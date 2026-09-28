@@ -189,6 +189,57 @@ function showBoard(){
 }
 
 function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+async function renderStatus(){
+  const box=document.getElementById("status");
+  box.innerHTML="<p class=\"small\">Conectando…</p>";
+  try{
+    const data=await getPlayerData();
+    const played=data.playedLevels||{};
+    box.innerHTML=["fácil","medio","difícil"].map(level=>{
+      const used=!!played[level];
+      return `<div class="status ${used?"used":""}"><span>${LEVELS[level].label}</span><span>${used?"✅ Ya jugado":"🟢 Disponible"}</span></div>`;
+    }).join("");
+  }catch(e){
+    console.error(e);
+    box.innerHTML='<p class="small">No se pudo conectar con Firebase. Recargá la página.</p>';
+  }
+}
+
+async function start(level){
+  try{
+    await authReady;
+    username=document.getElementById("username").value.trim();
+    if(!username){ alert("Primero ingresá tu nombre de usuario."); return; }
+    if(username.length<2){ alert("El usuario debe tener al menos 2 caracteres."); return; }
+    const data=await getPlayerData();
+    if(data.username && data.username!==username){
+      alert("Este dispositivo ya tiene un usuario asignado. Usá el mismo usuario para continuar.");
+      document.getElementById("username").value=data.username;
+      username=data.username;
+    }
+    const claimed=await claimLevel(level,username);
+    if(!claimed){
+      alert("Ya usaste tu único intento en este nivel.");
+      await renderStatus();
+      return;
+    }
+    currentLevel=level;
+    pool=shuffle(allQuestions.filter(q=>q.nivel===level)).slice(0,10);
+    index=0;
+    score=0;
+    locked=false;
+    document.getElementById("level").textContent=LEVELS[level].label;
+    home.classList.add("hidden");
+    boardSection.classList.add("hidden");
+    result.classList.add("hidden");
+    game.classList.remove("hidden");
+    render();
+  }catch(e){
+    console.error(e);
+    alert("No se pudo iniciar el juego. Revisá que Firebase Authentication anónimo esté habilitado y que las reglas de Firestore estén publicadas.");
+  }
+}
+
 function backHome(){boardSection.classList.add("hidden");home.classList.remove("hidden");renderStatus();}
 authReady.then(()=>renderStatus());
 </script></body></html>
