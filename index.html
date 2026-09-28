@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#071a12">
 <title>FREEHAND · Preguntados Argentina</title>
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=FAEpmdi96zh-GmobyPWq2rfUhVMnnXNYrSJu2Ng7LR7VqXz0RbCdkROYK_fsfk0kJXRK2apuTabfsFNZvZ690nQhn56ea5k6NydMdt3Cto-S_kBm_7XYiUDWlDjD0pS-VrO75yhJy5i9IeMsXpK-xoQtC-z0BgxeLss1IMA9iYKPgPD0n1i6hef1-tovaVFiA0YtLUujaz8AYA-LyQ3UBIYoFFKDPkAko_sRtoAMo7l9BaPMPPeZM9JFW7Kh4p9_kUkICqtnqntAKniceUa-fb-BLNu0722G3IaxcBfxAG0-mSD7BAw2UsNQcK7B0QQX2LvqH81c3smvgYyOrwlSOFFLPUhmEz5jeIyE9DG9C3m4I3P5pDBfAUgLW06YTEY_" charset="UTF-8"></script><style>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=nNTUxXH3tk24YZExnLgkeBByTMJ5AiKoFz0h7vp6FVeLsTr8QdgfC_D8p-2e88jzGO7HwToUxoQ_eV7K5G58eC65Sm1I8RWuJspNOD1N9OLnsuQfeDBhqyerM8PhAswnTghz4mLksOjbVecNIlOyhE0FTJV2ieWTLyDmlI8x7KMKzHkQO89pHWbxZatZ-LwcMfjH8ecRmtLtKku6quq2JZxHWcNvD-TNgxM8RPTepZpr4lvGh0Z9r6TCKtR2Yhc3TOdAbdmZfzzpMGs2Wo78W2IzpfEvaIfGYJOb-4ZZVITKMIg-welOG2pH3p1JWADvkGyHkf3WaWLf3YALWRBWyvIw8hzArX7-Sqzq4Ba-_To" charset="UTF-8"></script><style>
 *{box-sizing:border-box}
 :root{--green:#07180f;--green2:#0b2a1a;--neon:#39ff78;--gold:#ffd34d;--gold2:#ff9d00;--cream:#fff4cf;--red:#ff5b5b}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% -10%,#174c2b 0,#081a10 38%,#030a07 100%);color:#fff;min-height:100vh;overflow-x:hidden}
@@ -355,7 +355,21 @@ button:active{transform:translateY(2px);box-shadow:0 3px 0 rgba(0,0,0,.28),0 5px
 <button id="backHomeBtn" class="level">VOLVER</button>
 </section>
 </main>
-<script type="module">const app = initializeApp(firebaseConfig);
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, getDocs, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDStVY2-PEgM5nezY9BLMxXlfl8pgXgCaM",
+  authDomain: "preguntados-argentina.firebaseapp.com",
+  projectId: "preguntados-argentina",
+  storageBucket: "preguntados-argentina.firebasestorage.app",
+  messagingSenderId: "381499526265",
+  appId: "1:381499526265:web:a3728473d8644aee63d8a8"
+};
+
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 let firebaseUser = null;
