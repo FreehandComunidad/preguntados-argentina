@@ -40,7 +40,7 @@ input{width:100%;padding:15px;border-radius:14px;border:1px solid #ffffff25;back
 <button class="medium" onclick="start('medio')">🟡 MEDIO · 20 segundos</button>
 <button class="hard" onclick="start('difícil')">🔴 DIFÍCIL · 25 segundos</button>
 <button onclick="showBoard()" style="background:#ffffff12;color:#fff">🏆 TABLA DE PUNTAJES</button>
-<p class="note">Los intentos y puntajes se guardan en este navegador.</p>
+<p class="note">Los intentos y puntajes se guardan online. Los demás jugadores no pueden ver tu usuario.</p>
 </section>
 
 <section id="game" class="card hidden">
@@ -58,43 +58,77 @@ input{width:100%;padding:15px;border-radius:14px;border:1px solid #ffffff25;back
 </section>
 <section id="board" class="card hidden">
 <h1>🏆 Tabla de puntajes</h1>
-<p class="small">Puntaje acumulado en este dispositivo.</p>
+<p class="small">Ranking online actualizado en tiempo real. Los usuarios reales no se muestran.</p>
 <div id="boardContent"></div>
 <button class="level" onclick="backHome()">VOLVER</button>
 </section>
 </main>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDStVY2-PEgM5nezY9BLMxXlfl8pgXgCaM",
+  authDomain: "preguntados-argentina.firebaseapp.com",
+  projectId: "preguntados-argentina",
+  storageBucket: "preguntados-argentina.firebasestorage.app",
+  messagingSenderId: "381499526265",
+  appId: "1:381499526265:web:a3728473d8644aee63d8a8"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let firebaseUser = null;
+let authReady = new Promise((resolve,reject)=>{
+  onAuthStateChanged(auth,u=>{ if(u){firebaseUser=u; resolve(u);} });
+});
+signInAnonymously(auth).catch(e=>{console.error(e); alert("No se pudo conectar con Firebase. Revisá la configuración de Authentication.");});
+
 const allQuestions = [{"nivel": "fácil", "pregunta": "¿Cuál es la capital de Argentina?", "opciones": ["Córdoba", "Buenos Aires", "Rosario", "Mendoza"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuántos colores tiene la bandera argentina?", "opciones": ["2", "3", "4", "5"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuál es la bebida preparada tradicionalmente con yerba mate?", "opciones": ["Café", "Mate", "Té negro", "Licuado"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿En qué mes se celebra la Revolución de Mayo?", "opciones": ["Mayo", "Julio", "Agosto", "Septiembre"], "correcta": 0}, {"nivel": "fácil", "pregunta": "¿Cuál es la moneda oficial de Argentina?", "opciones": ["Peso argentino", "Real", "Sol", "Euro"], "correcta": 0}, {"nivel": "fácil", "pregunta": "¿Cuál es un baile tradicional argentino?", "opciones": ["Salsa", "Tango", "Samba", "Flamenco"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuál es la montaña más alta de Argentina?", "opciones": ["Cerro Catedral", "Aconcagua", "Lanín", "Fitz Roy"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuántas provincias tiene Argentina?", "opciones": ["21", "23", "25", "27"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿En qué provincia están las Cataratas del Iguazú?", "opciones": ["Corrientes", "Misiones", "Chaco", "Formosa"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuál es la capital de Tierra del Fuego?", "opciones": ["Río Grande", "Ushuaia", "Tolhuin", "Caleta Olivia"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿En qué provincia se encuentra el Aconcagua?", "opciones": ["San Juan", "Mendoza", "Neuquén", "Salta"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿Quién escribió el Martín Fierro?", "opciones": ["Sarmiento", "José Hernández", "Cortázar", "Lugones"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿En qué año se declaró la Independencia argentina?", "opciones": ["1810", "1812", "1816", "1820"], "correcta": 2}, {"nivel": "medio", "pregunta": "¿Qué prócer es conocido como el Padre de la Patria?", "opciones": ["Belgrano", "San Martín", "Moreno", "Rosas"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿Cuál es la capital de la provincia de San Juan?", "opciones": ["Caucete", "Rawson", "San Juan", "Rivadavia"], "correcta": 2}, {"nivel": "medio", "pregunta": "¿Qué científico argentino recibió dos Premios Nobel?", "opciones": ["Bernardo Houssay", "René Favaloro", "César Milstein", "Leloir"], "correcta": 0}, {"nivel": "medio", "pregunta": "¿Cuál es la provincia más austral de la Argentina continental?", "opciones": ["Santa Cruz", "Chubut", "Tierra del Fuego", "Río Negro"], "correcta": 2}, {"nivel": "medio", "pregunta": "¿Qué río es uno de los principales de la cuenca del Plata?", "opciones": ["Río Colorado", "Río Paraná", "Río Negro", "Río Limay"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿Quién fue conocido por impulsar la educación pública argentina en el siglo XIX?", "opciones": ["Sarmiento", "Roca", "Yrigoyen", "Rosas"], "correcta": 0}, {"nivel": "medio", "pregunta": "¿En qué provincia está el Parque Nacional El Leoncito?", "opciones": ["Mendoza", "San Juan", "La Rioja", "Catamarca"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿En qué año se sancionó la Constitución Nacional Argentina?", "opciones": ["1816", "1853", "1862", "1880"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Quién fue el primer presidente constitucional de la Confederación Argentina?", "opciones": ["Bartolomé Mitre", "Justo José de Urquiza", "Sarmiento", "Julio A. Roca"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Cuál es el punto más bajo de Argentina?", "opciones": ["Laguna del Carbón", "Salinas Grandes", "Valle de la Luna", "Bajo de Véliz"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿En qué provincia se encuentra el Parque Nacional Talampaya?", "opciones": ["Catamarca", "La Rioja", "San Juan", "Mendoza"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Qué científico argentino desarrolló la técnica de bypass coronario que lleva su nombre?", "opciones": ["René Favaloro", "Bernardo Houssay", "César Milstein", "Leloir"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Qué batalla fue decisiva para la independencia de Chile dentro de la campaña de San Martín?", "opciones": ["Caseros", "Maipú", "Pavón", "Cepeda"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Cuál de estos parques nacionales está en San Juan?", "opciones": ["El Leoncito", "Los Glaciares", "Nahuel Huapi", "Iguazú"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Quién fue el primer argentino en recibir un Premio Nobel?", "opciones": ["Bernardo Houssay", "Carlos Saavedra Lamas", "Leloir", "Pérez Esquivel"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Qué ley estableció la educación primaria común, gratuita y obligatoria?", "opciones": ["Ley 1420", "Ley Sáenz Peña", "Ley de Residencia", "Ley de Aduanas"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Qué prócer argentino nació en Yapeyú?", "opciones": ["Manuel Belgrano", "José de San Martín", "Sarmiento", "Guillermo Brown"], "correcta": 1}];
 const LEVELS = {"fácil":{time:15,label:"FÁCIL"},"medio":{time:20,label:"MEDIO"},"difícil":{time:25,label:"DIFÍCIL"}};
 let pool=[],index=0,score=0,locked=false,currentLevel="",username="",timerId=null,timeLeft=0;
 
 const home=document.getElementById("home"),game=document.getElementById("game"),result=document.getElementById("result"),boardSection=document.getElementById("board");
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-function getUsed(){return JSON.parse(localStorage.getItem("pq_used")||"{}")}
-function getBoard(){return JSON.parse(localStorage.getItem("pq_board")||"[]")}
+function playerDoc(){ return doc(db,"players_private",firebaseUser.uid); }
+function rankingDoc(){ return doc(db,"ranking_public",firebaseUser.uid); }
+function publicCode(uid){ return "Jugador #"+uid.slice(-4).toUpperCase(); }
 
-function renderStatus(){
- const u=getUsed(),box=document.getElementById("status");box.innerHTML="";
- Object.keys(LEVELS).forEach(l=>{
-   box.innerHTML+='<div class="status'+(u[l]?' used':'')+'"><b>'+LEVELS[l].label+'</b><span>'+(u[l]?'🔒 YA JUGADO':'✅ DISPONIBLE')+'</span></div>';
- });
+async function getPlayerData(){
+  await authReady;
+  const snap=await getDoc(playerDoc());
+  return snap.exists()?snap.data():{username:"",playedLevels:{},scores:{},totalScore:0};
 }
 
-function start(level){
- const name=document.getElementById("username").value.trim();
- if(!name){alert("Primero ingresá tu nombre de usuario.");return;}
- const u=getUsed();
- if(u[level]){alert("Ya utilizaste tu único intento en este nivel.");return;}
- username=name.slice(0,20);currentLevel=level;
- pool=shuffle(allQuestions.filter(x=>x.nivel===level)).slice(0,10);
- index=0;score=0;u[level]=true;
- localStorage.setItem("pq_used",JSON.stringify(u));
- home.classList.add("hidden");boardSection.classList.add("hidden");result.classList.add("hidden");game.classList.remove("hidden");
- document.getElementById("level").textContent=LEVELS[level].label;
- render();
+async function claimLevel(level,name){
+  await authReady;
+  const ref=playerDoc();
+  let claimed=false;
+  await runTransaction(db, async tx=>{
+    const snap=await tx.get(ref);
+    const data=snap.exists()?snap.data():{};
+    const played=data.playedLevels||{};
+    if(played[level]) return;
+    played[level]=true;
+    tx.set(ref,{username:name,playedLevels:played,scores:data.scores||{},totalScore:data.totalScore||0,lastSeen:serverTimestamp()},{merge:true});
+    claimed=true;
+  });
+  return claimed;
 }
 
-function startTimer(){
+async function saveResult(){
+  await authReady;
+  const ref=playerDoc();
+  const snap=await getDoc(ref);
+  const data=snap.exists()?snap.data():{};
+  const scores={...(data.scores||{}),[currentLevel]:score};
+  const total=Object.values(scores).reduce((a,b)=>a+(Number(b)||0),0);
+  await setDoc(ref,{username:username,scores:scores,totalScore:total,lastSeen:serverTimestamp()},{merge:true});
+  await setDoc(rankingDoc(),{publicId:publicCode(firebaseUser.uid),totalScore:total,lastUpdated:serverTimestamp()},{merge:true});
+}
+
+async function startTimer(){
  clearInterval(timerId);timeLeft=LEVELS[currentLevel].time;updateTimer();
  timerId=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerId);timeout();}},1000);
 }
@@ -129,7 +163,7 @@ function timeout(){
  setTimeout(next,1000);
 }
 function next(){index++;if(index<pool.length)render();else finish();}
-function finish(){
+async function finish(){
  clearInterval(timerId);game.classList.add("hidden");result.classList.remove("hidden");
  document.getElementById("resultLevel").textContent=LEVELS[currentLevel].label;
  document.getElementById("score").textContent=score+" / "+pool.length;
@@ -138,20 +172,23 @@ function finish(){
    score>=7?"¡Muy bien, "+username+"! 🔥":
    score>=5?"Buen trabajo, "+username+" 💪":
    "¡A seguir jugando, "+username+"! 🚀";
- const b=getBoard(),e=b.find(x=>x.nombre.toLowerCase()===username.toLowerCase());
- if(e)e.puntaje+=score;else b.push({nombre:username,puntaje:score});
- b.sort((a,c)=>c.puntaje-a.puntaje||a.nombre.localeCompare(c.nombre));
- localStorage.setItem("pq_board",JSON.stringify(b.slice(0,50)));
+ try{ await saveResult(); }catch(e){ console.error(e); alert("Tu resultado local se mostró, pero no se pudo sincronizar con el ranking."); }
 }
 function showBoard(){
  home.classList.add("hidden");result.classList.add("hidden");boardSection.classList.remove("hidden");
- const b=getBoard(),box=document.getElementById("boardContent");
- if(!b.length){box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';return;}
- let h='<div class="row head"><span>#</span><span>USUARIO</span><span>PUNTOS</span></div>';
- b.forEach((x,i)=>{h+='<div class="row"><span class="rank">'+(i+1)+'</span><span class="name">'+escapeHtml(x.nombre)+'</span><span class="points">'+x.puntaje+'</span></div>';});
- box.innerHTML=h;
+ const box=document.getElementById("boardContent");
+ box.innerHTML='<p class="small">Cargando ranking en tiempo real…</p>';
+ const q=query(collection(db,"ranking_public"),orderBy("totalScore","desc"),limit(50));
+ onSnapshot(q,snap=>{
+   const b=snap.docs.map(d=>d.data());
+   if(!b.length){box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';return;}
+   let h='<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span></div>';
+   b.forEach((x,i)=>{h+='<div class="row"><span class="rank">'+(i+1)+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+(i+1)))+'</span><span class="points">'+(x.totalScore||0)+'</span></div>';});
+   box.innerHTML=h;
+ },err=>{ console.error(err); box.innerHTML='<p class="small">No se pudo cargar el ranking. Revisá las reglas de Firestore.</p>'; });
 }
+
 function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
 function backHome(){boardSection.classList.add("hidden");home.classList.remove("hidden");renderStatus();}
-renderStatus();
+authReady.then(()=>renderStatus());
 </script></body></html>
