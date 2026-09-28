@@ -246,13 +246,23 @@ async function syncPublicRanking(){
   if(!snap.exists()) return;
   const data=snap.data();
   const scores=data.scores||{};
-  const total=Number(data.totalScore ?? Object.values(scores).reduce((a,b)=>a+(Number(b)||0),0)) || 0;
+  const read=(...keys)=>{
+    for(const key of keys){
+      const value=scores[key];
+      if(value!==undefined && value!==null && value!=="") return Number(value)||0;
+    }
+    return 0;
+  };
+  const easyScore=read("fácil","facil","easy") || Number(data.easyScore)||0;
+  const mediumScore=read("medio","medium") || Number(data.mediumScore)||0;
+  const hardScore=read("difícil","dificil","hard") || Number(data.hardScore)||0;
+  const total=easyScore+mediumScore+hardScore;
   await setDoc(rankingDoc(),{
     publicId:publicCode(firebaseUser.uid),
     totalScore:total,
-    easyScore:Number(data.easyScore||scores["fácil"]||0),
-    mediumScore:Number(data.mediumScore||scores["medio"]||0),
-    hardScore:Number(data.hardScore||scores["difícil"]||0),
+    easyScore:easyScore,
+    mediumScore:mediumScore,
+    hardScore:hardScore,
     lastUpdated:serverTimestamp()
   },{merge:true});
 }
@@ -285,14 +295,25 @@ async function saveResult(){
     const data=snap.exists()?snap.data():{};
     const oldScores={...(data.scores||{})};
 
-    const easy=Number(data.easyScore ?? oldScores["fácil"] ?? 0);
-    const medium=Number(data.mediumScore ?? oldScores["medio"] ?? 0);
-    const hard=Number(data.hardScore ?? oldScores["difícil"] ?? 0);
+    // Compatibilidad con datos anteriores: primero usamos el puntaje
+    // realmente guardado en "scores", y solo si no existe usamos el campo
+    // específico del nivel. Esto evita que easyScore=0 tape un fácil ya jugado.
+    const readScore=(...keys)=>{
+      for(const key of keys){
+        const value=data.scores?.[key];
+        if(value!==undefined && value!==null && value!=="") return Number(value)||0;
+      }
+      return 0;
+    };
+
+    const easy=readScore("fácil","facil","easy") || Number(data.easyScore)||0;
+    const medium=readScore("medio","medium") || Number(data.mediumScore)||0;
+    const hard=readScore("difícil","dificil","hard") || Number(data.hardScore)||0;
 
     let easyScore=easy, mediumScore=medium, hardScore=hard;
-    if(currentLevel==="fácil") easyScore=Number(score);
-    if(currentLevel==="medio") mediumScore=Number(score);
-    if(currentLevel==="difícil") hardScore=Number(score);
+    if(currentLevel==="fácil") easyScore=Number(score)||0;
+    if(currentLevel==="medio") mediumScore=Number(score)||0;
+    if(currentLevel==="difícil") hardScore=Number(score)||0;
 
     const scores={
       ...oldScores,
