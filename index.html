@@ -101,6 +101,21 @@ async function getPlayerData(){
   return snap.exists()?snap.data():{username:"",playedLevels:{},scores:{},totalScore:0};
 }
 
+async function syncPublicRanking(){
+  await authReady;
+  const snap=await getDoc(playerDoc());
+  if(!snap.exists()) return;
+  const data=snap.data();
+  const scores=data.scores||{};
+  const total=Object.values(scores).reduce((a,b)=>a+(Number(b)||0),0);
+  if(total<=0) return;
+  await setDoc(rankingDoc(),{
+    publicId:publicCode(firebaseUser.uid),
+    totalScore:total,
+    lastUpdated:serverTimestamp()
+  },{merge:true});
+}
+
 async function claimLevel(level,name){
   await authReady;
   const ref=playerDoc();
@@ -194,6 +209,7 @@ async function renderStatus(){
   box.innerHTML="<p class=\"small\">Conectando…</p>";
   try{
     const data=await getPlayerData();
+    try{ await syncPublicRanking(); }catch(e){ console.error("No se pudo sincronizar el ranking público",e); }
     const played=data.playedLevels||{};
     box.innerHTML=["fácil","medio","difícil"].map(level=>{
       const used=!!played[level];
