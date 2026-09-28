@@ -246,11 +246,13 @@ async function syncPublicRanking(){
   if(!snap.exists()) return;
   const data=snap.data();
   const scores=data.scores||{};
-  const total=Object.values(scores).reduce((a,b)=>a+(Number(b)||0),0);
-  if(total<=0) return;
+  const total=Number(data.totalScore ?? Object.values(scores).reduce((a,b)=>a+(Number(b)||0),0)) || 0;
   await setDoc(rankingDoc(),{
     publicId:publicCode(firebaseUser.uid),
     totalScore:total,
+    easyScore:Number(data.easyScore||scores["fácil"]||0),
+    mediumScore:Number(data.mediumScore||scores["medio"]||0),
+    hardScore:Number(data.hardScore||scores["difícil"]||0),
     lastUpdated:serverTimestamp()
   },{merge:true});
 }
@@ -273,13 +275,52 @@ async function claimLevel(level,name){
 
 async function saveResult(){
   await authReady;
-  const ref=playerDoc();
-  const snap=await getDoc(ref);
-  const data=snap.exists()?snap.data():{};
-  const scores={...(data.scores||{}),[currentLevel]:score};
-  const total=Object.values(scores).reduce((a,b)=>a+(Number(b)||0),0);
-  await setDoc(ref,{username:username,scores:scores,totalScore:total,lastSeen:serverTimestamp()},{merge:true});
-  await setDoc(rankingDoc(),{publicId:publicCode(firebaseUser.uid),totalScore:total,lastUpdated:serverTimestamp()},{merge:true});
+  const playerRef=playerDoc();
+  const publicRef=rankingDoc();
+
+  // Guardamos jugador + ranking en una sola transacción para que el puntaje
+  // de cada nivel y el total nunca queden desincronizados.
+  await runTransaction(db, async tx=>{
+    const snap=await tx.get(playerRef);
+    const data=snap.exists()?snap.data():{};
+    const oldScores={...(data.scores||{})};
+
+    const easy=Number(data.easyScore ?? oldScores["fácil"] ?? 0);
+    const medium=Number(data.mediumScore ?? oldScores["medio"] ?? 0);
+    const hard=Number(data.hardScore ?? oldScores["difícil"] ?? 0);
+
+    let easyScore=easy, mediumScore=medium, hardScore=hard;
+    if(currentLevel==="fácil") easyScore=Number(score);
+    if(currentLevel==="medio") mediumScore=Number(score);
+    if(currentLevel==="difícil") hardScore=Number(score);
+
+    const scores={
+      ...oldScores,
+      "fácil":easyScore,
+      "medio":mediumScore,
+      "difícil":hardScore
+    };
+    const total=easyScore+mediumScore+hardScore;
+
+    tx.set(playerRef,{
+      username:username,
+      scores:scores,
+      easyScore:easyScore,
+      mediumScore:mediumScore,
+      hardScore:hardScore,
+      totalScore:total,
+      lastSeen:serverTimestamp()
+    },{merge:true});
+
+    tx.set(publicRef,{
+      publicId:publicCode(firebaseUser.uid),
+      easyScore:easyScore,
+      mediumScore:mediumScore,
+      hardScore:hardScore,
+      totalScore:total,
+      lastUpdated:serverTimestamp()
+    },{merge:true});
+  });
 }
 
 async function startTimer(){
@@ -326,7 +367,12 @@ async function finish(){
    score>=7?"¡Muy bien, "+username+"! 🔥":
    score>=5?"Buen trabajo, "+username+" 💪":
    "¡A seguir jugando, "+username+"! 🚀";
- try{ await saveResult(); }catch(e){ console.error(e); alert("Tu resultado local se mostró, pero no se pudo sincronizar con el ranking."); }
+ try{
+    await saveResult();
+  }catch(e){
+    console.error("ERROR GUARDANDO RESULTADO",e);
+    alert("No se pudo guardar el resultado en Firebase. Abrí la consola del navegador (F12) para ver el error.");
+  }
 }
 function showBoard(){
  home.classList.add("hidden");result.classList.add("hidden");boardSection.classList.remove("hidden");
@@ -337,7 +383,7 @@ function showBoard(){
    const b=snap.docs.map(d=>d.data());
    if(!b.length){box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';return;}
    let h='<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span></div>';
-   b.forEach((x,i)=>{h+='<div class="row"><span class="rank">'+(i+1)+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+(i+1)))+'</span><span class="points">'+(x.totalScore||0)+'</span></div>';});
+   b.forEach((x,i)=>{h+='<div class="row"><span class="rank">'+(i+1)+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+(i+1)))+'</span><span class="points">'+(Number(x.totalScore)||0)+'</span></div>';});
    box.innerHTML=h;
  },err=>{ console.error(err); box.innerHTML='<p class="small">No se pudo cargar el ranking. Revisá las reglas de Firestore.</p>'; });
 }
