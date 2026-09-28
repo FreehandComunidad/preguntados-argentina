@@ -1,0 +1,422 @@
+[
+  {
+    "id": "q_easy_001",
+    "nivel": "fácil",
+    "pregunta": "¿Cuál es la capital de Argentina?",
+    "opciones": [
+      "Córdoba",
+      "Buenos Aires",
+      "Rosario",
+      "Mendoza"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 1
+  },
+  {
+    "id": "q_easy_002",
+    "nivel": "fácil",
+    "pregunta": "¿Cuántos colores tiene la bandera argentina?",
+    "opciones": [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 2
+  },
+  {
+    "id": "q_easy_003",
+    "nivel": "fácil",
+    "pregunta": "¿Cuál es la bebida preparada tradicionalmente con yerba mate?",
+    "opciones": [
+      "Café",
+      "Mate",
+      "Té negro",
+      "Licuado"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 3
+  },
+  {
+    "id": "q_easy_004",
+    "nivel": "fácil",
+    "pregunta": "¿En qué mes se celebra la Revolución de Mayo?",
+    "opciones": [
+      "Mayo",
+      "Julio",
+      "Agosto",
+      "Septiembre"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 4
+  },
+  {
+    "id": "q_easy_005",
+    "nivel": "fácil",
+    "pregunta": "¿Cuál es la moneda oficial de Argentina?",
+    "opciones": [
+      "Peso argentino",
+      "Real",
+      "Sol",
+      "Euro"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 5
+  },
+  {
+    "id": "q_easy_006",
+    "nivel": "fácil",
+    "pregunta": "¿Cuál es un baile tradicional argentino?",
+    "opciones": [
+      "Salsa",
+      "Tango",
+      "Samba",
+      "Flamenco"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 6
+  },
+  {
+    "id": "q_easy_007",
+    "nivel": "fácil",
+    "pregunta": "¿Cuál es la montaña más alta de Argentina?",
+    "opciones": [
+      "Cerro Catedral",
+      "Aconcagua",
+      "Lanín",
+      "Fitz Roy"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 7
+  },
+  {
+    "id": "q_easy_008",
+    "nivel": "fácil",
+    "pregunta": "¿Cuántas provincias tiene Argentina?",
+    "opciones": [
+      "21",
+      "23",
+      "25",
+      "27"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 8
+  },
+  {
+    "id": "q_easy_009",
+    "nivel": "fácil",
+    "pregunta": "¿En qué provincia están las Cataratas del Iguazú?",
+    "opciones": [
+      "Corrientes",
+      "Misiones",
+      "Chaco",
+      "Formosa"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 9
+  },
+  {
+    "id": "q_easy_010",
+    "nivel": "fácil",
+    "pregunta": "¿Cuál es la capital de Tierra del Fuego?",
+    "opciones": [
+      "Río Grande",
+      "Ushuaia",
+      "Tolhuin",
+      "Caleta Olivia"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 10
+  },
+  {
+    "id": "q_medium_011",
+    "nivel": "medio",
+    "pregunta": "¿En qué provincia se encuentra el Aconcagua?",
+    "opciones": [
+      "San Juan",
+      "Mendoza",
+      "Neuquén",
+      "Salta"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 11
+  },
+  {
+    "id": "q_medium_012",
+    "nivel": "medio",
+    "pregunta": "¿Quién escribió el Martín Fierro?",
+    "opciones": [
+      "Sarmiento",
+      "José Hernández",
+      "Cortázar",
+      "Lugones"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 12
+  },
+  {
+    "id": "q_medium_013",
+    "nivel": "medio",
+    "pregunta": "¿En qué año se declaró la Independencia argentina?",
+    "opciones": [
+      "1810",
+      "1812",
+      "1816",
+      "1820"
+    ],
+    "correcta": 2,
+    "activo": true,
+    "orden": 13
+  },
+  {
+    "id": "q_medium_014",
+    "nivel": "medio",
+    "pregunta": "¿Qué prócer es conocido como el Padre de la Patria?",
+    "opciones": [
+      "Belgrano",
+      "San Martín",
+      "Moreno",
+      "Rosas"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 14
+  },
+  {
+    "id": "q_medium_015",
+    "nivel": "medio",
+    "pregunta": "¿Cuál es la capital de la provincia de San Juan?",
+    "opciones": [
+      "Caucete",
+      "Rawson",
+      "San Juan",
+      "Rivadavia"
+    ],
+    "correcta": 2,
+    "activo": true,
+    "orden": 15
+  },
+  {
+    "id": "q_medium_016",
+    "nivel": "medio",
+    "pregunta": "¿Qué científico argentino recibió dos Premios Nobel?",
+    "opciones": [
+      "Bernardo Houssay",
+      "René Favaloro",
+      "César Milstein",
+      "Leloir"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 16
+  },
+  {
+    "id": "q_medium_017",
+    "nivel": "medio",
+    "pregunta": "¿Cuál es la provincia más austral de la Argentina continental?",
+    "opciones": [
+      "Santa Cruz",
+      "Chubut",
+      "Tierra del Fuego",
+      "Río Negro"
+    ],
+    "correcta": 2,
+    "activo": true,
+    "orden": 17
+  },
+  {
+    "id": "q_medium_018",
+    "nivel": "medio",
+    "pregunta": "¿Qué río es uno de los principales de la cuenca del Plata?",
+    "opciones": [
+      "Río Colorado",
+      "Río Paraná",
+      "Río Negro",
+      "Río Limay"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 18
+  },
+  {
+    "id": "q_medium_019",
+    "nivel": "medio",
+    "pregunta": "¿Quién fue conocido por impulsar la educación pública argentina en el siglo XIX?",
+    "opciones": [
+      "Sarmiento",
+      "Roca",
+      "Yrigoyen",
+      "Rosas"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 19
+  },
+  {
+    "id": "q_medium_020",
+    "nivel": "medio",
+    "pregunta": "¿En qué provincia está el Parque Nacional El Leoncito?",
+    "opciones": [
+      "Mendoza",
+      "San Juan",
+      "La Rioja",
+      "Catamarca"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 20
+  },
+  {
+    "id": "q_hard_021",
+    "nivel": "difícil",
+    "pregunta": "¿En qué año se sancionó la Constitución Nacional Argentina?",
+    "opciones": [
+      "1816",
+      "1853",
+      "1862",
+      "1880"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 21
+  },
+  {
+    "id": "q_hard_022",
+    "nivel": "difícil",
+    "pregunta": "¿Quién fue el primer presidente constitucional de la Confederación Argentina?",
+    "opciones": [
+      "Bartolomé Mitre",
+      "Justo José de Urquiza",
+      "Sarmiento",
+      "Julio A. Roca"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 22
+  },
+  {
+    "id": "q_hard_023",
+    "nivel": "difícil",
+    "pregunta": "¿Cuál es el punto más bajo de Argentina?",
+    "opciones": [
+      "Laguna del Carbón",
+      "Salinas Grandes",
+      "Valle de la Luna",
+      "Bajo de Véliz"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 23
+  },
+  {
+    "id": "q_hard_024",
+    "nivel": "difícil",
+    "pregunta": "¿En qué provincia se encuentra el Parque Nacional Talampaya?",
+    "opciones": [
+      "Catamarca",
+      "La Rioja",
+      "San Juan",
+      "Mendoza"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 24
+  },
+  {
+    "id": "q_hard_025",
+    "nivel": "difícil",
+    "pregunta": "¿Qué científico argentino desarrolló la técnica de bypass coronario que lleva su nombre?",
+    "opciones": [
+      "René Favaloro",
+      "Bernardo Houssay",
+      "César Milstein",
+      "Leloir"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 25
+  },
+  {
+    "id": "q_hard_026",
+    "nivel": "difícil",
+    "pregunta": "¿Qué batalla fue decisiva para la independencia de Chile dentro de la campaña de San Martín?",
+    "opciones": [
+      "Caseros",
+      "Maipú",
+      "Pavón",
+      "Cepeda"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 26
+  },
+  {
+    "id": "q_hard_027",
+    "nivel": "difícil",
+    "pregunta": "¿Cuál de estos parques nacionales está en San Juan?",
+    "opciones": [
+      "El Leoncito",
+      "Los Glaciares",
+      "Nahuel Huapi",
+      "Iguazú"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 27
+  },
+  {
+    "id": "q_hard_028",
+    "nivel": "difícil",
+    "pregunta": "¿Quién fue el primer argentino en recibir un Premio Nobel?",
+    "opciones": [
+      "Bernardo Houssay",
+      "Carlos Saavedra Lamas",
+      "Leloir",
+      "Pérez Esquivel"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 28
+  },
+  {
+    "id": "q_hard_029",
+    "nivel": "difícil",
+    "pregunta": "¿Qué ley estableció la educación primaria común, gratuita y obligatoria?",
+    "opciones": [
+      "Ley 1420",
+      "Ley Sáenz Peña",
+      "Ley de Residencia",
+      "Ley de Aduanas"
+    ],
+    "correcta": 0,
+    "activo": true,
+    "orden": 29
+  },
+  {
+    "id": "q_hard_030",
+    "nivel": "difícil",
+    "pregunta": "¿Qué prócer argentino nació en Yapeyú?",
+    "opciones": [
+      "Manuel Belgrano",
+      "José de San Martín",
+      "Sarmiento",
+      "Guillermo Brown"
+    ],
+    "correcta": 1,
+    "activo": true,
+    "orden": 30
+  }
+]
