@@ -952,9 +952,20 @@ async function finish(){
     await saveResult();
   }catch(e){
     console.error("ERROR GUARDANDO RESULTADO",e);
-    alert("No se pudo guardar el resultado en Firebase. Abrí la consola del navegador (F12) para ver el error.");
+    const code=e?.code||"";
+    alert("No se pudo guardar el resultado en Firebase"+(code?` (${code})`:"")+".");
   }
 }
+function rankingTime(entry){
+  if(!entry || !Object.prototype.hasOwnProperty.call(entry,"totalTime")) return Infinity;
+  const n=Number(entry.totalTime);
+  return Number.isFinite(n) && n>=0 ? n : Infinity;
+}
+function rankingTimeLabel(entry){
+  const t=rankingTime(entry);
+  return Number.isFinite(t) ? `${t} s` : "—";
+}
+
 async function showBoard(){
  home.classList.add("hidden");result.classList.add("hidden");boardSection.classList.remove("hidden");
  const box=document.getElementById("boardContent");
@@ -969,7 +980,7 @@ async function showBoard(){
    all.sort((a,b)=>{
      const scoreDiff=(Number(b.totalScore)||0)-(Number(a.totalScore)||0);
      if(scoreDiff!==0) return scoreDiff;
-     return (Number(a.totalTime)||0)-(Number(b.totalTime)||0);
+     return rankingTime(a)-rankingTime(b);
    });
 
    if(!all.length){
@@ -981,14 +992,14 @@ async function showBoard(){
    let myPanel="";
    if(mine){
      const myScore=Number(mine.totalScore)||0;
-     const myTime=Number(mine.totalTime)||0;
+     const myTime=rankingTime(mine);
      const position=1+all.filter(x=>{
        const s=Number(x.totalScore)||0;
-       const t=Number(x.totalTime)||0;
+       const t=rankingTime(x);
        return s>myScore || (s===myScore && t<myTime);
      }).length;
 
-     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos · '+myTime+' s</div></div>';
+     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos · '+rankingTimeLabel(mine)+'</div></div>';
    }else{
      myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-meta">Todavía no tenés un puntaje registrado.</div></div>';
    }
@@ -998,15 +1009,15 @@ async function showBoard(){
 
    b.forEach((x)=>{
      const pts=Number(x.totalScore)||0;
-     const rowTime=Number(x.totalTime)||0;
+     const rowTime=rankingTime(x);
      const position=1+all.filter(y=>{
        const ys=Number(y.totalScore)||0;
-       const yt=Number(y.totalTime)||0;
+       const yt=rankingTime(y);
        return ys>pts || (ys===pts && yt<rowTime);
      }).length;
 
      const mineClass=x.id===firebaseUser.uid?' my-row':'';
-     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span><span class="time">'+rowTime+' s</span></div>';
+     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span><span class="time">'+rankingTimeLabel(x)+'</span></div>';
    });
 
    box.innerHTML=h;
@@ -1023,7 +1034,6 @@ async function renderStatus(){
   try{
     const data=await getPlayerData();
     if(data.username) document.getElementById("username").value=data.username;
-    try{ await syncPublicRanking(); }catch(e){ console.error("No se pudo sincronizar el ranking público",e); }
     const played=data.playedLevels||{};
     box.innerHTML=["fácil","medio","difícil"].map(level=>{
       const used=!!played[level];
@@ -1036,32 +1046,47 @@ async function renderStatus(){
 }
 
 
-async function loadQuestions(level){
+let questionsCachePromise=null;
+
+async function loadAllQuestions(){
   await authReady;
-  const snap=await getDocs(collection(db,"questions_public"));
 
-  const questions=snap.docs.map(d=>({id:d.id,...d.data()})).filter(q=>
-    q.nivel===level &&
-    q.activo===true &&
-    typeof q.pregunta==="string" &&
-    q.pregunta.trim().length>0 &&
-    Array.isArray(q.opciones) &&
-    q.opciones.length===4 &&
-    q.opciones.every(x=>typeof x==="string" && x.trim().length>0) &&
-    Number.isInteger(Number(q.correcta)) &&
-    Number(q.correcta)>=0 && Number(q.correcta)<4
-  );
+  if(!questionsCachePromise){
+    questionsCachePromise=(async()=>{
+      const snap=await getDocs(collection(db,"questions_public"));
+      return snap.docs.map(d=>({id:d.id,...d.data()})).filter(q=>
+        q.activo===true &&
+        typeof q.nivel==="string" &&
+        typeof q.pregunta==="string" &&
+        q.pregunta.trim().length>0 &&
+        Array.isArray(q.opciones) &&
+        q.opciones.length===4 &&
+        q.opciones.every(x=>typeof x==="string" && x.trim().length>0) &&
+        Number.isInteger(Number(q.correcta)) &&
+        Number(q.correcta)>=0 &&
+        Number(q.correcta)<4
+      );
+    })().catch(err=>{
+      questionsCachePromise=null;
+      throw err;
+    });
+  }
 
-  questions.sort((a,b)=>(Number(a.orden)||0)-(Number(b.orden)||0));
+  return questionsCachePromise;
+}
+
+async function loadQuestions(level){
+  const all=await loadAllQuestions();
+  const questions=all
+    .filter(q=>q.nivel===level)
+    .sort((a,b)=>(Number(a.orden)||0)-(Number(b.orden)||0));
 
   if(questions.length<10){
     throw new Error(`No hay 10 preguntas activas válidas de nivel ${level}. Hay ${questions.length}.`);
   }
 
-  // Firebase es la única fuente de verdad. Sin caché y sin preguntas locales de respaldo.
   return shuffle(questions).slice(0,10);
 }
-
 async function start(level){
   try{
     await authReady;
@@ -1105,7 +1130,8 @@ async function start(level){
     }else if(String(e?.message||"").includes("No hay 10 preguntas")){
       alert(e.message);
     }else{
-      alert("No se pudo iniciar el juego. Abrí la consola del navegador para ver el error de Firebase.");
+      const detail=code ? ` (${code})` : "";
+      alert("No se pudo iniciar el juego"+detail+". Revisá la conexión con Firebase.");
     }
   }
 }
@@ -1121,7 +1147,12 @@ document.getElementById("boardBtn").addEventListener("click",showBoard);
 document.getElementById("restartBtn").addEventListener("click",()=>location.reload());
 document.getElementById("backHomeBtn").addEventListener("click",backHome);
 
-authReady.then(()=>renderStatus());
+authReady.then(()=>{
+  renderStatus();
+  // Precarga una sola vez las preguntas mientras el jugador está en la pantalla inicial.
+  // Así al tocar FÁCIL/MEDIO/DIFÍCIL no hay una nueva espera a Firestore.
+  loadAllQuestions().catch(err=>console.error("No se pudieron precargar las preguntas:",err));
+});
 
 
 // Navegación visual nueva: reutiliza los controles existentes, sin tocar la lógica de Firebase.
