@@ -20,7 +20,8 @@ body:before{width:260px;height:260px;background:#12ff63;top:8%;left:-130px}body:
 .homeTitle{font-size:32px;line-height:1.05;margin:4px 0 10px;text-align:center;font-weight:950}.homeTitle span{color:var(--gold)}
 h1{font-size:34px;line-height:1.05;margin:6px 0 12px;text-align:center}h2{font-size:22px;margin:8px 0 18px}
 .small{color:#b9c8c0;font-size:13px;text-align:center}.eyebrow{text-align:center;color:var(--neon);font-weight:900;letter-spacing:2px;font-size:11px;margin-bottom:5px}
-button{width:100%;border:0;border-radius:16px;padding:15px;margin:7px 0;font-size:16px;font-weight:900;cursor:pointer;transition:.15s transform,.15s filter;box-shadow:0 7px 0 #0005}button:active{transform:translateY(3px);box-shadow:0 3px 0 #0005}
+button{width:100%;border:0;border-radius:16px;padding:15px;margin:7px 0;font-size:16px;font-weight:900;cursor:pointer;transition:.15s transform,.15s filter;box-shadow:0 7px 0 #0005}
+button:disabled{opacity:.72;cursor:wait;filter:saturate(.7)}button:active{transform:translateY(3px);box-shadow:0 3px 0 #0005}
 .level{background:linear-gradient(135deg,#c9ff21,#52ff7b);color:#06130b}.medium{background:linear-gradient(135deg,#ffe16b,#ffb52c);color:#211400}.hard{background:linear-gradient(135deg,#ff8a75,#ff465e);color:#25050a}
 .answer{background:linear-gradient(135deg,#fffaf0,#e9efe9);color:#132018;text-align:left;box-shadow:0 5px 0 #0004}.answer.correct{background:#43e890}.answer.wrong{background:#ff6c78}
 #boardBtn{background:linear-gradient(135deg,#111d17,#182d20);color:#fff;border:1px solid #ffd34d66}
@@ -1036,12 +1037,20 @@ async function renderStatus(){
 }
 
 
-async function loadQuestions(level){
+// Firebase sigue siendo la única fuente de verdad.
+// Optimización: descargamos las 30 preguntas una sola vez por sesión y
+// las dejamos en memoria para que cambiar de nivel sea inmediato.
+let questionsCache=null;
+let questionsLoadPromise=null;
+let startBusy=false;
+
+async function loadAllQuestions(){
   await authReady;
   const snap=await getDocs(collection(db,"questions_public"));
 
   const questions=snap.docs.map(d=>({id:d.id,...d.data()})).filter(q=>
-    q.nivel===level &&
+    q.nivel==="fácil" || q.nivel==="medio" || q.nivel==="difícil"
+  ).filter(q=>
     q.activo===true &&
     typeof q.pregunta==="string" &&
     q.pregunta.trim().length>0 &&
@@ -1054,26 +1063,62 @@ async function loadQuestions(level){
 
   questions.sort((a,b)=>(Number(a.orden)||0)-(Number(b.orden)||0));
 
+  for(const level of ["fácil","medio","difícil"]){
+    const count=questions.filter(q=>q.nivel===level).length;
+    if(count<10){
+      throw new Error(`No hay 10 preguntas activas válidas de nivel ${level}. Hay ${count}.`);
+    }
+  }
+
+  questionsCache=questions;
+  return questions;
+}
+
+function prefetchQuestions(){
+  if(questionsCache) return Promise.resolve(questionsCache);
+  if(!questionsLoadPromise){
+    questionsLoadPromise=loadAllQuestions().catch(err=>{
+      questionsLoadPromise=null;
+      throw err;
+    });
+  }
+  return questionsLoadPromise;
+}
+
+async function loadQuestions(level){
+  const all=questionsCache || await prefetchQuestions();
+  const questions=all.filter(q=>q.nivel===level);
   if(questions.length<10){
     throw new Error(`No hay 10 preguntas activas válidas de nivel ${level}. Hay ${questions.length}.`);
   }
-
-  // Firebase es la única fuente de verdad. Sin caché y sin preguntas locales de respaldo.
   return shuffle(questions).slice(0,10);
 }
 
 async function start(level){
+  if(startBusy) return;
+  startBusy=true;
+  const buttons=[document.getElementById("easyBtn"),document.getElementById("mediumBtn"),document.getElementById("hardBtn")];
+  buttons.forEach(b=>{if(b)b.disabled=true;});
   try{
     await authReady;
     username=document.getElementById("username").value.trim();
     if(!username){ alert("Primero ingresá tu nombre de usuario."); return; }
     if(username.length<2){ alert("El usuario debe tener al menos 2 caracteres."); return; }
-    const data=await getPlayerData();
+
+    // El usuario y las preguntas se preparan en paralelo.
+    // Así evitamos una espera innecesaria al tocar el nivel.
+    const [data]=await Promise.all([getPlayerData(),prefetchQuestions()]);
+
     if(data.username && data.username!==username){
       alert("Este dispositivo ya tiene un usuario asignado. Usá el mismo usuario para continuar.");
       document.getElementById("username").value=data.username;
       username=data.username;
+      return;
     }
+
+    // Las preguntas ya están cargadas; seleccionar el nivel es instantáneo.
+    const selectedQuestions=await loadQuestions(level);
+
     const claimed=await claimLevel(level,username);
     if(!claimed){
       alert("Ya usaste tu único intento en este nivel.");
@@ -1081,7 +1126,7 @@ async function start(level){
       return;
     }
     currentLevel=level;
-    pool=await loadQuestions(level);
+    pool=selectedQuestions;
     index=0;
     score=0;
     levelElapsedSeconds=0;
@@ -1107,6 +1152,9 @@ async function start(level){
     }else{
       alert("No se pudo iniciar el juego. Abrí la consola del navegador para ver el error de Firebase.");
     }
+  }finally{
+    startBusy=false;
+    buttons.forEach(b=>{if(b)b.disabled=false;});
   }
 }
 
@@ -1121,7 +1169,11 @@ document.getElementById("boardBtn").addEventListener("click",showBoard);
 document.getElementById("restartBtn").addEventListener("click",()=>location.reload());
 document.getElementById("backHomeBtn").addEventListener("click",backHome);
 
-authReady.then(()=>renderStatus());
+authReady.then(()=>{
+  renderStatus();
+  // Precarga silenciosa: cuando el jugador toque un nivel, las preguntas ya estarán en memoria.
+  prefetchQuestions().catch(err=>console.warn("Precarga de preguntas:",err));
+});
 
 
 // Navegación visual nueva: reutiliza los controles existentes, sin tocar la lógica de Firebase.
