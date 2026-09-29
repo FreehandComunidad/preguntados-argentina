@@ -598,6 +598,27 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
   #game{min-height:calc(100svh - 68px)!important}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* FREEHAND GAME FLOW — animaciones suaves de partida */
+#game .top, #game .progress, #game .timer, #game #question, #game #answers, #game #feedback{will-change:transform,opacity}
+#game.game-question-in #question{animation:fh-question-in .34s cubic-bezier(.2,.8,.2,1) both}
+#game.game-question-in #answers .answer{animation:fh-answer-in .28s cubic-bezier(.2,.8,.2,1) both}
+#game.game-question-in #answers .answer:nth-child(1){animation-delay:.03s}
+#game.game-question-in #answers .answer:nth-child(2){animation-delay:.07s}
+#game.game-question-in #answers .answer:nth-child(3){animation-delay:.11s}
+#game.game-question-in #answers .answer:nth-child(4){animation-delay:.15s}
+#game #feedback.feedback-in{animation:fh-feedback-in .22s ease both}
+#game #timer.warning{animation:fh-timer-pulse .72s ease-in-out infinite;color:#fff2a8!important}
+#game #timer.timer-critical{color:#ff8a91!important;text-shadow:0 0 24px rgba(255,90,99,.3)!important}
+#game .answer.answer-pop{animation:fh-answer-pop .24s ease both!important}
+#game .answer.answer-shake{animation:fh-answer-shake .28s ease both!important}
+@keyframes fh-question-in{from{opacity:0;transform:translateY(12px) scale(.985);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+@keyframes fh-answer-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes fh-feedback-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes fh-timer-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes fh-answer-pop{0%{transform:scale(1)}45%{transform:scale(1.025)}100%{transform:scale(1)}}
+@keyframes fh-answer-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+@media(prefers-reduced-motion:reduce){#game.game-question-in #question,#game.game-question-in #answers .answer,#game #feedback.feedback-in,#game #timer.warning,#game .answer.answer-pop,#game .answer.answer-shake{animation:none!important}}
 </style>
 </head>
 <body>
@@ -833,33 +854,56 @@ async function startTimer(){
  timerId=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerId);timeout();}},1000);
 }
 function updateTimer(){
- const t=document.getElementById("timer");t.textContent=timeLeft+" s";
- t.className="timer"+(timeLeft<=5?" warning":"");
+ const t=document.getElementById("timer");
+ t.textContent=timeLeft+" s";
+ t.className="timer"+(timeLeft<=5?" warning":"")+(timeLeft<=3?" timer-critical":"");
 }
 function render(){
  locked=false;const q=pool[index];
+ const gameEl=document.getElementById("game");
+ gameEl.classList.remove("game-question-in");
+ void gameEl.offsetWidth;
+ gameEl.classList.add("game-question-in");
  document.getElementById("counter").textContent=(index+1)+" / "+pool.length;
  document.getElementById("bar").style.width=(index/pool.length*100)+"%";
  document.getElementById("question").textContent=q.pregunta;
- document.getElementById("feedback").textContent="";
+ const feedback=document.getElementById("feedback");
+ feedback.textContent="";
+ feedback.classList.remove("feedback-in");
  const box=document.getElementById("answers");box.innerHTML="";
  shuffle(q.opciones.map((text,i)=>({text,i}))).forEach(a=>{
-   const b=document.createElement("button");b.className="answer";b.textContent=a.text;
-   b.onclick=()=>answer(a.i,b);box.appendChild(b);
+   const b=document.createElement("button");
+   b.className="answer";
+   b.textContent=a.text;
+   b.onclick=()=>answer(a.i,b);
+   box.appendChild(b);
  });
  startTimer();
 }
 function answer(i,b){
  if(locked)return;locked=true;clearInterval(timerId);
  const q=pool[index];document.querySelectorAll(".answer").forEach(x=>x.disabled=true);
- if(i===q.correcta){score++;b.classList.add("correct");document.getElementById("feedback").textContent="✅ ¡Correcto!";}
- else{b.classList.add("wrong");document.getElementById("feedback").textContent="❌ Incorrecto. Era: "+q.opciones[q.correcta];}
+ const feedback=document.getElementById("feedback");
+ if(i===q.correcta){
+   score++;b.classList.add("correct","answer-pop");
+   feedback.textContent="✅ ¡Correcto!";
+ }else{
+   b.classList.add("wrong","answer-shake");
+   feedback.textContent="❌ Incorrecto. Era: "+q.opciones[q.correcta];
+ }
+ feedback.classList.remove("feedback-in");
+ void feedback.offsetWidth;
+ feedback.classList.add("feedback-in");
  setTimeout(next,900);
 }
 function timeout(){
  if(locked)return;locked=true;const q=pool[index];
  document.querySelectorAll(".answer").forEach(x=>x.disabled=true);
- document.getElementById("feedback").textContent="⏰ Tiempo agotado. Era: "+q.opciones[q.correcta];
+ const feedback=document.getElementById("feedback");
+ feedback.textContent="⏰ Tiempo agotado. Era: "+q.opciones[q.correcta];
+ feedback.classList.remove("feedback-in");
+ void feedback.offsetWidth;
+ feedback.classList.add("feedback-in");
  setTimeout(next,1000);
 }
 function next(){index++;if(index<pool.length)render();else finish();}
