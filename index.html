@@ -659,7 +659,6 @@ let authReady = (async()=>{
   throw e;
 });
 
-const allQuestions = [{"nivel": "fácil", "pregunta": "¿Cuál es la capital de Argentina?", "opciones": ["Córdoba", "Buenos Aires", "Rosario", "Mendoza"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuántos colores tiene la bandera argentina?", "opciones": ["2", "3", "4", "5"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuál es la bebida preparada tradicionalmente con yerba mate?", "opciones": ["Café", "Mate", "Té negro", "Licuado"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿En qué mes se celebra la Revolución de Mayo?", "opciones": ["Mayo", "Julio", "Agosto", "Septiembre"], "correcta": 0}, {"nivel": "fácil", "pregunta": "¿Cuál es la moneda oficial de Argentina?", "opciones": ["Peso argentino", "Real", "Sol", "Euro"], "correcta": 0}, {"nivel": "fácil", "pregunta": "¿Cuál es un baile tradicional argentino?", "opciones": ["Salsa", "Tango", "Samba", "Flamenco"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuál es la montaña más alta de Argentina?", "opciones": ["Cerro Catedral", "Aconcagua", "Lanín", "Fitz Roy"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuántas provincias tiene Argentina?", "opciones": ["21", "23", "25", "27"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿En qué provincia están las Cataratas del Iguazú?", "opciones": ["Corrientes", "Misiones", "Chaco", "Formosa"], "correcta": 1}, {"nivel": "fácil", "pregunta": "¿Cuál es la capital de Tierra del Fuego?", "opciones": ["Río Grande", "Ushuaia", "Tolhuin", "Caleta Olivia"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿En qué provincia se encuentra el Aconcagua?", "opciones": ["San Juan", "Mendoza", "Neuquén", "Salta"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿Quién escribió el Martín Fierro?", "opciones": ["Sarmiento", "José Hernández", "Cortázar", "Lugones"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿En qué año se declaró la Independencia argentina?", "opciones": ["1810", "1812", "1816", "1820"], "correcta": 2}, {"nivel": "medio", "pregunta": "¿Qué prócer es conocido como el Padre de la Patria?", "opciones": ["Belgrano", "San Martín", "Moreno", "Rosas"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿Cuál es la capital de la provincia de San Juan?", "opciones": ["Caucete", "Rawson", "San Juan", "Rivadavia"], "correcta": 2}, {"nivel": "medio", "pregunta": "¿Qué científico argentino recibió dos Premios Nobel?", "opciones": ["Bernardo Houssay", "René Favaloro", "César Milstein", "Leloir"], "correcta": 0}, {"nivel": "medio", "pregunta": "¿Cuál es la provincia más austral de la Argentina continental?", "opciones": ["Santa Cruz", "Chubut", "Tierra del Fuego", "Río Negro"], "correcta": 2}, {"nivel": "medio", "pregunta": "¿Qué río es uno de los principales de la cuenca del Plata?", "opciones": ["Río Colorado", "Río Paraná", "Río Negro", "Río Limay"], "correcta": 1}, {"nivel": "medio", "pregunta": "¿Quién fue conocido por impulsar la educación pública argentina en el siglo XIX?", "opciones": ["Sarmiento", "Roca", "Yrigoyen", "Rosas"], "correcta": 0}, {"nivel": "medio", "pregunta": "¿En qué provincia está el Parque Nacional El Leoncito?", "opciones": ["Mendoza", "San Juan", "La Rioja", "Catamarca"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿En qué año se sancionó la Constitución Nacional Argentina?", "opciones": ["1816", "1853", "1862", "1880"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Quién fue el primer presidente constitucional de la Confederación Argentina?", "opciones": ["Bartolomé Mitre", "Justo José de Urquiza", "Sarmiento", "Julio A. Roca"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Cuál es el punto más bajo de Argentina?", "opciones": ["Laguna del Carbón", "Salinas Grandes", "Valle de la Luna", "Bajo de Véliz"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿En qué provincia se encuentra el Parque Nacional Talampaya?", "opciones": ["Catamarca", "La Rioja", "San Juan", "Mendoza"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Qué científico argentino desarrolló la técnica de bypass coronario que lleva su nombre?", "opciones": ["René Favaloro", "Bernardo Houssay", "César Milstein", "Leloir"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Qué batalla fue decisiva para la independencia de Chile dentro de la campaña de San Martín?", "opciones": ["Caseros", "Maipú", "Pavón", "Cepeda"], "correcta": 1}, {"nivel": "difícil", "pregunta": "¿Cuál de estos parques nacionales está en San Juan?", "opciones": ["El Leoncito", "Los Glaciares", "Nahuel Huapi", "Iguazú"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Quién fue el primer argentino en recibir un Premio Nobel?", "opciones": ["Bernardo Houssay", "Carlos Saavedra Lamas", "Leloir", "Pérez Esquivel"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Qué ley estableció la educación primaria común, gratuita y obligatoria?", "opciones": ["Ley 1420", "Ley Sáenz Peña", "Ley de Residencia", "Ley de Aduanas"], "correcta": 0}, {"nivel": "difícil", "pregunta": "¿Qué prócer argentino nació en Yapeyú?", "opciones": ["Manuel Belgrano", "José de San Martín", "Sarmiento", "Guillermo Brown"], "correcta": 1}];
 const LEVELS = {"fácil":{time:15,label:"FÁCIL"},"medio":{time:20,label:"MEDIO"},"difícil":{time:25,label:"DIFÍCIL"}};
 let pool=[],index=0,score=0,locked=false,currentLevel="",username="",timerId=null,timeLeft=0;
 
@@ -668,6 +667,16 @@ function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function playerDoc(){ return doc(db,"players_private",firebaseUser.uid); }
 function rankingDoc(){ return doc(db,"ranking_public",firebaseUser.uid); }
 function publicCode(uid){ return "Jugador #"+uid.slice(-4).toUpperCase(); }
+
+function clampScore(value){
+  const n=Number(value);
+  if(!Number.isFinite(n)) return 0;
+  return Math.max(0,Math.min(10,Math.floor(n)));
+}
+
+function normalizeLevelScore(value){
+  return clampScore(value);
+}
 
 async function getPlayerData(){
   await authReady;
@@ -679,19 +688,24 @@ async function syncPublicRanking(){
   await authReady;
   const snap=await getDoc(playerDoc());
   if(!snap.exists()) return;
+
   const data=snap.data();
   const scores=data.scores||{};
   const read=(...keys)=>{
     for(const key of keys){
       const value=scores[key];
-      if(value!==undefined && value!==null && value!=="") return Number(value)||0;
+      if(value!==undefined && value!==null && value!==""){
+        return normalizeLevelScore(value);
+      }
     }
     return 0;
   };
-  const easyScore=read("fácil","facil","easy") || Number(data.easyScore)||0;
-  const mediumScore=read("medio","medium") || Number(data.mediumScore)||0;
-  const hardScore=read("difícil","dificil","hard") || Number(data.hardScore)||0;
+
+  const easyScore=read("fácil","facil","easy");
+  const mediumScore=read("medio","medium");
+  const hardScore=read("difícil","dificil","hard");
   const total=easyScore+mediumScore+hardScore;
+
   await setDoc(rankingDoc(),{
     publicId:publicCode(firebaseUser.uid),
     totalScore:total,
@@ -701,7 +715,6 @@ async function syncPublicRanking(){
     lastUpdated:serverTimestamp()
   },{merge:true});
 }
-
 async function claimLevel(level,name){
   await authReady;
   const ref=playerDoc();
@@ -723,32 +736,29 @@ async function saveResult(){
   const playerRef=playerDoc();
   const publicRef=rankingDoc();
 
-  // Guardamos jugador + ranking en una sola transacción para que el puntaje
-  // de cada nivel y el total nunca queden desincronizados.
   await runTransaction(db, async tx=>{
     const snap=await tx.get(playerRef);
     const data=snap.exists()?snap.data():{};
     const oldScores={...(data.scores||{})};
 
-    // Compatibilidad con datos anteriores: primero usamos el puntaje
-    // realmente guardado en "scores", y solo si no existe usamos el campo
-    // específico del nivel. Esto evita que easyScore=0 tape un fácil ya jugado.
     const readScore=(...keys)=>{
       for(const key of keys){
         const value=data.scores?.[key];
-        if(value!==undefined && value!==null && value!=="") return Number(value)||0;
+        if(value!==undefined && value!==null && value!==""){
+          return normalizeLevelScore(value);
+        }
       }
       return 0;
     };
 
-    const easy=readScore("fácil","facil","easy") || Number(data.easyScore)||0;
-    const medium=readScore("medio","medium") || Number(data.mediumScore)||0;
-    const hard=readScore("difícil","dificil","hard") || Number(data.hardScore)||0;
+    const easy=readScore("fácil","facil","easy");
+    const medium=readScore("medio","medium");
+    const hard=readScore("difícil","dificil","hard");
 
     let easyScore=easy, mediumScore=medium, hardScore=hard;
-    if(currentLevel==="fácil") easyScore=Number(score)||0;
-    if(currentLevel==="medio") mediumScore=Number(score)||0;
-    if(currentLevel==="difícil") hardScore=Number(score)||0;
+    if(currentLevel==="fácil") easyScore=normalizeLevelScore(score);
+    if(currentLevel==="medio") mediumScore=normalizeLevelScore(score);
+    if(currentLevel==="difícil") hardScore=normalizeLevelScore(score);
 
     const scores={
       ...oldScores,
@@ -778,7 +788,6 @@ async function saveResult(){
     },{merge:true});
   });
 }
-
 async function startTimer(){
  clearInterval(timerId);timeLeft=LEVELS[currentLevel].time;updateTimer();
  timerId=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerId);timeout();}},1000);
