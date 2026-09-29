@@ -659,7 +659,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 <section id="result" class="card hidden result">
 <div class="badge" id="resultLevel"></div>
 <h1>🏆 Resultado</h1><div class="score" id="score"></div>
-<p id="resultText"></p>
+<p id="resultText"></p><p id="resultTime" class="result-time"></p>
 <button id="restartBtn" class="level">VOLVER AL INICIO</button>
 </section>
 <section id="board" class="card hidden">
@@ -721,7 +721,7 @@ let authReady = (async()=>{
 });
 
 const LEVELS = {"fácil":{time:15,label:"FÁCIL"},"medio":{time:20,label:"MEDIO"},"difícil":{time:25,label:"DIFÍCIL"}};
-let pool=[],index=0,score=0,locked=false,currentLevel="",username="",timerId=null,timeLeft=0;
+let pool=[],index=0,score=0,locked=false,currentLevel="",username="",timerId=null,timeLeft=0,questionStartedAt=0,levelElapsedSeconds=0;
 
 const home=document.getElementById("home"),game=document.getElementById("game"),result=document.getElementById("result"),boardSection=document.getElementById("board");
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
@@ -839,12 +839,39 @@ async function saveResult(){
       lastSeen:serverTimestamp()
     },{merge:true});
 
+    const oldEasyTime=Number(data.easyTime)||0;
+    const oldMediumTime=Number(data.mediumTime)||0;
+    const oldHardTime=Number(data.hardTime)||0;
+    let easyTime=oldEasyTime, mediumTime=oldMediumTime, hardTime=oldHardTime;
+    if(currentLevel==="fácil") easyTime=Math.max(0,Math.round(levelElapsedSeconds));
+    if(currentLevel==="medio") mediumTime=Math.max(0,Math.round(levelElapsedSeconds));
+    if(currentLevel==="difícil") hardTime=Math.max(0,Math.round(levelElapsedSeconds));
+    const totalTime=easyTime+mediumTime+hardTime;
+
+    tx.set(playerRef,{
+      username:username,
+      scores:scores,
+      easyScore:easyScore,
+      mediumScore:mediumScore,
+      hardScore:hardScore,
+      totalScore:total,
+      easyTime:easyTime,
+      mediumTime:mediumTime,
+      hardTime:hardTime,
+      totalTime:totalTime,
+      lastSeen:serverTimestamp()
+    },{merge:true});
+
     tx.set(publicRef,{
       publicId:publicCode(firebaseUser.uid),
       easyScore:easyScore,
       mediumScore:mediumScore,
       hardScore:hardScore,
       totalScore:total,
+      easyTime:easyTime,
+      mediumTime:mediumTime,
+      hardTime:hardTime,
+      totalTime:totalTime,
       lastUpdated:serverTimestamp()
     },{merge:true});
   });
@@ -860,6 +887,7 @@ function updateTimer(){
 }
 function render(){
  locked=false;const q=pool[index];
+ questionStartedAt=performance.now();
  const gameEl=document.getElementById("game");
  gameEl.classList.remove("game-question-in");
  void gameEl.offsetWidth;
@@ -882,6 +910,7 @@ function render(){
 }
 function answer(i,b){
  if(locked)return;locked=true;clearInterval(timerId);
+ levelElapsedSeconds += Math.min(LEVELS[currentLevel].time, Math.max(0,(performance.now()-questionStartedAt)/1000));
  const q=pool[index];document.querySelectorAll(".answer").forEach(x=>x.disabled=true);
  const feedback=document.getElementById("feedback");
  if(i===q.correcta){
@@ -897,7 +926,9 @@ function answer(i,b){
  setTimeout(next,900);
 }
 function timeout(){
- if(locked)return;locked=true;const q=pool[index];
+ if(locked)return;locked=true;
+ levelElapsedSeconds += LEVELS[currentLevel].time;
+ const q=pool[index];
  document.querySelectorAll(".answer").forEach(x=>x.disabled=true);
  const feedback=document.getElementById("feedback");
  feedback.textContent="⏰ Tiempo agotado. Era: "+q.opciones[q.correcta];
@@ -911,6 +942,7 @@ async function finish(){
  clearInterval(timerId);game.classList.add("hidden");result.classList.remove("hidden");
  document.getElementById("resultLevel").textContent=LEVELS[currentLevel].label;
  document.getElementById("score").textContent=score+" / "+pool.length;
+ document.getElementById("resultTime").textContent=Math.round(levelElapsedSeconds)+" s";
  document.getElementById("resultText").textContent=
    score>=9?"¡Excelente, "+username+"! 🇦🇷":
    score>=7?"¡Muy bien, "+username+"! 🔥":
@@ -932,6 +964,7 @@ async function showBoard(){
    const q=query(collection(db,"ranking_public"),orderBy("totalScore","desc"));
    const snap=await getDocs(q);
    const all=snap.docs.map(d=>({id:d.id,...d.data()}));
+   all.sort((a,b)=>{ const ps=(Number(b.totalScore)||0)-(Number(a.totalScore)||0); if(ps!==0)return ps; return (Number(a.totalTime)||0)-(Number(b.totalTime)||0); });
    if(!all.length){box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';return;}
 
    const mine=all.find(x=>x.id===firebaseUser.uid);
@@ -1028,6 +1061,8 @@ async function start(level){
     pool=await loadQuestions(level);
     index=0;
     score=0;
+    levelElapsedSeconds=0;
+    questionStartedAt=0;
     locked=false;
     document.getElementById("level").textContent=LEVELS[level].label;
     home.classList.add("hidden");
