@@ -1,4 +1,3 @@
-<!-- FREEHAND PREGUNTADOS ARGENTINA - INDEX 12 -->
 <!doctype html>
 <html lang="es">
 <head>
@@ -29,7 +28,7 @@ input{width:100%;padding:15px;border-radius:15px;border:1px solid #ffd34d35;back
 .status{padding:10px 12px;border-radius:12px;background:#ffffff08;font-size:13px;display:flex;justify-content:space-between;margin:5px 0}.status.used{opacity:.5}
 .top{display:flex;justify-content:space-between;color:var(--gold);font-weight:900;margin-bottom:14px}.progress{height:8px;background:#ffffff12;border-radius:9px;overflow:hidden;margin-bottom:20px;border:1px solid #ffffff08}.bar{height:100%;background:linear-gradient(90deg,var(--neon),var(--gold));width:0;box-shadow:0 0 14px #39ff78aa}.timer{font-size:28px;font-weight:950;text-align:center;margin:2px 0 10px;color:var(--gold)}.timer.warning{color:#ff6672}
 .badge{display:inline-block;padding:7px 12px;border-radius:999px;background:#ffd34d18;color:var(--gold);font-weight:900;font-size:12px;border:1px solid #ffd34d35}.result{text-align:center}.score{font-size:56px;font-weight:950;color:var(--neon);text-shadow:0 0 20px #39ff7866}
-.row{display:grid;grid-template-columns:42px 1fr 60px 70px;gap:8px;align-items:center;padding:11px 8px;border-bottom:1px solid #ffffff0d}.row.head{color:#aebcb5;font-size:12px;font-weight:900}.rank{color:var(--gold);font-weight:950}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.time{text-align:right;color:#9fb1a8;font-variant-numeric:tabular-nums}.points{text-align:right;font-weight:950;color:var(--neon)}
+.row{display:grid;grid-template-columns:42px 1fr 60px;gap:8px;align-items:center;padding:11px 8px;border-bottom:1px solid #ffffff0d}.row.head{color:#aebcb5;font-size:12px;font-weight:900}.rank{color:var(--gold);font-weight:950}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.points{text-align:right;font-weight:950;color:var(--neon)}
 .note{margin:12px 0 0;color:#9fb2a7;font-size:12px;line-height:1.4;text-align:center}.hidden{display:none}
 .mascotWrap{display:flex;justify-content:center;margin:-4px 0 5px}.mascot{width:120px;filter:drop-shadow(0 8px 12px #0008)} .mascotImg{cursor:default !important;user-select:none;-webkit-user-drag:none;pointer-events:none;width:min(230px,72vw);height:auto;max-height:190px;object-fit:contain;display:block;border-radius:18px;filter:drop-shadow(0 10px 18px #000b);margin:0 auto} .userSaved{border-color:#39ff78!important;box-shadow:0 0 0 2px #39ff7822,0 0 18px #39ff7822!important} .userHint{color:#39ff78;font-size:12px;text-align:center;margin:6px 0 2px}
 .decor{display:flex;justify-content:center;gap:10px;margin:4px 0 15px}.chip{width:38px;height:38px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;background:#092016;color:var(--gold);box-shadow:0 0 12px #ffd34d22;font-weight:900}
@@ -751,8 +750,8 @@ async function syncPublicRanking(){
   const snap=await getDoc(playerDoc());
   if(!snap.exists()) return;
 
-  const data=snap.data() || {};
-  const scores=data.scores || {};
+  const data=snap.data();
+  const scores=data.scores||{};
   const read=(...keys)=>{
     for(const key of keys){
       const value=scores[key];
@@ -768,21 +767,12 @@ async function syncPublicRanking(){
   const hardScore=read("difícil","dificil","hard");
   const total=easyScore+mediumScore+hardScore;
 
-  const easyTime=Math.max(0,Math.round(Number(data.easyTime)||0));
-  const mediumTime=Math.max(0,Math.round(Number(data.mediumTime)||0));
-  const hardTime=Math.max(0,Math.round(Number(data.hardTime)||0));
-  const totalTime=easyTime+mediumTime+hardTime;
-
   await setDoc(rankingDoc(),{
     publicId:publicCode(firebaseUser.uid),
     totalScore:total,
     easyScore:easyScore,
     mediumScore:mediumScore,
     hardScore:hardScore,
-    easyTime:easyTime,
-    mediumTime:mediumTime,
-    hardTime:hardTime,
-    totalTime:totalTime,
     lastUpdated:serverTimestamp()
   },{merge:true});
 }
@@ -838,6 +828,16 @@ async function saveResult(){
       "difícil":hardScore
     };
     const total=easyScore+mediumScore+hardScore;
+
+    tx.set(playerRef,{
+      username:username,
+      scores:scores,
+      easyScore:easyScore,
+      mediumScore:mediumScore,
+      hardScore:hardScore,
+      totalScore:total,
+      lastSeen:serverTimestamp()
+    },{merge:true});
 
     const oldEasyTime=Number(data.easyTime)||0;
     const oldMediumTime=Number(data.mediumTime)||0;
@@ -952,20 +952,9 @@ async function finish(){
     await saveResult();
   }catch(e){
     console.error("ERROR GUARDANDO RESULTADO",e);
-    const code=e?.code||"";
-    alert("No se pudo guardar el resultado en Firebase"+(code?` (${code})`:"")+".");
+    alert("No se pudo guardar el resultado en Firebase. Abrí la consola del navegador (F12) para ver el error.");
   }
 }
-function rankingTime(entry){
-  if(!entry || !Object.prototype.hasOwnProperty.call(entry,"totalTime")) return Infinity;
-  const n=Number(entry.totalTime);
-  return Number.isFinite(n) && n>=0 ? n : Infinity;
-}
-function rankingTimeLabel(entry){
-  const t=rankingTime(entry);
-  return Number.isFinite(t) ? `${t} s` : "—";
-}
-
 async function showBoard(){
  home.classList.add("hidden");result.classList.add("hidden");boardSection.classList.remove("hidden");
  const box=document.getElementById("boardContent");
@@ -975,51 +964,28 @@ async function showBoard(){
    const q=query(collection(db,"ranking_public"),orderBy("totalScore","desc"));
    const snap=await getDocs(q);
    const all=snap.docs.map(d=>({id:d.id,...d.data()}));
-
-   // Desempate: primero mayor puntaje, luego menor tiempo total.
-   all.sort((a,b)=>{
-     const scoreDiff=(Number(b.totalScore)||0)-(Number(a.totalScore)||0);
-     if(scoreDiff!==0) return scoreDiff;
-     return rankingTime(a)-rankingTime(b);
-   });
-
-   if(!all.length){
-     box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';
-     return;
-   }
+   all.sort((a,b)=>{ const ps=(Number(b.totalScore)||0)-(Number(a.totalScore)||0); if(ps!==0)return ps; return (Number(a.totalTime)||0)-(Number(b.totalTime)||0); });
+   if(!all.length){box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';return;}
 
    const mine=all.find(x=>x.id===firebaseUser.uid);
    let myPanel="";
    if(mine){
      const myScore=Number(mine.totalScore)||0;
-     const myTime=rankingTime(mine);
-     const position=1+all.filter(x=>{
-       const s=Number(x.totalScore)||0;
-       const t=rankingTime(x);
-       return s>myScore || (s===myScore && t<myTime);
-     }).length;
-
-     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos · '+rankingTimeLabel(mine)+'</div></div>';
+     // Posición compartida: si hay empate, todos ocupan el mismo puesto.
+     const position=1+all.filter(x=>(Number(x.totalScore)||0)>myScore).length;
+     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos</div></div>';
    }else{
      myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-meta">Todavía no tenés un puntaje registrado.</div></div>';
    }
 
    const b=all.slice(0,50);
-   let h=myPanel+'<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span><span>TIEMPO</span></div>';
-
+   let h=myPanel+'<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span></div>';
    b.forEach((x)=>{
      const pts=Number(x.totalScore)||0;
-     const rowTime=rankingTime(x);
-     const position=1+all.filter(y=>{
-       const ys=Number(y.totalScore)||0;
-       const yt=rankingTime(y);
-       return ys>pts || (ys===pts && yt<rowTime);
-     }).length;
-
+     const position=1+all.filter(y=>(Number(y.totalScore)||0)>pts).length;
      const mineClass=x.id===firebaseUser.uid?' my-row':'';
-     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span><span class="time">'+rankingTimeLabel(x)+'</span></div>';
+     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span></div>';
    });
-
    box.innerHTML=h;
  }catch(err){
    console.error("ERROR CARGANDO RANKING",err);
@@ -1034,6 +1000,7 @@ async function renderStatus(){
   try{
     const data=await getPlayerData();
     if(data.username) document.getElementById("username").value=data.username;
+    try{ await syncPublicRanking(); }catch(e){ console.error("No se pudo sincronizar el ranking público",e); }
     const played=data.playedLevels||{};
     box.innerHTML=["fácil","medio","difícil"].map(level=>{
       const used=!!played[level];
@@ -1046,47 +1013,32 @@ async function renderStatus(){
 }
 
 
-let questionsCachePromise=null;
-
-async function loadAllQuestions(){
-  await authReady;
-
-  if(!questionsCachePromise){
-    questionsCachePromise=(async()=>{
-      const snap=await getDocs(collection(db,"questions_public"));
-      return snap.docs.map(d=>({id:d.id,...d.data()})).filter(q=>
-        q.activo===true &&
-        typeof q.nivel==="string" &&
-        typeof q.pregunta==="string" &&
-        q.pregunta.trim().length>0 &&
-        Array.isArray(q.opciones) &&
-        q.opciones.length===4 &&
-        q.opciones.every(x=>typeof x==="string" && x.trim().length>0) &&
-        Number.isInteger(Number(q.correcta)) &&
-        Number(q.correcta)>=0 &&
-        Number(q.correcta)<4
-      );
-    })().catch(err=>{
-      questionsCachePromise=null;
-      throw err;
-    });
-  }
-
-  return questionsCachePromise;
-}
-
 async function loadQuestions(level){
-  const all=await loadAllQuestions();
-  const questions=all
-    .filter(q=>q.nivel===level)
-    .sort((a,b)=>(Number(a.orden)||0)-(Number(b.orden)||0));
+  await authReady;
+  const snap=await getDocs(collection(db,"questions_public"));
+
+  const questions=snap.docs.map(d=>({id:d.id,...d.data()})).filter(q=>
+    q.nivel===level &&
+    q.activo===true &&
+    typeof q.pregunta==="string" &&
+    q.pregunta.trim().length>0 &&
+    Array.isArray(q.opciones) &&
+    q.opciones.length===4 &&
+    q.opciones.every(x=>typeof x==="string" && x.trim().length>0) &&
+    Number.isInteger(Number(q.correcta)) &&
+    Number(q.correcta)>=0 && Number(q.correcta)<4
+  );
+
+  questions.sort((a,b)=>(Number(a.orden)||0)-(Number(b.orden)||0));
 
   if(questions.length<10){
     throw new Error(`No hay 10 preguntas activas válidas de nivel ${level}. Hay ${questions.length}.`);
   }
 
+  // Firebase es la única fuente de verdad. Sin caché y sin preguntas locales de respaldo.
   return shuffle(questions).slice(0,10);
 }
+
 async function start(level){
   try{
     await authReady;
@@ -1130,8 +1082,7 @@ async function start(level){
     }else if(String(e?.message||"").includes("No hay 10 preguntas")){
       alert(e.message);
     }else{
-      const detail=code ? ` (${code})` : "";
-      alert("No se pudo iniciar el juego"+detail+". Revisá la conexión con Firebase.");
+      alert("No se pudo iniciar el juego. Abrí la consola del navegador para ver el error de Firebase.");
     }
   }
 }
@@ -1147,12 +1098,7 @@ document.getElementById("boardBtn").addEventListener("click",showBoard);
 document.getElementById("restartBtn").addEventListener("click",()=>location.reload());
 document.getElementById("backHomeBtn").addEventListener("click",backHome);
 
-authReady.then(()=>{
-  renderStatus();
-  // Precarga una sola vez las preguntas mientras el jugador está en la pantalla inicial.
-  // Así al tocar FÁCIL/MEDIO/DIFÍCIL no hay una nueva espera a Firestore.
-  loadAllQuestions().catch(err=>console.error("No se pudieron precargar las preguntas:",err));
-});
+authReady.then(()=>renderStatus());
 
 
 // Navegación visual nueva: reutiliza los controles existentes, sin tocar la lógica de Firebase.
