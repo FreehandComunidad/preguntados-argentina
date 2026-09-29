@@ -29,7 +29,7 @@ input{width:100%;padding:15px;border-radius:15px;border:1px solid #ffd34d35;back
 .status{padding:10px 12px;border-radius:12px;background:#ffffff08;font-size:13px;display:flex;justify-content:space-between;margin:5px 0}.status.used{opacity:.5}
 .top{display:flex;justify-content:space-between;color:var(--gold);font-weight:900;margin-bottom:14px}.progress{height:8px;background:#ffffff12;border-radius:9px;overflow:hidden;margin-bottom:20px;border:1px solid #ffffff08}.bar{height:100%;background:linear-gradient(90deg,var(--neon),var(--gold));width:0;box-shadow:0 0 14px #39ff78aa}.timer{font-size:28px;font-weight:950;text-align:center;margin:2px 0 10px;color:var(--gold)}.timer.warning{color:#ff6672}
 .badge{display:inline-block;padding:7px 12px;border-radius:999px;background:#ffd34d18;color:var(--gold);font-weight:900;font-size:12px;border:1px solid #ffd34d35}.result{text-align:center}.score{font-size:56px;font-weight:950;color:var(--neon);text-shadow:0 0 20px #39ff7866}
-.row{display:grid;grid-template-columns:42px 1fr 60px;gap:8px;align-items:center;padding:11px 8px;border-bottom:1px solid #ffffff0d}.row.head{color:#aebcb5;font-size:12px;font-weight:900}.rank{color:var(--gold);font-weight:950}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.points{text-align:right;font-weight:950;color:var(--neon)}
+.row{display:grid;grid-template-columns:42px 1fr 60px 70px;gap:8px;align-items:center;padding:11px 8px;border-bottom:1px solid #ffffff0d}.row.head{color:#aebcb5;font-size:12px;font-weight:900}.rank{color:var(--gold);font-weight:950}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.time{text-align:right;color:#9fb1a8;font-variant-numeric:tabular-nums}.points{text-align:right;font-weight:950;color:var(--neon)}
 .note{margin:12px 0 0;color:#9fb2a7;font-size:12px;line-height:1.4;text-align:center}.hidden{display:none}
 .mascotWrap{display:flex;justify-content:center;margin:-4px 0 5px}.mascot{width:120px;filter:drop-shadow(0 8px 12px #0008)} .mascotImg{cursor:default !important;user-select:none;-webkit-user-drag:none;pointer-events:none;width:min(230px,72vw);height:auto;max-height:190px;object-fit:contain;display:block;border-radius:18px;filter:drop-shadow(0 10px 18px #000b);margin:0 auto} .userSaved{border-color:#39ff78!important;box-shadow:0 0 0 2px #39ff7822,0 0 18px #39ff7822!important} .userHint{color:#39ff78;font-size:12px;text-align:center;margin:6px 0 2px}
 .decor{display:flex;justify-content:center;gap:10px;margin:4px 0 15px}.chip{width:38px;height:38px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;background:#092016;color:var(--gold);box-shadow:0 0 12px #ffd34d22;font-weight:900}
@@ -751,8 +751,8 @@ async function syncPublicRanking(){
   const snap=await getDoc(playerDoc());
   if(!snap.exists()) return;
 
-  const data=snap.data();
-  const scores=data.scores||{};
+  const data=snap.data() || {};
+  const scores=data.scores || {};
   const read=(...keys)=>{
     for(const key of keys){
       const value=scores[key];
@@ -768,12 +768,21 @@ async function syncPublicRanking(){
   const hardScore=read("difícil","dificil","hard");
   const total=easyScore+mediumScore+hardScore;
 
+  const easyTime=Math.max(0,Math.round(Number(data.easyTime)||0));
+  const mediumTime=Math.max(0,Math.round(Number(data.mediumTime)||0));
+  const hardTime=Math.max(0,Math.round(Number(data.hardTime)||0));
+  const totalTime=easyTime+mediumTime+hardTime;
+
   await setDoc(rankingDoc(),{
     publicId:publicCode(firebaseUser.uid),
     totalScore:total,
     easyScore:easyScore,
     mediumScore:mediumScore,
     hardScore:hardScore,
+    easyTime:easyTime,
+    mediumTime:mediumTime,
+    hardTime:hardTime,
+    totalTime:totalTime,
     lastUpdated:serverTimestamp()
   },{merge:true});
 }
@@ -829,16 +838,6 @@ async function saveResult(){
       "difícil":hardScore
     };
     const total=easyScore+mediumScore+hardScore;
-
-    tx.set(playerRef,{
-      username:username,
-      scores:scores,
-      easyScore:easyScore,
-      mediumScore:mediumScore,
-      hardScore:hardScore,
-      totalScore:total,
-      lastSeen:serverTimestamp()
-    },{merge:true});
 
     const oldEasyTime=Number(data.easyTime)||0;
     const oldMediumTime=Number(data.mediumTime)||0;
@@ -965,29 +964,51 @@ async function showBoard(){
    const q=query(collection(db,"ranking_public"),orderBy("totalScore","desc"));
    const snap=await getDocs(q);
    const all=snap.docs.map(d=>({id:d.id,...d.data()}));
-   all.sort((a,b)=>{ const ps=(Number(b.totalScore)||0)-(Number(a.totalScore)||0); if(ps!==0)return ps; return (Number(a.totalTime)||0)-(Number(b.totalTime)||0); });
-   if(!all.length){box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';return;}
+
+   // Desempate: primero mayor puntaje, luego menor tiempo total.
+   all.sort((a,b)=>{
+     const scoreDiff=(Number(b.totalScore)||0)-(Number(a.totalScore)||0);
+     if(scoreDiff!==0) return scoreDiff;
+     return (Number(a.totalTime)||0)-(Number(b.totalTime)||0);
+   });
+
+   if(!all.length){
+     box.innerHTML='<p class="small">Todavía no hay puntajes.</p>';
+     return;
+   }
 
    const mine=all.find(x=>x.id===firebaseUser.uid);
    let myPanel="";
    if(mine){
      const myScore=Number(mine.totalScore)||0;
-     // Posición compartida: si hay empate, todos ocupan el mismo puesto.
-     const myTime=Number(mine.totalTime)||0; const position=1+all.filter(x=>{ const s=Number(x.totalScore)||0; const t=Number(x.totalTime)||0; return s>myScore || (s===myScore && t<myTime); }).length;
-     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos</div></div>';
+     const myTime=Number(mine.totalTime)||0;
+     const position=1+all.filter(x=>{
+       const s=Number(x.totalScore)||0;
+       const t=Number(x.totalTime)||0;
+       return s>myScore || (s===myScore && t<myTime);
+     }).length;
+
+     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos · '+myTime+' s</div></div>';
    }else{
      myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-meta">Todavía no tenés un puntaje registrado.</div></div>';
    }
 
    const b=all.slice(0,50);
-   let h=myPanel+'<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span></div>';
+   let h=myPanel+'<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span><span>TIEMPO</span></div>';
+
    b.forEach((x)=>{
      const pts=Number(x.totalScore)||0;
      const rowTime=Number(x.totalTime)||0;
-     const position=1+all.filter(y=>{ const ys=Number(y.totalScore)||0; const yt=Number(y.totalTime)||0; return ys>pts || (ys===pts && yt<rowTime); }).length;
+     const position=1+all.filter(y=>{
+       const ys=Number(y.totalScore)||0;
+       const yt=Number(y.totalTime)||0;
+       return ys>pts || (ys===pts && yt<rowTime);
+     }).length;
+
      const mineClass=x.id===firebaseUser.uid?' my-row':'';
-     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span></div>';
+     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span><span class="time">'+rowTime+' s</span></div>';
    });
+
    box.innerHTML=h;
  }catch(err){
    console.error("ERROR CARGANDO RANKING",err);
