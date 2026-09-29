@@ -556,6 +556,47 @@ input:focus{border-color:rgba(24,255,114,.42)!important;box-shadow:0 0 0 4px rgb
   .homeTitle{font-size:27px!important}
   .mascotImg{max-width:180px!important}
 }
+/* FREEHAND FLOW PASS — navegación y modo juego móvil */
+.quick-rail{
+  position:sticky!important;top:8px;z-index:60;
+  margin-bottom:12px!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.045)!important;
+}
+.quick-rail button:active{transform:scale(.97)!important}
+.quick-rail button[data-quick="play"]{color:#dfffe9!important}
+.quick-rail button[data-quick="rank"] span,.quick-rail button[data-quick="community"] span{color:var(--fh-gold)!important}
+
+/* En juego: menos introducción y más área útil. */
+body.playing .brand{display:none!important}
+body.playing .quick-rail{margin-bottom:9px!important}
+body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!important}
+@keyframes fh-game-in{from{opacity:0;transform:translateY(14px) scale(.992)}to{opacity:1;transform:none}}
+
+#game{scroll-margin-top:12px}
+#game .top{margin-bottom:11px!important}
+#game #question{max-width:680px;margin:10px auto 22px!important}
+#game #answers{max-width:680px;margin:0 auto}
+#game .answer{min-height:58px!important;display:flex;align-items:center}
+#game #feedback{min-height:20px;margin:7px 0 0}
+
+@media(max-width:700px){
+  .quick-rail{top:5px;border-radius:16px!important;padding:4px!important}
+  .quick-rail button{min-height:42px!important;padding:9px 6px!important}
+  .quick-rail button span{font-size:12px!important}
+  .brand{margin-top:3px!important}
+  .brandLogo{max-height:112px!important}
+  .brandTag{font-size:10px!important;padding:6px 11px!important}
+  #game{min-height:calc(100svh - 76px)!important;padding:17px 16px 22px!important;border-radius:22px!important}
+  #game .timer{font-size:44px!important;margin:7px 0 12px!important}
+  #game #question{font-size:clamp(25px,7vw,31px)!important;line-height:1.08!important;margin:8px auto 20px!important}
+  #game .answer{min-height:58px!important;margin:8px 0!important;padding:14px 15px!important;font-size:15px!important}
+}
+@media(max-width:480px){
+  .quick-rail button{font-size:9px!important;letter-spacing:.06em!important}
+  body.playing .app{padding-top:8px!important}
+  body.playing .quick-rail{top:4px!important}
+  #game{min-height:calc(100svh - 68px)!important}
+}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -608,7 +649,6 @@ input:focus{border-color:rgba(24,255,114,.42)!important;box-shadow:0 0 0 4px rgb
 </section>
 </main>
 
-<div id="communityEdge" class="community-edge" aria-label="Abrir comunidad">COMUNIDAD</div>
 <div id="communityOverlay" class="community-overlay" aria-hidden="true">
   <aside id="communityPanel" class="community-panel" aria-label="Flyer de la comunidad">
     <div class="community-head">
@@ -950,7 +990,9 @@ async function start(level){
     boardSection.classList.add("hidden");
     result.classList.add("hidden");
     game.classList.remove("hidden");
+    document.body.classList.add('playing');
     render();
+    requestAnimationFrame(()=>game.scrollIntoView({behavior:'smooth',block:'start'}));
   }catch(e){
     console.error("No se pudo iniciar el juego:",e);
     const code=e?.code||"";
@@ -966,7 +1008,7 @@ async function start(level){
   }
 }
 
-function backHome(){boardSection.classList.add("hidden");result.classList.add("hidden");game.classList.add("hidden");home.classList.remove("hidden");renderStatus();}
+function backHome(){document.body.classList.remove('playing');boardSection.classList.add("hidden");result.classList.add("hidden");game.classList.add("hidden");home.classList.remove("hidden");renderStatus();window.scrollTo({top:0,behavior:'smooth'});}
 
 // Los <script type="module"> no exponen sus funciones al atributo HTML onclick.
 // Por eso conectamos los botones mediante addEventListener.
@@ -986,23 +1028,21 @@ document.querySelectorAll('[data-quick]').forEach(btn=>{
     const action=btn.dataset.quick;
     if(action==='play') document.getElementById('home').scrollIntoView({behavior:'smooth',block:'center'});
     if(action==='rank') document.getElementById('boardBtn').click();
-    if(action==='community') document.getElementById('communityEdge').click();
+    if(action==='community') openCommunity();
   });
 });
 
 // Gestos para abrir el flyer de la comunidad sin interferir con el juego.
 const communityOverlay=document.getElementById('communityOverlay');
-const communityEdge=document.getElementById('communityEdge');
 const communityClose=document.getElementById('communityClose');
 const communityPanel=document.getElementById('communityPanel');
 let swipeStartX=0,swipeStartY=0,swipeTracking=false;
 function openCommunity(){communityOverlay.classList.add('open');communityOverlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
 function closeCommunity(){communityOverlay.classList.remove('open');communityOverlay.setAttribute('aria-hidden','true');document.body.style.overflow='';}
-communityEdge.addEventListener('click',openCommunity);
 communityClose.addEventListener('click',closeCommunity);
 communityOverlay.addEventListener('click',e=>{if(e.target===communityOverlay)closeCommunity();});
 window.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;swipeStartX=e.touches[0].clientX;swipeStartY=e.touches[0].clientY;swipeTracking=true;},{passive:true});
-window.addEventListener('touchend',e=>{if(!swipeTracking||e.changedTouches.length!==1)return;swipeTracking=false;const x=e.changedTouches[0].clientX,y=e.changedTouches[0].clientY;const dx=x-swipeStartX,dy=y-swipeStartY;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.25)return;if(!communityOverlay.classList.contains('open') && swipeStartX<70 && dx>70){openCommunity();}else if(communityOverlay.classList.contains('open') && swipeStartX<520 && dx<-70){closeCommunity();}},{passive:true});
+window.addEventListener('touchend',e=>{if(!swipeTracking||e.changedTouches.length!==1)return;swipeTracking=false;const x=e.changedTouches[0].clientX,y=e.changedTouches[0].clientY;const dx=x-swipeStartX,dy=y-swipeStartY;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.25)return;if(communityOverlay.classList.contains('open') && swipeStartX<520 && dx<-70)closeCommunity();},{passive:true});
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommunity();});
 </script>
 </body></html>
