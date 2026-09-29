@@ -1,3 +1,4 @@
+<!-- FREEHAND PREGUNTADOS ARGENTINA - INDEX 12 -->
 <!doctype html>
 <html lang="es">
 <head>
@@ -972,7 +973,7 @@ async function showBoard(){
    if(mine){
      const myScore=Number(mine.totalScore)||0;
      // Posición compartida: si hay empate, todos ocupan el mismo puesto.
-     const position=1+all.filter(x=>(Number(x.totalScore)||0)>myScore).length;
+     const myTime=Number(mine.totalTime)||0; const position=1+all.filter(x=>{ const s=Number(x.totalScore)||0; const t=Number(x.totalTime)||0; return s>myScore || (s===myScore && t<myTime); }).length;
      myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos</div></div>';
    }else{
      myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-meta">Todavía no tenés un puntaje registrado.</div></div>';
@@ -982,7 +983,8 @@ async function showBoard(){
    let h=myPanel+'<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span></div>';
    b.forEach((x)=>{
      const pts=Number(x.totalScore)||0;
-     const position=1+all.filter(y=>(Number(y.totalScore)||0)>pts).length;
+     const rowTime=Number(x.totalTime)||0;
+     const position=1+all.filter(y=>{ const ys=Number(y.totalScore)||0; const yt=Number(y.totalTime)||0; return ys>pts || (ys===pts && yt<rowTime); }).length;
      const mineClass=x.id===firebaseUser.uid?' my-row':'';
      h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span></div>';
    });
