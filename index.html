@@ -29,7 +29,7 @@ input{width:100%;padding:15px;border-radius:15px;border:1px solid #ffd34d35;back
 .status{padding:10px 12px;border-radius:12px;background:#ffffff08;font-size:13px;display:flex;justify-content:space-between;margin:5px 0}.status.used{opacity:.5}
 .top{display:flex;justify-content:space-between;color:var(--gold);font-weight:900;margin-bottom:14px}.progress{height:8px;background:#ffffff12;border-radius:9px;overflow:hidden;margin-bottom:20px;border:1px solid #ffffff08}.bar{height:100%;background:linear-gradient(90deg,var(--neon),var(--gold));width:0;box-shadow:0 0 14px #39ff78aa}.timer{font-size:28px;font-weight:950;text-align:center;margin:2px 0 10px;color:var(--gold)}.timer.warning{color:#ff6672}
 .badge{display:inline-block;padding:7px 12px;border-radius:999px;background:#ffd34d18;color:var(--gold);font-weight:900;font-size:12px;border:1px solid #ffd34d35}.result{text-align:center}.score{font-size:56px;font-weight:950;color:var(--neon);text-shadow:0 0 20px #39ff7866}
-.row{display:grid;grid-template-columns:42px 1fr 60px;gap:8px;align-items:center;padding:11px 8px;border-bottom:1px solid #ffffff0d}.row.head{color:#aebcb5;font-size:12px;font-weight:900}.rank{color:var(--gold);font-weight:950}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.points{text-align:right;font-weight:950;color:var(--neon)}
+.row{display:grid;grid-template-columns:42px minmax(0,1fr) 60px 64px;gap:8px;align-items:center;padding:11px 8px;border-bottom:1px solid #ffffff0d}.row.head{color:#aebcb5;font-size:12px;font-weight:900}.rank{color:var(--gold);font-weight:950}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.points{text-align:right;font-weight:950;color:var(--neon)} .time{text-align:right;font-weight:850;color:#aebcb5;font-variant-numeric:tabular-nums}
 .note{margin:12px 0 0;color:#9fb2a7;font-size:12px;line-height:1.4;text-align:center}.hidden{display:none}
 .mascotWrap{display:flex;justify-content:center;margin:-4px 0 5px}.mascot{width:120px;filter:drop-shadow(0 8px 12px #0008)} .mascotImg{cursor:default !important;user-select:none;-webkit-user-drag:none;pointer-events:none;width:min(230px,72vw);height:auto;max-height:190px;object-fit:contain;display:block;border-radius:18px;filter:drop-shadow(0 10px 18px #000b);margin:0 auto} .userSaved{border-color:#39ff78!important;box-shadow:0 0 0 2px #39ff7822,0 0 18px #39ff7822!important} .userHint{color:#39ff78;font-size:12px;text-align:center;margin:6px 0 2px}
 .decor{display:flex;justify-content:center;gap:10px;margin:4px 0 15px}.chip{width:38px;height:38px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;background:#092016;color:var(--gold);box-shadow:0 0 12px #ffd34d22;font-weight:900}
@@ -653,9 +653,9 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 <input id="username" maxlength="20" autocomplete="nickname" placeholder="Tu nombre de usuario">
 <div id="status"></div>
 <div class="level-deck" aria-label="Elegí un nivel">
-  <button id="easyBtn" class="level">🟢 FÁCIL · 15 segundos</button>
-  <button id="mediumBtn" class="medium">🟡 MEDIO · 20 segundos</button>
-  <button id="hardBtn" class="hard">🔴 DIFÍCIL · 25 segundos</button>
+  <button id="easyBtn" class="level">🟢 FÁCIL · 20 segundos</button>
+  <button id="mediumBtn" class="medium">🟡 MEDIO · 15 segundos</button>
+  <button id="hardBtn" class="hard">🔴 DIFÍCIL · 10 segundos</button>
 </div>
 <div class="deck-scroll-hint"><span>DESLIZÁ</span><i></i><span>3 NIVELES</span></div>
 <div class="decor"><div class="chip">♣</div><div class="chip">♦</div><div class="chip">🎲</div><div class="chip">🍀</div><div class="chip">♥</div></div><button id="boardBtn">🏆 TABLA DE PUNTAJES</button>
@@ -968,6 +968,12 @@ async function finish(){
     alert("No se pudo guardar el resultado en Firebase. Abrí la consola del navegador (F12) para ver el error.");
   }
 }
+function formatTime(totalSeconds){
+  const s=Math.max(0,Math.round(Number(totalSeconds)||0));
+  const m=Math.floor(s/60);
+  const sec=s%60;
+  return m+":"+String(sec).padStart(2,"0");
+}
 async function showBoard(){
  home.classList.add("hidden");result.classList.add("hidden");boardSection.classList.remove("hidden");
  const box=document.getElementById("boardContent");
@@ -986,19 +992,19 @@ async function showBoard(){
      const myScore=Number(mine.totalScore)||0;
      // Posición compartida: si hay empate, todos ocupan el mismo puesto.
      const myTime=Number(mine.totalTime)||0; const position=1+all.filter(x=>{ const s=Number(x.totalScore)||0; const t=Number(x.totalTime)||0; return s>myScore || (s===myScore && t<myTime); }).length;
-     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos</div></div>';
+     myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-main">#'+position+'</div><div class="my-position-meta">'+escapeHtml(mine.publicId||publicCode(firebaseUser.uid))+' · '+myScore+' puntos · '+formatTime(myTime)+'</div></div>';
    }else{
      myPanel='<div class="my-position"><div class="my-position-label">TU POSICIÓN</div><div class="my-position-meta">Todavía no tenés un puntaje registrado.</div></div>';
    }
 
    const b=all.slice(0,50);
-   let h=myPanel+'<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span></div>';
+   let h=myPanel+'<div class="row head"><span>#</span><span>JUGADOR</span><span>PUNTOS</span><span>TIEMPO</span></div>';
    b.forEach((x)=>{
      const pts=Number(x.totalScore)||0;
      const rowTime=Number(x.totalTime)||0;
      const position=1+all.filter(y=>{ const ys=Number(y.totalScore)||0; const yt=Number(y.totalTime)||0; return ys>pts || (ys===pts && yt<rowTime); }).length;
      const mineClass=x.id===firebaseUser.uid?' my-row':'';
-     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span></div>';
+     h+='<div class="row'+mineClass+'"><span class="rank">'+position+'</span><span class="name">'+escapeHtml(x.publicId||('Jugador #'+position))+'</span><span class="points">'+pts+'</span><span class="time">'+formatTime(rowTime)+'</span></div>';
    });
    box.innerHTML=h;
  }catch(err){
@@ -1139,7 +1145,7 @@ window.addEventListener('touchend',e=>{if(!swipeTracking||e.changedTouches.lengt
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommunity();});
 </script>
 
-<script id="freehand-bonus-7clicks">
+<script id="freehand-bonus-3clicks">
 (() => {
   const mascot = document.querySelector('.mascotImg');
   const overlay = document.getElementById('bonusEggOverlay');
@@ -1149,7 +1155,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommunity();});
 
   let taps = 0;
   let resetTimer = null;
-  const REQUIRED = 7;
+  const REQUIRED = 3;
   const WINDOW_MS = 2200;
 
   function resetTaps(){
@@ -1172,6 +1178,7 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommunity();});
   }
 
   mascot.style.cursor = 'pointer';
+  mascot.style.setProperty('pointer-events','auto','important');
   mascot.addEventListener('click', (event) => {
     if (home && home.classList.contains('hidden')) { resetTaps(); return; }
     event.preventDefault();
