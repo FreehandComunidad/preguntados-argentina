@@ -628,6 +628,32 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 #bonusEggImage{display:block;width:min(92vw,760px);max-height:88vh;height:auto;object-fit:contain;border-radius:18px;box-shadow:0 0 0 1px rgba(255,211,77,.45),0 24px 90px rgba(0,0,0,.8);background:#000}
 #bonusEggClose{position:fixed;right:16px;top:14px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,211,77,.45);background:#07180f;color:#ffd34d;font:900 22px/1 system-ui;cursor:pointer;z-index:2}
 </style>
+<style id="freehand-roulette-style">
+.roulette-section{margin-top:18px;text-align:center}
+.roulette-note{margin:6px 0 14px;color:#b8c8be;font-size:13px}
+.roulette-user{font-weight:900;color:#ffd34d}
+.roulette-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.roulette-stage{position:relative;width:min(82vw,390px);aspect-ratio:1;display:grid;place-items:center;margin:4px auto 2px}
+.roulette-wheel{width:100%;height:100%;border-radius:50%;position:relative;background:conic-gradient(from -90deg,#18271e 0deg 324deg,#243b2c 324deg 345.6deg,#394b1f 345.6deg 354.6deg,#4a421d 354.6deg 358.2deg,#5b261f 358.2deg 360deg);border:9px solid #07110b;box-shadow:0 0 0 3px #ffd34d55,0 12px 45px #000b,inset 0 0 0 2px #ffffff18;transform:rotate(0deg)}
+.roulette-wheel.spinning{transition:transform 4.4s cubic-bezier(.12,.74,.15,1)}
+.roulette-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:#07150d;border:4px solid #ffd34d;color:#ffd34d;font-weight:1000;font-size:13px;box-shadow:0 0 25px #000a,0 0 18px #ffd34d33;z-index:3}
+.roulette-pointer{position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:0;border-bottom:30px solid #ffd34d;filter:drop-shadow(0 4px 4px #000);z-index:5}
+.roulette-burst{position:absolute;inset:10%;border-radius:50%;pointer-events:none;opacity:0;box-shadow:0 0 0 0 #ffd34d;z-index:1}
+.roulette-burst.show{animation:rouletteBurst .8s ease-out}
+@keyframes rouletteBurst{0%{opacity:1;box-shadow:0 0 0 0 #ffd34d}100%{opacity:0;box-shadow:0 0 0 34px transparent}}
+.roulette-spin-btn{width:100%;max-width:390px;background:linear-gradient(135deg,#ffd34d,#ff9f1c);color:#181006;border:1px solid #ffe89a;font-size:18px;font-weight:1000;letter-spacing:.4px}
+.roulette-spin-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:0 7px 0 #0005}
+.roulette-tries{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.roulette-try{padding:7px 11px;border-radius:999px;border:1px solid #ffd34d44;background:#ffffff08;color:#dce8df;font-size:12px;font-weight:900}
+.roulette-try.used{opacity:.35;text-decoration:line-through}
+.roulette-prize{min-height:66px;display:flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:16px;background:#ffffff08;border:1px solid #ffffff10;font-weight:900}
+.roulette-prize.win{border-color:#ffd34d77;background:#ffd34d12;color:#ffe18a;box-shadow:0 0 25px #ffd34d18}
+.roulette-prize.empty{color:#aab9b0}
+.roulette-prize strong{font-size:24px;display:block;color:#ffd34d}
+.roulette-locked{padding:12px;border-radius:14px;background:#ff66720d;border:1px solid #ff667233;color:#ffc0c6;font-size:13px;font-weight:800}
+.roulette-disabled-game{opacity:.38;filter:grayscale(.65);pointer-events:none}
+@media(max-width:520px){.roulette-stage{width:min(86vw,340px)}.roulette-label{width:74px;height:74px;font-size:11px}.roulette-pointer{border-left-width:12px;border-right-width:12px;border-bottom-width:25px}}
+</style>
 </head>
 <body>
 <div id="bonusEggOverlay" aria-hidden="true">
@@ -652,14 +678,32 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 <p class="small">El duende de la fortuna te desafía. Cada nivel tiene un único intento.</p>
 <input id="username" maxlength="20" autocomplete="nickname" placeholder="Tu nombre de usuario">
 <div id="status"></div>
-<div class="level-deck" aria-label="Elegí un nivel">
-  <button id="easyBtn" class="level">🟢 FÁCIL · 20 segundos</button>
-  <button id="mediumBtn" class="medium">🟡 MEDIO · 15 segundos</button>
-  <button id="hardBtn" class="hard">🔴 DIFÍCIL · 10 segundos</button>
+<div class="level-deck roulette-disabled-game" aria-label="Preguntas temporalmente pausadas">
+  <button id="easyBtn" class="level" disabled>🟢 FÁCIL · PAUSADO</button>
+  <button id="mediumBtn" class="medium" disabled>🟡 MEDIO · PAUSADO</button>
+  <button id="hardBtn" class="hard" disabled>🔴 DIFÍCIL · PAUSADO</button>
 </div>
-<div class="deck-scroll-hint"><span>DESLIZÁ</span><i></i><span>3 NIVELES</span></div>
-<div class="decor"><div class="chip">♣</div><div class="chip">♦</div><div class="chip">🎲</div><div class="chip">🍀</div><div class="chip">♥</div></div><button id="boardBtn">🏆 TABLA DE PUNTAJES</button>
-<p class="note">Tus puntajes se guardan online. En el ranking público solo aparece tu código anónimo.</p><p class="freehandLine"><b>FREEHAND</b> · Llegó la hora de tu fortuna</p>
+<div class="deck-scroll-hint roulette-disabled-game"><span>PREGUNTAS</span><i></i><span>TEMPORALMENTE PAUSADAS</span></div>
+<div class="decor"><div class="chip">♣</div><div class="chip">♦</div><div class="chip">🎲</div><div class="chip">🍀</div><div class="chip">♥</div></div>
+
+<div class="roulette-section" id="rouletteSection">
+  <div class="badge">🎡 RULETA FREEHAND</div>
+  <h2 style="margin:10px 0 4px">Probá tu suerte</h2>
+  <p class="roulette-note">Tenés <b>2 tiros</b>. No son acumulables. Los premios quedan guardados para una próxima carga.</p>
+  <div class="roulette-user">Jugador: <span id="rouletteUsername">—</span></div>
+  <div class="roulette-tries" id="rouletteTries" aria-label="Tiros disponibles"></div>
+  <div class="roulette-wrap">
+    <div class="roulette-stage">
+      <div class="roulette-pointer" aria-hidden="true"></div>
+      <div class="roulette-wheel" id="rouletteWheel" aria-label="Ruleta de premios"></div>
+      <div class="roulette-label">FREEHAND<br>🎡</div>
+      <div class="roulette-burst" id="rouletteBurst"></div>
+    </div>
+    <button id="rouletteSpinBtn" class="roulette-spin-btn" type="button">🎡 GIRAR RULETA</button>
+    <div id="roulettePrize" class="roulette-prize empty">Ingresá tu usuario para comenzar.</div>
+  </div>
+</div>
+<p class="note">Las preguntas y la tabla de puntajes están temporalmente desactivadas. Se conservan para volver a habilitarlas.</p><p class="freehandLine"><b>FREEHAND</b> · Llegó la hora de tu fortuna</p>
 </section>
 
 <section id="game" class="card hidden">
@@ -675,7 +719,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 <p id="resultText"></p><p id="resultTime" class="result-time"></p>
 <button id="restartBtn" class="level">VOLVER AL INICIO</button>
 </section>
-<section id="board" class="card hidden">
+<section id="board" class="card hidden" aria-hidden="true">
 <h1>🏆 Tabla de puntajes</h1>
 <p class="small">Ranking online actualizado en tiempo real. Los usuarios reales no se muestran.</p>
 <div id="boardContent"></div>
@@ -1117,6 +1161,166 @@ document.getElementById("hardBtn").addEventListener("click",()=>start("difícil"
 document.getElementById("boardBtn").addEventListener("click",showBoard);
 document.getElementById("restartBtn").addEventListener("click",()=>location.reload());
 document.getElementById("backHomeBtn").addEventListener("click",backHome);
+
+
+
+// ==============================
+// RULETA FREEHAND — 2 TIROS
+// ==============================
+const ROULETTE_RESULTS = [
+  {label:"SIN PREMIO", bonus:0, weight:900},
+  {label:"BONUS 5%", bonus:5, weight:60},
+  {label:"BONUS 10%", bonus:10, weight:25},
+  {label:"BONUS 15%", bonus:15, weight:10},
+  {label:"BONUS 20%", bonus:20, weight:5}
+];
+const ROULETTE_TOTAL_WEIGHT = ROULETTE_RESULTS.reduce((n,x)=>n+x.weight,0);
+let rouletteSpinning=false;
+let rouletteState={used:0, prizes:[]};
+
+function weightedRouletteResult(){
+  let n=Math.floor(Math.random()*ROULETTE_TOTAL_WEIGHT);
+  for(const item of ROULETTE_RESULTS){
+    if(n < item.weight) return item;
+    n-=item.weight;
+  }
+  return ROULETTE_RESULTS[0];
+}
+
+function rouletteAngleForResult(result){
+  // Ángulos proporcionales a las probabilidades: 90% sin premio,
+  // 6% bonus 5, 2.5% bonus 10, 1% bonus 15 y 0.5% bonus 20.
+  const start={"SIN PREMIO":0,"BONUS 5%":324,"BONUS 10%":345.6,"BONUS 15%":354.6,"BONUS 20%":358.2}[result.label]||0;
+  const span={"SIN PREMIO":324,"BONUS 5%":21.6,"BONUS 10%":9,"BONUS 15%":3.6,"BONUS 20%":1.8}[result.label]||324;
+  return start + Math.random()*span;
+}
+
+function renderRouletteState(){
+  const tries=document.getElementById('rouletteTries');
+  const userEl=document.getElementById('rouletteUsername');
+  const btn=document.getElementById('rouletteSpinBtn');
+  if(!tries||!btn)return;
+  userEl.textContent=username||'—';
+  tries.innerHTML=[1,2].map(n=>`<span class="roulette-try ${n<=rouletteState.used?'used':''}">${n<=rouletteState.used?'✓ Tiro usado':'🎯 Tiro '+n}</span>`).join('');
+  btn.disabled=!username || rouletteState.used>=2 || rouletteSpinning;
+  btn.textContent=rouletteState.used>=2?'🔒 SIN TIROS DISPONIBLES':'🎡 GIRAR RULETA';
+}
+
+function showRoulettePrize(item){
+  const box=document.getElementById('roulettePrize');
+  box.className='roulette-prize '+(item.bonus?'win':'empty');
+  if(item.bonus){
+    box.innerHTML=`🎉 ¡PREMIO!<br><strong>${item.label}</strong><br><small>Guardado para tu próxima carga.</small>`;
+  }else{
+    box.innerHTML='😔 <b>SIN PREMIO</b><br><small>Esta vez no salió bonus. Todavía podés usar tu próximo tiro.</small>';
+  }
+}
+
+async function loadRouletteState(){
+  await authReady;
+  const snap=await getDoc(playerDoc());
+  const data=snap.exists()?snap.data():{};
+  const used=Math.min(2,Math.max(0,Number(data.rouletteSpinsUsed)||0));
+  const prizes=Array.isArray(data.roulettePrizes)?data.roulettePrizes:[];
+  rouletteState={used,prizes};
+  if(data.username){username=data.username;document.getElementById('username').value=data.username;}
+  renderRouletteState();
+}
+
+async function spinRoulette(){
+  if(rouletteSpinning)return;
+  await authReady;
+  const input=document.getElementById('username');
+  username=(input?.value||username||'').trim();
+  if(!username){
+    alert('Primero ingresá tu nombre de usuario para usar la ruleta.');
+    input?.focus();
+    return;
+  }
+  if(username.length<2){alert('El usuario debe tener al menos 2 caracteres.');return;}
+
+  rouletteSpinning=true;
+  renderRouletteState();
+  const wheel=document.getElementById('rouletteWheel');
+  const burst=document.getElementById('rouletteBurst');
+  const prizeBox=document.getElementById('roulettePrize');
+  const resultItem=weightedRouletteResult();
+  const target=rouletteAngleForResult(resultItem);
+  const fullTurns=6+Math.floor(Math.random()*3);
+  const rotation=fullTurns*360 + (360-target);
+  wheel.classList.remove('spinning');
+  void wheel.offsetWidth;
+  wheel.classList.add('spinning');
+  wheel.style.transform=`rotate(${rotation}deg)`;
+  prizeBox.className='roulette-prize';
+  prizeBox.innerHTML='🎡 La ruleta está girando…';
+
+  try{
+    // La transacción controla los 2 tiros en Firebase, por lo que recargar
+    // la página no devuelve tiros utilizados.
+    const spinRef=doc(collection(db,'roulette_spins'),firebaseUser.uid+'_spin_'+Date.now());
+    const spinNumber=await runTransaction(db,async tx=>{
+      const ref=playerDoc();
+      const snap=await tx.get(ref);
+      const data=snap.exists()?snap.data():{};
+      const savedName=String(data.username||'').trim();
+      if(savedName && savedName!==username){
+        const err=new Error('USERNAME_MISMATCH');
+        err.savedName=savedName;
+        throw err;
+      }
+      const used=Math.min(2,Math.max(0,Number(data.rouletteSpinsUsed)||0));
+      if(used>=2) throw new Error('NO_SPINS');
+      const next=used+1;
+      const prizeRecord={spinNumber:next,result:resultItem.label,bonusPercent:resultItem.bonus,at:new Date().toISOString()};
+      const prizes=Array.isArray(data.roulettePrizes)?data.roulettePrizes.slice():[];
+      prizes.push(prizeRecord);
+      tx.set(ref,{username:username,rouletteSpinsUsed:next,roulettePrizes:prizes,lastSeen:serverTimestamp()},{merge:true});
+      // Registro individual: queda guardado quién giró, qué tiro fue y qué obtuvo.
+      tx.set(spinRef,{
+        uid:firebaseUser.uid,
+        username:username,
+        spinNumber:next,
+        result:resultItem.label,
+        bonusPercent:resultItem.bonus,
+        createdAt:serverTimestamp()
+      });
+      return next;
+    });
+
+    await new Promise(r=>setTimeout(r,4500));
+    rouletteState.used=spinNumber;
+    rouletteState.prizes=[...(rouletteState.prizes||[]),{spinNumber,result:resultItem.label,bonusPercent:resultItem.bonus}];
+    renderRouletteState();
+    burst.classList.remove('show');void burst.offsetWidth;burst.classList.add('show');
+    showRoulettePrize(resultItem);
+  }catch(e){
+    wheel.classList.remove('spinning');
+    wheel.style.transform='rotate(0deg)';
+    if(e.message==='NO_SPINS'){
+      rouletteState.used=2;renderRouletteState();
+      prizeBox.className='roulette-prize empty';prizeBox.innerHTML='🔒 Ya utilizaste tus 2 tiros de ruleta.';
+    }else if(e.message==='USERNAME_MISMATCH'){
+      username=e.savedName||username;
+      document.getElementById('username').value=username;
+      renderRouletteState();
+      prizeBox.className='roulette-prize empty';prizeBox.innerHTML='⚠️ Este dispositivo ya tiene asignado otro usuario. Se restauró el usuario guardado.';
+    }else{
+      console.error('RULETA:',e);
+      prizeBox.className='roulette-prize empty';
+      prizeBox.innerHTML='⚠️ No se pudo guardar el giro. No se descontó el tiro. Intentá nuevamente.';
+    }
+  }finally{
+    rouletteSpinning=false;
+    renderRouletteState();
+  }
+}
+
+// Las preguntas y el ranking quedan conservados, pero esta edición no los habilita.
+document.getElementById('boardBtn')?.classList.add('hidden');
+document.getElementById('rouletteSpinBtn')?.addEventListener('click',spinRoulette);
+document.getElementById('username')?.addEventListener('input',()=>{ username=document.getElementById('username').value.trim(); renderRouletteState(); });
+authReady.then(()=>loadRouletteState()).catch(console.error);
 
 authReady.then(()=>renderStatus());
 
