@@ -654,6 +654,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 .roulette-result.win{border-color:#ffd34d88;background:linear-gradient(145deg,rgba(255,211,77,.14),rgba(24,255,114,.06));color:#ffe17a;box-shadow:0 0 25px #ffd34d13}
 .roulette-result strong{font-size:22px;color:#fff4c5;display:block;margin-top:2px}
 .roulette-legal{max-width:420px;color:#71837a;font-size:10px;line-height:1.45;text-align:center;margin:0}
+.roulette-connection{font-size:10px;color:#71837a;text-align:center;min-height:16px}.roulette-connection.ok{color:#8ee7aa}.roulette-connection.err{color:#ff9b8e}
 @media(max-width:520px){
   .app{padding-left:10px!important;padding-right:10px!important}
   .quick-rail{width:calc(100% - 4px)!important;max-width:420px!important;gap:3px!important;margin-left:auto!important;margin-right:auto!important;position:sticky!important;top:7px!important;padding:4px!important;border-radius:16px!important}
@@ -703,6 +704,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
   <button id="spinBtn" type="button">🎡 GIRAR RULETA</button>
   <div id="rouletteResult" class="roulette-result">Ingresá tu usuario para comenzar.</div>
   <p class="roulette-legal">Los bonus son premios visuales para futuras cargas. La ruleta tiene 2 tiros por cuenta y cada tiro queda registrado.</p>
+  <div id="rouletteConnection" class="roulette-connection">Conectando con FREEHAND…</div>
 </div>
 </section>
 
@@ -1155,14 +1157,14 @@ function backHome(){document.body.classList.remove('playing');boardSection.class
 
 // Los <script type="module"> no exponen sus funciones al atributo HTML onclick.
 // Por eso conectamos los botones mediante addEventListener.
-document.getElementById("easyBtn").addEventListener("click",()=>start("fácil"));
-document.getElementById("mediumBtn").addEventListener("click",()=>start("medio"));
-document.getElementById("hardBtn").addEventListener("click",()=>start("difícil"));
-document.getElementById("boardBtn").addEventListener("click",showBoard);
-document.getElementById("restartBtn").addEventListener("click",()=>location.reload());
-document.getElementById("backHomeBtn").addEventListener("click",backHome);
+document.getElementById("easyBtn")?.addEventListener("click",()=>start("fácil"));
+document.getElementById("mediumBtn")?.addEventListener("click",()=>start("medio"));
+document.getElementById("hardBtn")?.addEventListener("click",()=>start("difícil"));
+document.getElementById("boardBtn")?.addEventListener("click",showBoard);
+document.getElementById("restartBtn")?.addEventListener("click",()=>location.reload());
+document.getElementById("backHomeBtn")?.addEventListener("click",backHome);
 
-authReady.then(()=>renderStatus());
+authReady.then(()=>{ renderStatus(); rouletteRefresh(); }).catch(()=>{});
 
 
 // Navegación visual nueva: reutiliza los controles existentes, sin tocar la lógica de Firebase.
@@ -1231,20 +1233,42 @@ async function rouletteRefresh(){
   const playerLabel=document.getElementById('playerLabel');
   const result=document.getElementById('rouletteResult');
   const btn=document.getElementById('spinBtn');
-  if(!spinsLeft||!playerLabel||!result||!btn)return;
-  const name=rouletteNormalizeName(document.getElementById('username').value||'');
-  playerLabel.textContent=name?name.slice(0,10):'—';
-  if(!name){spinsLeft.textContent='2';btn.disabled=true;result.className='roulette-result';result.innerHTML='Ingresá tu usuario para comenzar.';return;}
+  const connection=document.getElementById('rouletteConnection');
+  const input=document.getElementById('username');
+  if(!spinsLeft||!playerLabel||!result||!btn||!input)return;
+  const name=rouletteNormalizeName(input.value||'');
+  playerLabel.textContent=name?name.slice(0,12):'—';
+  if(!name){
+    spinsLeft.textContent='2';btn.disabled=true;result.className='roulette-result';
+    result.innerHTML='Ingresá tu usuario para comenzar.';
+    if(connection){connection.className='roulette-connection';connection.textContent='';}
+    return;
+  }
+  if(name.length<2){btn.disabled=true;result.textContent='El usuario debe tener al menos 2 caracteres.';return;}
   try{
+    if(connection){connection.className='roulette-connection';connection.textContent='Conectando con FREEHAND…';}
     await authReady;
+    if(!firebaseUser) throw new Error('No hay usuario autenticado');
     const spins=await rouletteGetSpins(firebaseUser.uid);
     const used=spins.length;
     spinsLeft.textContent=String(Math.max(0,2-used));
     btn.disabled=used>=2||rouletteBusy;
-    if(used>=2){result.className='roulette-result';result.innerHTML='Ya usaste tus 2 tiros.<strong>¡Gracias por jugar!</strong>';}
-    else if(!rouletteBusy){result.className='roulette-result';result.textContent=`Te ${used===1?'queda 1 tiro':'quedan 2 tiros'}.`}
+    if(used>=2){
+      result.className='roulette-result';
+      result.innerHTML='Ya usaste tus 2 tiros.<strong>¡Gracias por jugar!</strong>';
+    }else if(!rouletteBusy){
+      result.className='roulette-result';
+      result.textContent=`Te ${used===1?'queda 1 tiro':'quedan 2 tiros'}.`;
+    }
     rouletteUserData={name,used};
-  }catch(e){console.error('RULETA STATUS',e);btn.disabled=false;result.textContent='No se pudo consultar tus tiros. Intentá nuevamente.';}
+    if(connection){connection.className='roulette-connection ok';connection.textContent='● Conectado';}
+  }catch(e){
+    console.error('RULETA STATUS',e);
+    btn.disabled=true;
+    if(connection){connection.className='roulette-connection err';connection.textContent='● No se pudo conectar con Firebase';}
+    result.className='roulette-result';
+    result.innerHTML='No se pudo conectar con el servidor.<strong>Revisá Firebase y recargá.</strong>';
+  }
 }
 async function rouletteSpin(){
   if(rouletteBusy)return;
