@@ -639,10 +639,28 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 .roulette-ring{position:absolute;inset:0;border-radius:50%;padding:9px;background:linear-gradient(145deg,#ffe477,#b77818 25%,#ffd34d 55%,#9b6114 78%,#ffe47b);box-shadow:inset 0 0 0 2px #fff2a655,0 0 0 7px #07140d,0 0 0 9px #ffd34d33,0 0 30px #ffd34d22}
 .roulette-wheel{position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;transform:rotate(0deg);transition:transform 5.8s cubic-bezier(.12,.72,.12,1);background:conic-gradient(from -9deg,#102e1d 0 18deg,#173a24 18deg 36deg,#102e1d 36deg 54deg,#173a24 54deg 72deg,#102e1d 72deg 90deg,#173a24 90deg 108deg,#102e1d 108deg 126deg,#173a24 126deg 144deg,#102e1d 144deg 162deg,#173a24 162deg 180deg,#102e1d 180deg 198deg,#173a24 198deg 216deg,#102e1d 216deg 234deg,#173a24 234deg 252deg,#102e1d 252deg 270deg,#173a24 270deg 288deg,#102e1d 288deg 306deg,#173a24 306deg 324deg,#102e1d 324deg 342deg,#173a24 342deg 360deg)}
 .roulette-wheel:before{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from -9deg,transparent 0 17.2deg,#f5c84b2e 17.2deg 18deg);z-index:1}
-.roulette-label{position:absolute;z-index:2;left:50%;top:50%;width:50%;height:50%;transform-origin:0 0;pointer-events:none}
-.roulette-label span{position:absolute;left:7px;top:1px;transform:rotate(9deg);transform-origin:0 0;width:74px;text-align:center;color:#dce8df;font-size:9px;line-height:1.05;font-weight:900;letter-spacing:.3px;text-shadow:0 2px 3px #000c;}
-.roulette-label.prize span{color:#ffe47b;text-shadow:0 0 9px #ffd34d55,0 2px 3px #000}
-.roulette-label.b5 span{color:#9dffbf}.roulette-label.b10 span{color:#ffe47b}.roulette-label.b15 span{color:#ffbd65}.roulette-label.b20 span{color:#fff0b0;font-size:10px}
+.roulette-label{position:absolute;z-index:2;inset:0;pointer-events:none;transform-origin:50% 50%;display:block}
+.roulette-label span{position:absolute;left:50%;top:7.5%;transform:translateX(-50%);width:23%;min-width:42px;text-align:center;color:#e5eee8;font-size:9px;line-height:1.02;font-weight:950;letter-spacing:.15px;text-shadow:0 2px 4px #000d;white-space:nowrap}
+.roulette-label span:before{content:'•';display:block;font-size:10px;line-height:8px;color:#9fb3a7;margin-bottom:2px;text-shadow:0 0 5px #000}
+.roulette-label.prize span{font-size:9.5px;color:#fff4c2;text-shadow:0 0 10px #ffd34d88,0 2px 4px #000f}
+.roulette-label.prize span:before{content:'★';color:#ffd34d;font-size:10px}
+.roulette-label.b5 span{color:#a9ffc4}.roulette-label.b5 span:before{color:#79f4a0}
+.roulette-label.b10 span{color:#ffe47b}.roulette-label.b10 span:before{color:#ffd34d}
+.roulette-label.b15 span{color:#ffc77a}.roulette-label.b15 span:before{color:#ff9e43}
+.roulette-label.b20 span{color:#fff8d9;font-size:10.5px;text-shadow:0 0 13px #ffd34daa,0 2px 4px #000f}.roulette-label.b20 span:before{color:#fff0a0;font-size:11px}
+.roulette-label.none-alt span{color:#c8d6ce}
+.roulette-label.none-alt span:before{color:#71877b}
+.roulette-label.b5,.roulette-label.b10,.roulette-label.b15,.roulette-label.b20{z-index:3}
+.roulette-result-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(1,8,5,.78);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease}
+.roulette-result-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+.roulette-result-card{width:min(88vw,420px);border-radius:26px;border:1px solid rgba(255,211,77,.48);background:radial-gradient(circle at 50% 0%,rgba(255,211,77,.18),transparent 45%),linear-gradient(145deg,#102b1b,#06130c);box-shadow:0 24px 90px #000c,0 0 0 5px rgba(255,211,77,.05),0 0 55px rgba(255,211,77,.12);padding:30px 22px;text-align:center;transform:translateY(14px) scale(.96);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.roulette-result-overlay.open .roulette-result-card{transform:none}
+.roulette-result-card .rr-icon{font-size:42px;line-height:1;margin-bottom:10px}
+.roulette-result-card .rr-kicker{font-size:11px;font-weight:900;letter-spacing:2px;color:#9fb3a7;text-transform:uppercase}
+.roulette-result-card strong{display:block;font-size:30px;line-height:1.05;color:#ffe27a;margin:9px 0 7px;text-shadow:0 0 20px rgba(255,211,77,.2)}
+.roulette-result-card p{margin:0;color:#c7d3cc;font-size:13px;line-height:1.45}
+.roulette-result-card button{margin-top:20px;width:100%;min-height:50px;border:1px solid #fff0a1;border-radius:14px;background:linear-gradient(180deg,#ffe37a,#f5b82f);color:#171006;font-weight:950;font-size:14px;box-shadow:0 6px 0 #6b4508;cursor:pointer}
+.roulette-result-card.no-prize strong{color:#dfe9e3}.roulette-result-card.no-prize .rr-icon{filter:grayscale(.2)}
 .roulette-hub{position:absolute;z-index:6;width:92px;height:92px;border-radius:50%;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 35% 28%,#183b25,#07150d 66%);border:4px solid #ffd34d;box-shadow:0 0 0 7px #06120b,0 0 25px #ffd34d2b,inset 0 1px 0 #fff5b766;color:#ffd34d;font-weight:950;font-size:12px;line-height:1.05;letter-spacing:.5px}
 .roulette-hub small{display:block;color:#d6e0d9;font-size:8px;margin-top:3px;letter-spacing:1.5px}
 .roulette-meta{width:100%;max-width:420px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -662,8 +680,8 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
   .quick-rail button span{margin-right:3px}
   .roulette-stage{width:min(350px,84vw)}
   .roulette-hub{width:76px;height:76px;font-size:10px}
-  .roulette-label span{font-size:7.5px;width:61px}
-  .roulette-label.b20 span{font-size:8px}
+  .roulette-label span{font-size:7.8px;min-width:34px;top:7.8%;width:25%}
+  .roulette-label.b20 span{font-size:8.8px}
 }
 @media(max-width:360px){.quick-rail button{font-size:10.5px!important;padding-left:4px!important;padding-right:4px!important}.roulette-stage{width:82vw}}
 </style>
@@ -715,6 +733,16 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
   <div id="rouletteConnection" class="roulette-connection">Conectando con FREEHAND…</div>
 </div>
 </section>
+
+<div id="rouletteResultOverlay" class="roulette-result-overlay" aria-hidden="true">
+  <div id="rouletteResultCard" class="roulette-result-card">
+    <div id="rouletteOverlayIcon" class="rr-icon">🎡</div>
+    <div id="rouletteOverlayKicker" class="rr-kicker">Resultado de tu giro</div>
+    <strong id="rouletteOverlayPrize">—</strong>
+    <p id="rouletteOverlayText">—</p>
+    <button id="rouletteOverlayClose" type="button">CONTINUAR</button>
+  </div>
+</div>
 
 <section id="game" class="card hidden">
 <div class="top"><span id="level"></span><span id="counter"></span></div>
@@ -1216,11 +1244,16 @@ function rouletteBuildLabels(){
   const visual=['SIN PREMIO','SIN PREMIO','SIN PREMIO','BONUS 5%','SIN PREMIO','SIN PREMIO','SIN PREMIO','BONUS 10%','SIN PREMIO','SIN PREMIO','SIN PREMIO','BONUS 15%','SIN PREMIO','SIN PREMIO','BONUS 20%','SIN PREMIO','SIN PREMIO','SIN PREMIO','SIN PREMIO','SIN PREMIO'];
   visual.forEach((label,i)=>{
     const el=document.createElement('div');
-    el.className='roulette-label '+(label.startsWith('BONUS')?'prize '+({ 'BONUS 5%':'b5','BONUS 10%':'b10','BONUS 15%':'b15','BONUS 20%':'b20'}[label]):'');
-    el.style.transform=`rotate(${i*18}deg)`;
-    const span=document.createElement('span');span.textContent=label;el.appendChild(span);wheel.appendChild(el);
+    const isPrize=label.startsWith('BONUS');
+    el.className='roulette-label '+(isPrize?'prize '+({ 'BONUS 5%':'b5','BONUS 10%':'b10','BONUS 15%':'b15','BONUS 20%':'b20'}[label]):(i%2?'none-alt':''));
+    el.style.transform=`rotate(${i*18+9}deg)`;
+    const span=document.createElement('span');
+    span.textContent=label;
+    el.appendChild(span);
+    wheel.appendChild(el);
   });
 }
+
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 async function rouletteGetSpins(uid){
   const out=[];
@@ -1278,6 +1311,27 @@ async function rouletteRefresh(){
     result.innerHTML='No se pudo conectar con el servidor.<strong>Revisá Firebase y recargá.</strong>';
   }
 }
+function rouletteShowOverlay(result, spinNumber){
+  const overlay=document.getElementById('rouletteResultOverlay');
+  const card=document.getElementById('rouletteResultCard');
+  if(!overlay||!card)return;
+  const prize=document.getElementById('rouletteOverlayPrize');
+  const text=document.getElementById('rouletteOverlayText');
+  const icon=document.getElementById('rouletteOverlayIcon');
+  const kicker=document.getElementById('rouletteOverlayKicker');
+  const close=document.getElementById('rouletteOverlayClose');
+  const win=!!result.bonus;
+  card.className='roulette-result-card '+(win?'':'no-prize');
+  icon.textContent=win?'🎉':'🍀';
+  kicker.textContent=win?'¡PREMIO!':'Resultado de tu giro';
+  prize.textContent=result.label;
+  text.textContent=win?'Tu bonus quedó guardado para una próxima carga.':`Esta vez no salió premio. ${spinNumber===1?'Te queda 1 tiro.':'Ya usaste tus 2 tiros.'}`;
+  close.textContent=spinNumber===2?'FINALIZAR':'CONTINUAR';
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden','false');
+  close.onclick=()=>{overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');};
+}
+
 async function rouletteSpin(){
   if(rouletteBusy)return;
   const name=rouletteNormalizeName(document.getElementById('username').value||'');
@@ -1310,7 +1364,9 @@ async function rouletteSpin(){
       resultBox.className='roulette-result '+(result.bonus?'win':'');
       resultBox.innerHTML=result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>Te quedan ${spinNumber===1?'1':'0'} tiros.</span>`;
       btn.textContent=spinNumber===2?'🎡 SIN TIROS DISPONIBLES':'🎡 GIRAR RULETA';
-      rouletteBusy=false;await rouletteRefresh();
+      rouletteBusy=false;
+      await rouletteRefresh();
+      rouletteShowOverlay(result,spinNumber);
     };
     wheel.addEventListener('transitionend',finish,{once:true});
     // Fallback para navegadores que no emitan transitionend.
@@ -1320,6 +1376,9 @@ async function rouletteSpin(){
   }
 }
 rouletteBuildLabels();
+document.getElementById('rouletteResultOverlay')?.addEventListener('click',e=>{
+  if(e.target.id==='rouletteResultOverlay') e.currentTarget.classList.remove('open');
+});
 document.getElementById('spinBtn')?.addEventListener('click',rouletteSpin);
 document.getElementById('username')?.addEventListener('input',()=>rouletteRefresh());
 authReady.then(()=>rouletteRefresh());
