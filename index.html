@@ -667,7 +667,15 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 }
 @media(max-width:360px){.quick-rail button{font-size:10.5px!important;padding-left:4px!important;padding-right:4px!important}.roulette-stage{width:82vw}}
 </style>
-<style id="freehand-feature-lock">#game,#board{display:none!important}.level-deck,#status,#boardBtn,.deck-scroll-hint,.decor,.note{display:none!important}</style></head>
+<style id="freehand-feature-lock">#game,#board{display:none!important}.level-deck,#status,#boardBtn,.deck-scroll-hint,.decor,.note{display:none!important}</style><style id="freehand-roulette-motion-fix">
+/* FIX PUNTUAL: la ruleta debe conservar su transición aunque el dispositivo tenga reduced-motion.
+   No modifica colores, tamaños, layout ni lógica de premios. */
+#rouletteWheel{
+  transition:transform 5.8s cubic-bezier(.12,.72,.12,1)!important;
+  will-change:transform;
+}
+</style>
+</head>
 <body>
 <div id="bonusEggOverlay" aria-hidden="true">
   <button id="bonusEggClose" type="button" aria-label="Cerrar">×</button>
