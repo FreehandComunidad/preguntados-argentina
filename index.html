@@ -1256,14 +1256,15 @@ document.querySelectorAll('[data-quick]').forEach(btn=>{
 
 
 // =========================================================
-// FREEHAND RULETA V2 — 2 tiros por cuenta
+// FREEHAND RULETA — 2 tiros originales + tercer tiro especial condicional
 // =========================================================
 const ROULETTE_RESULTS=[
   {key:'none',label:'SIN PREMIO',bonus:0},
   {key:'b5',label:'BONUS 5%',bonus:5},
   {key:'b10',label:'BONUS 10%',bonus:10},
   {key:'b15',label:'BONUS 15%',bonus:15},
-  {key:'b20',label:'BONUS 20%',bonus:20}
+  {key:'b20',label:'BONUS 20%',bonus:20},
+  {key:'number',label:'NÚMERO A ELECCIÓN PARA EL SORTEO DEL CUATRICICLO',bonus:0}
 ];
 const ROULETTE_SEGMENTS=20;
 let rouletteRotation=0;
@@ -1277,6 +1278,14 @@ function roulettePick(){
   if(r<98.5) return ROULETTE_RESULTS[2];
   if(r<99.5) return ROULETTE_RESULTS[3];
   return ROULETTE_RESULTS[4];
+}
+// El tercer tiro solo se habilita si los dos primeros fueron SIN PREMIO.
+// El número a elección tiene una probabilidad de 0,1% en ese tiro especial.
+function roulettePickThird(){
+  return Math.random() < 0.001 ? ROULETTE_RESULTS[5] : ROULETTE_RESULTS[0];
+}
+function rouletteCanHaveThird(spins){
+  return spins.length===2 && spins.every(s=>s.result==='SIN PREMIO');
 }
 function rouletteBuildLabels(){
   // Las etiquetas están integradas en la ilustración final de cada sector.
@@ -1310,7 +1319,7 @@ function rouletteBuildLabels(){
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 async function rouletteGetSpins(uid){
   const out=[];
-  for(let n=1;n<=2;n++){
+  for(let n=1;n<=3;n++){
     const snap=await getDoc(doc(db,'roulette_spins',uid+'_'+n));
     if(snap.exists()) out.push(snap.data());
   }
@@ -1345,16 +1354,21 @@ async function rouletteRefresh(){
     if(!firebaseUser) throw new Error('No hay usuario autenticado');
     const spins=await rouletteGetSpins(firebaseUser.uid);
     const used=spins.length;
-    spinsLeft.textContent=String(Math.max(0,2-used));
-    btn.disabled=used>=2||rouletteBusy;
-    if(used>=2){
+    const thirdAvailable=rouletteCanHaveThird(spins);
+    const left=used<2 ? 2-used : (used===2 && thirdAvailable ? 1 : 0);
+    spinsLeft.textContent=String(left);
+    btn.disabled=(left===0)||rouletteBusy;
+    if(used>=3 || (used>=2 && !thirdAvailable)){
       result.className='roulette-result';
-      result.innerHTML='Ya usaste tus 2 tiros.<strong>¡Gracias por jugar!</strong>';
+      result.innerHTML='Ya finalizaste tus tiros.<strong>¡Gracias por jugar!</strong>';
+    }else if(used===2 && thirdAvailable && !rouletteBusy){
+      result.className='roulette-result';
+      result.innerHTML='¡Desbloqueaste un tiro extra!<strong>Chance especial: número a elección para el sorteo del cuatriciclo.</strong>';
     }else if(!rouletteBusy){
       result.className='roulette-result';
       result.textContent=`Te ${used===1?'queda 1 tiro':'quedan 2 tiros'}.`;
     }
-    rouletteUserData={name,used};
+    rouletteUserData={name,used,thirdAvailable};
     if(connection){connection.className='roulette-connection ok';connection.textContent='● Conectado';}
   }catch(e){
     console.error('RULETA STATUS',e);
@@ -1373,13 +1387,14 @@ function rouletteShowOverlay(result, spinNumber){
   const icon=document.getElementById('rouletteOverlayIcon');
   const kicker=document.getElementById('rouletteOverlayKicker');
   const close=document.getElementById('rouletteOverlayClose');
-  const win=!!result.bonus;
+  const special=result.key==='number';
+  const win=!!result.bonus || special;
   card.className='roulette-result-card '+(win?'':'no-prize');
-  icon.textContent=win?'🎉':'🍀';
-  kicker.textContent=win?'¡PREMIO!':'Resultado de tu giro';
+  icon.textContent=special?'🎟️':(win?'🎉':'🍀');
+  kicker.textContent=special?'¡PREMIO ESPECIAL!':(win?'¡PREMIO!':'Resultado de tu giro');
   prize.textContent=result.label;
-  text.textContent=win?'Tu bonus quedó guardado para una próxima carga.':`Esta vez no salió premio. ${spinNumber===1?'Te queda 1 tiro.':'Ya usaste tus 2 tiros.'}`;
-  close.textContent=spinNumber===2?'FINALIZAR':'CONTINUAR';
+  text.textContent=special?'Ganaste un número a elección para el sorteo del cuatriciclo. Coordiná el número por mensaje.':(result.bonus?'Tu bonus quedó guardado para una próxima carga.':(spinNumber===2?'No salió premio en los dos tiros. ¡Desbloqueaste un tiro extra especial!':spinNumber===1?'Esta vez no salió premio. Te queda 1 tiro.':'Esta vez no salió premio.')) ;
+  close.textContent=spinNumber===3?'FINALIZAR':(spinNumber===2 && !special?'CONTINUAR':'CONTINUAR');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden','false');
   close.onclick=()=>{overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');};
@@ -1396,11 +1411,12 @@ async function rouletteSpin(){
   try{
     await authReady;
     const spins=await rouletteGetSpins(firebaseUser.uid);
-    if(spins.length>=2){rouletteBusy=false;await rouletteRefresh();return;}
+    const thirdAvailable=rouletteCanHaveThird(spins);
+    if(spins.length>=3 || (spins.length>=2 && !thirdAvailable)){rouletteBusy=false;await rouletteRefresh();return;}
     const spinNumber=spins.length+1;
-    const result=roulettePick();
+    const result=spinNumber===3 ? roulettePickThird() : roulettePick();
     // Elegimos una posición visual que represente el premio y hacemos que termine bajo el puntero.
-    const sectorCenter={none:30,b5:210,b10:75,b15:300,b20:0}[result.key];
+    const sectorCenter={none:30,b5:210,b10:75,b15:300,b20:0,number:162}[result.key];
     const current=((rouletteRotation%360)+360)%360;
     const target=((360-sectorCenter)-current+360)%360;
     rouletteRotation+=360*9+target;
@@ -1414,8 +1430,9 @@ async function rouletteSpin(){
         rouletteBusy=false;btn.textContent='🎡 GIRAR RULETA';await rouletteRefresh();return;
       }
       resultBox.className='roulette-result '+(result.bonus?'win':'');
-      resultBox.innerHTML=result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>Te quedan ${spinNumber===1?'1':'0'} tiros.</span>`;
-      btn.textContent=spinNumber===2?'🎡 SIN TIROS DISPONIBLES':'🎡 GIRAR RULETA';
+      const special=result.key==='number';
+      resultBox.innerHTML=special?`🎟️ ¡PREMIO ESPECIAL!<strong>${result.label}</strong><span>Coordiná el número por mensaje.</span>`:result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>${spinNumber===1?'Te queda 1 tiro.':spinNumber===2 && rouletteCanHaveThird([...spins,{result:result.label}])?'Desbloqueaste un tiro extra especial.':'Tiros finalizados.'}</span>`;
+      btn.textContent=spinNumber===3 || (spinNumber===2 && result.bonus>0)?'🎡 TIROS FINALIZADOS':'🎡 GIRAR RULETA';
       rouletteBusy=false;
       await rouletteRefresh();
       rouletteShowOverlay(result,spinNumber);
