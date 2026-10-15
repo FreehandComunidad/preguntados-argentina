@@ -655,7 +655,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 .roulette-result-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
 .roulette-result-card{width:min(88vw,420px);border-radius:26px;border:1px solid rgba(255,211,77,.48);background:radial-gradient(circle at 50% 0%,rgba(255,211,77,.18),transparent 45%),linear-gradient(145deg,#102b1b,#06130c);box-shadow:0 24px 90px #000c,0 0 0 5px rgba(255,211,77,.05),0 0 55px rgba(255,211,77,.12);padding:30px 22px;text-align:center;transform:translateY(14px) scale(.96);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
 .roulette-result-overlay.open .roulette-result-card{transform:none}
-.roulette-result-card .rr-icon{font-size:42px;line-height:1;margin-bottom:10px}
+.roulette-result-card .rr-icon{font-size:68px;line-height:1;margin:0 auto 16px;width:112px;height:96px;display:grid;place-items:center;border-radius:24px;border:1px solid rgba(255,211,77,.42);background:radial-gradient(circle at 50% 30%,rgba(255,211,77,.24),rgba(255,211,77,.04) 68%);box-shadow:inset 0 1px 0 #fff3,0 10px 30px #0005;text-shadow:0 5px 18px #ffd34d55}
 .roulette-result-card .rr-kicker{font-size:11px;font-weight:900;letter-spacing:2px;color:#9fb3a7;text-transform:uppercase}
 .roulette-result-card strong{display:block;font-size:30px;line-height:1.05;color:#ffe27a;margin:9px 0 7px;text-shadow:0 0 20px rgba(255,211,77,.2)}
 .roulette-result-card p{margin:0;color:#c7d3cc;font-size:13px;line-height:1.45}
@@ -1411,7 +1411,7 @@ function rouletteShowOverlay(result, spinNumber){
   const special=result.key==='number';
   const win=!!result.bonus || special;
   card.className='roulette-result-card '+(win?'':'no-prize');
-  icon.textContent=special?'🎟️':(win?'🎉':'🍀');
+  icon.textContent=special?'🎟️':(result.bonus===5?'🎁':result.bonus===10?'⭐':result.bonus===15?'💎':result.bonus===20?'👑':'🍀');
   kicker.textContent=special?'¡PREMIO ESPECIAL!':(win?'¡PREMIO!':'Resultado de tu giro');
   prize.textContent=result.label;
   text.textContent=special?'Ganaste un número a elección para el sorteo del cuatriciclo. Coordiná el número por mensaje.':(result.bonus?'Tu bonus quedó guardado para una próxima carga.':(spinNumber===2?'No salió premio en los dos tiros. ¡Desbloqueaste un tiro extra especial!':spinNumber===1?'Esta vez no salió premio. Te queda 1 tiro.':'Esta vez no salió premio.')) ;
@@ -1436,11 +1436,17 @@ async function rouletteSpin(){
     if(spins.length>=3 || (spins.length>=2 && !thirdAvailable)){rouletteBusy=false;await rouletteRefresh();return;}
     const spinNumber=spins.length+1;
     const result=spinNumber===3 ? roulettePickThird() : roulettePick();
-    // Elegimos una posición visual que represente el premio y hacemos que termine bajo el puntero.
-    const sectorCenter={none:30,b5:210,b10:75,b15:300,b20:0,number:162}[result.key];
+    // Centros reales aproximados de los sectores de la ilustración (grados desde arriba, sentido horario).
+    // SIN PREMIO puede caer en cualquiera de sus sectores, para no terminar siempre junto al BONUS 20%.
+    const visualSectors={
+      none:[43,88,108,128,148,168,188,208,228,268,288,318,338],
+      b5:[62], b10:[250], b15:[302], b20:[24], number:[0]
+    };
+    const choices=visualSectors[result.key]||visualSectors.none;
+    const sectorCenter=choices[Math.floor(Math.random()*choices.length)];
     const current=((rouletteRotation%360)+360)%360;
     const target=((360-sectorCenter)-current+360)%360;
-    rouletteRotation+=360*9+target;
+    rouletteRotation+=360*(8+Math.floor(Math.random()*3))+target;
     const wheel=document.getElementById('rouletteWheel');
     wheel.style.transform=`rotate(${rouletteRotation}deg)`;
     const finish=async()=>{
