@@ -1293,17 +1293,25 @@ let rouletteBusy=false;
 let rouletteUserData=null;
 
 function roulettePick(){
+  // Primeros dos tiros: número a elección 0,1%; el resto conserva sus probabilidades previas.
   const r=Math.random()*100;
-  if(r<90) return ROULETTE_RESULTS[0];
-  if(r<96) return ROULETTE_RESULTS[1];
-  if(r<98.5) return ROULETTE_RESULTS[2];
-  if(r<99.5) return ROULETTE_RESULTS[3];
-  return ROULETTE_RESULTS[4];
+  if(r<89.9) return ROULETTE_RESULTS[0];
+  if(r<95.9) return ROULETTE_RESULTS[1];
+  if(r<98.4) return ROULETTE_RESULTS[2];
+  if(r<99.4) return ROULETTE_RESULTS[3];
+  if(r<99.9) return ROULETTE_RESULTS[4];
+  return ROULETTE_RESULTS[5];
 }
 // El tercer tiro solo se habilita si los dos primeros fueron SIN PREMIO.
-// El número a elección tiene una probabilidad de 0,1% en ese tiro especial.
+// En el tercer tiro: número 1%; BONUS 5% y 10% al doble de sus probabilidades originales.
 function roulettePickThird(){
-  return Math.random() < 0.001 ? ROULETTE_RESULTS[5] : ROULETTE_RESULTS[0];
+  const r=Math.random()*100;
+  if(r<80.5) return ROULETTE_RESULTS[0];
+  if(r<92.5) return ROULETTE_RESULTS[1];
+  if(r<97.5) return ROULETTE_RESULTS[2];
+  if(r<98.5) return ROULETTE_RESULTS[3];
+  if(r<99) return ROULETTE_RESULTS[4];
+  return ROULETTE_RESULTS[5];
 }
 function rouletteCanHaveThird(spins){
   return spins.length===2 && spins.every(s=>s.result==='SIN PREMIO');
