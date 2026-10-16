@@ -1293,21 +1293,27 @@ let rouletteBusy=false;
 let rouletteUserData=null;
 
 function roulettePick(){
-  // Primeros dos tiros: número a elección 0,1%; el resto conserva sus probabilidades previas.
+  // Primeros dos tiros: 70% sin premio; se aumentan BONUS 5% y BONUS 10%.
+  // Se conservan BONUS 15%, BONUS 20% y número para el cuatriciclo.
+  // Probabilidades: SIN PREMIO 70%; BONUS 5% 20%; BONUS 10% 8,4%;
+  // BONUS 15% 1%; BONUS 20% 0,5%; número para el sorteo 0,1%.
   const r=Math.random()*100;
-  if(r<89.9) return ROULETTE_RESULTS[0];
-  if(r<95.9) return ROULETTE_RESULTS[1];
+  if(r<70) return ROULETTE_RESULTS[0];
+  if(r<90) return ROULETTE_RESULTS[1];
   if(r<98.4) return ROULETTE_RESULTS[2];
   if(r<99.4) return ROULETTE_RESULTS[3];
   if(r<99.9) return ROULETTE_RESULTS[4];
   return ROULETTE_RESULTS[5];
 }
 // El tercer tiro solo se habilita si los dos primeros fueron SIN PREMIO.
-// En el tercer tiro: número 1%; BONUS 5% y 10% al doble de sus probabilidades originales.
+// Se fija 70% SIN PREMIO, se aumentan BONUS 5% y BONUS 10%,
+// y se conservan los premios restantes (incluido el número para el cuatriciclo).
+// Probabilidades: SIN PREMIO 70%; BONUS 5% 19,5%; BONUS 10% 8%;
+// BONUS 15% 1%; BONUS 20% 0,5%; número para el sorteo 1%.
 function roulettePickThird(){
   const r=Math.random()*100;
-  if(r<80.5) return ROULETTE_RESULTS[0];
-  if(r<92.5) return ROULETTE_RESULTS[1];
+  if(r<70) return ROULETTE_RESULTS[0];
+  if(r<89.5) return ROULETTE_RESULTS[1];
   if(r<97.5) return ROULETTE_RESULTS[2];
   if(r<98.5) return ROULETTE_RESULTS[3];
   if(r<99) return ROULETTE_RESULTS[4];
