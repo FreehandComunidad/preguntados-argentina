@@ -3,7 +3,7 @@
 ## Estado actual
 - Rama de trabajo: `migracion-supabase`. La rama `main` no se modificó.
 - Proyecto Supabase: `freehand-roulette` (`yiznobpjxksymqqazryr`), región São Paulo.
-- Migraciones aplicadas: esquema privado, giro atómico, aleatoriedad criptográfica, endurecimiento de funciones y bloqueo de PIN.
+- Migraciones aplicadas: seis en total, incluyendo esquema privado, giro atómico, aleatoriedad criptográfica, endurecimiento de funciones, bloqueo de PIN y permisos del trigger automático de RLS.
 - Tablas creadas: `roulette_players` y `roulette_spins`, ambas con RLS activado.
 - Edge Function `roulette`: desplegada y activa (versión 6).
 - `index.html`: Preguntados y ranking permanecen en Firebase; las acciones de ruleta usan Supabase.
