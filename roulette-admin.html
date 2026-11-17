@@ -9,16 +9,39 @@
 <section class="card"><div class="grid" style="align-items:center"><div><h2>Jugadores y tiros</h2><p class="muted">Estado actualizado desde el servidor.</p></div><div style="text-align:right"><button class="secondary" id="refreshBtn">ACTUALIZAR LISTA</button></div></div><div id="players" class="players muted">Todavía no se cargaron jugadores.</div></section>
 <section class="card"><h2>Herramientas</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Usuario</label><input id="resetName" maxlength="20" placeholder="Nombre exacto del jugador"><button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section></main></div>
 <script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
-import {getAuth,signInAnonymously} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js';
-const firebaseConfig={apiKey:'AIzaSyDStVY2-PEgM5nezY9BLMxXlfl8pgXgCaM',authDomain:'preguntados-argentina.firebaseapp.com',projectId:'preguntados-argentina',storageBucket:'preguntados-argentina.firebasestorage.app',messagingSenderId:'381499526265',appId:'1:381499526265:web:a3728473d8644aee63d8a8'};
-const app=initializeApp(firebaseConfig);const auth=getAuth(app);const fn=getFunctions(app,'us-central1');let adminKey='';
-const call=name=>httpsCallable(fn,name);const byId=id=>document.getElementById(id);const val=id=>byId(id).value.trim();
+const SUPABASE_URL='https://yiznobpjxksymqqazryr.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_gIJ_EWPdSfm-GLEQmPcL1Q_AeQKNa2O';
+let adminKey='';
+const call=name=>async(args={})=>{
+  const {adminKey:providedKey,...payload}=args||{};
+  const key=providedKey||adminKey;
+  const response=await fetch(`${SUPABASE_URL}/functions/v1/roulette`,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'apikey':SUPABASE_PUBLISHABLE_KEY,
+      'x-admin-key':key
+    },
+    body:JSON.stringify({action:name,...payload})
+  });
+  let data;
+  try{data=await response.json();}catch{throw new Error('No se pudo leer la respuesta del servidor.');}
+  if(!response.ok||data?.error){
+    const messages={
+      PLAYER_NOT_FOUND:'Jugador inexistente.',
+      INVALID_CREDENTIALS:'Usuario o PIN incorrecto.',
+      PIN_LOCKED:'PIN bloqueado por seguridad.',
+      'Clave de administración incorrecta.':'Clave de administración incorrecta.'
+    };
+    throw new Error(messages[data?.error]||data?.error||'No se pudo completar la operación.');
+  }
+  return {data};
+};
+const byId=id=>document.getElementById(id);const val=id=>byId(id).value.trim();
 function status(id,msg,ok=false){const el=byId(id);el.textContent=msg;el.className='status '+(ok?'ok':'err');}
 function adminArgs(extra={}){return {adminKey,...extra};}
 // Keep admin key only in memory; establish auth first and then probe server key.
-byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{if(!auth.currentUser)await signInAnonymously(auth);await call('adminListPlayers')(adminArgs());byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await refresh();}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
+byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{await call('adminListPlayers')(adminArgs());byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await refresh();}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
 byId('createBtn').onclick=async()=>{try{const r=(await call('adminCreatePlayer')(adminArgs({username:val('newName')}))).data;byId('newPin').textContent=r.pin;byId('pinHelp').textContent=`PIN de ${r.username}. Copialo y entregáselo al jugador; no se puede volver a consultar.`;byId('createdResult').classList.remove('hidden');status('createStatus','Jugador creado correctamente.',true);byId('newName').value='';await refresh();}catch(e){status('createStatus',e.message||'No se pudo crear el jugador.');}};
 byId('copyPinBtn').onclick=async()=>{await navigator.clipboard.writeText(byId('newPin').textContent);status('createStatus','PIN copiado.',true);};
 async function grant(which){try{const name=val('grantName'),count=which==='adminApproveLoad'?1:Number(val('grantCount'));const r=(await call(which)(adminArgs({username:name,count}))).data;status('grantStatus',`${which==='adminApproveLoad'?'Carga aprobada':'Oportunidad regalada'} para ${r.username}. Ciclos en espera: ${r.queuedCycles}.`,true);await refresh();}catch(e){status('grantStatus',e.message||'No se pudo habilitar.');}}

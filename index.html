@@ -851,7 +851,6 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, getDocs, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDStVY2-PEgM5nezY9BLMxXlfl8pgXgCaM",
@@ -865,9 +864,40 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const functions = getFunctions(app, "us-central1");
-const rouletteStatusCall = httpsCallable(functions, "getRouletteStatus");
-const rouletteSpinCall = httpsCallable(functions, "spinRoulette");
+
+// La ruleta usa Supabase; Firebase Auth/Firestore queda para el juego y el ranking.
+const SUPABASE_URL = "https://yiznobpjxksymqqazryr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_gIJ_EWPdSfm-GLEQmPcL1Q_AeQKNa2O";
+const ROULETTE_ERROR_MESSAGES = {
+  PLAYER_NOT_FOUND: "No encontramos ese usuario. Pedile tu acceso a FREEHAND.",
+  INVALID_CREDENTIALS: "El usuario o el PIN son incorrectos.",
+  PIN_LOCKED: "El PIN quedó bloqueado por seguridad durante 15 minutos.",
+  NO_ACTIVE_CYCLE: "Todavía no tenés tiros habilitados. Comunicate con FREEHAND.",
+  CYCLE_FINISHED: "Tu oportunidad ya finalizó."
+};
+async function rouletteApi(action, payload = {}) {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/roulette`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_PUBLISHABLE_KEY
+    },
+    body: JSON.stringify({ action, ...payload })
+  });
+  let data;
+  try { data = await response.json(); }
+  catch { throw new Error("No se pudo leer la respuesta del servidor de la ruleta."); }
+  if (!response.ok || data?.error) {
+    const code = data?.error || `HTTP_${response.status}`;
+    const error = new Error(ROULETTE_ERROR_MESSAGES[code] || code);
+    error.code = code;
+    error.status = response.status;
+    throw error;
+  }
+  return { data };
+}
+const rouletteStatusCall = payload => rouletteApi("status", payload);
+const rouletteSpinCall = payload => rouletteApi("spin", payload);
 let firebaseUser = null;
 let authReady = (async()=>{
   if(!auth.currentUser){
@@ -1276,7 +1306,7 @@ document.getElementById("boardBtn")?.addEventListener("click",showBoard);
 document.getElementById("restartBtn")?.addEventListener("click",()=>location.reload());
 document.getElementById("backHomeBtn")?.addEventListener("click",backHome);
 
-authReady.then(()=>{ renderStatus(); rouletteRefresh(); }).catch(()=>{});
+authReady.then(()=>renderStatus()).catch(()=>{});
 
 
 // Navegación visual nueva: reutiliza los controles existentes, sin tocar la lógica de Firebase.
@@ -1305,7 +1335,7 @@ function rouletteCanHaveThird(spins){return spins.length===2 && spins.every(s=>s
 function rouletteBuildLabels(){} // Las etiquetas ya están impresas en la ilustración nueva.
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 function rouletteCredentials(){return {username:rouletteNormalizeName(document.getElementById('username')?.value||''),pin:(document.getElementById('roulettePin')?.value||'').trim()};}
-async function rouletteGetStatus(){const c=rouletteCredentials();if(!c.username||!c.pin)return null;await authReady;const r=await rouletteStatusCall(c);return r.data;}
+async function rouletteGetStatus(){const c=rouletteCredentials();if(!c.username||!c.pin)return null;const r=await rouletteStatusCall(c);return r.data;}
 async function rouletteRefresh(){
  const spinsLeft=document.getElementById('spinsLeft'),playerLabel=document.getElementById('playerLabel'),result=document.getElementById('rouletteResult'),btn=document.getElementById('spinBtn'),connection=document.getElementById('rouletteConnection');
  if(!spinsLeft||!playerLabel||!result||!btn)return;
@@ -1319,7 +1349,7 @@ async function rouletteRefresh(){
   else if(left>0)result.textContent=`Tenés ${left} tiro${left===1?'':'s'} disponible${left===1?'':'s'}.`;
   else result.innerHTML='Oportunidad finalizada.<strong>¡Gracias por jugar!</strong>';
   if(connection){connection.className='roulette-connection ok';connection.textContent='● Jugador verificado';}
- }catch(e){console.error('ROULETTE STATUS',e);btn.disabled=true;result.textContent=e?.message?.includes('not-found')?'No encontramos ese usuario o PIN. Revisá los datos.':'No se pudo verificar tu cuenta. Intentá nuevamente.';if(connection){connection.className='roulette-connection err';connection.textContent='● No se pudo validar';}}
+ }catch(e){console.error('ROULETTE STATUS',e);btn.disabled=true;result.textContent=e?.message||'No se pudo verificar tu cuenta. Intentá nuevamente.';if(connection){connection.className='roulette-connection err';connection.textContent='● No se pudo validar';}}
 }
 function rouletteShowOverlay(result, spinNumber){
   const overlay=document.getElementById('rouletteResultOverlay');
@@ -1348,7 +1378,7 @@ async function rouletteSpin(){
  if(rouletteBusy)return;const c=rouletteCredentials();if(!c.username||!c.pin){alert('Ingresá tu usuario y el PIN que te entregó FREEHAND.');return;}
  rouletteBusy=true;const btn=document.getElementById('spinBtn'),resultBox=document.getElementById('rouletteResult');btn.disabled=true;btn.textContent='🎡 GIRANDO…';resultBox.textContent='La suerte está girando…';
  try{
-  await authReady;const response=await rouletteSpinCall(c);const data=response.data;const result=data.result;const spinNumber=data.spinNumber;
+  const response=await rouletteSpinCall(c);const data=response.data;const result=data.result;const spinNumber=data.spinNumber;
   const sectors={none:[36,72,90,108,144,180,216,234,270,306],number:[0],b20:[18],b5:[54],b10:[252],b15:[198],t1000:[288],t3000:[126],t5000:[162],t50000:[324],t100000:[342]};
   const choices=sectors[result.key]||sectors.none;const sector=choices[Math.floor(Math.random()*choices.length)];const current=((rouletteRotation%360)+360)%360;const target=((360-sector)-current+360)%360;rouletteRotation+=360*(8+Math.floor(Math.random()*3))+target;
   const wheel=document.getElementById('rouletteWheel');wheel.style.transform=`rotate(${rouletteRotation}deg)`;
@@ -1363,7 +1393,7 @@ document.getElementById('rouletteResultOverlay')?.addEventListener('click',e=>{
 document.getElementById('spinBtn')?.addEventListener('click',rouletteSpin);
 document.getElementById('username')?.addEventListener('input',()=>rouletteRefresh());
 document.getElementById('roulettePin')?.addEventListener('input',()=>rouletteRefresh());
-authReady.then(()=>rouletteRefresh());
+rouletteRefresh();
 
 // Gestos para abrir el flyer de la comunidad sin interferir con el juego.
 const communityOverlay=document.getElementById('communityOverlay');
