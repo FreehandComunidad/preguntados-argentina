@@ -1,0 +1,19 @@
+{
+  "name": "freehand-roulette-functions",
+  "description": "Backend seguro para oportunidades y premios de la ruleta FREEHAND",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "lint": "node --check index.js",
+    "test": "node test/roulette-logic.test.js"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.3.0"
+  },
+  "private": true
+}

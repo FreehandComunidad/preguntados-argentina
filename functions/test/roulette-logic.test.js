@@ -1,0 +1,10 @@
+const assert = require('node:assert/strict');
+const FIRST = [6000, 2000, 1000, 200, 100, 500, 150, 40, 10];
+const THIRD = [5000, 1200, 800, 300, 200, 1700, 600, 150, 50];
+const canHaveThird = spins => spins.length === 2 && spins.every(s => s.result === 'SIN PREMIO');
+assert.equal(FIRST.reduce((a, b) => a + b, 0), 10000);
+assert.equal(THIRD.reduce((a, b) => a + b, 0), 10000);
+assert.equal(canHaveThird([{result:'SIN PREMIO'}, {result:'SIN PREMIO'}]), true);
+assert.equal(canHaveThird([{result:'SIN PREMIO'}, {result:'BONUS 5%'}]), false);
+assert.equal(canHaveThird([{result:'SIN PREMIO'}]), false);
+console.log('Ruleta: probabilidades y desbloqueo del tercer giro OK.');

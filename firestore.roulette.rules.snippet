@@ -1,0 +1,8 @@
+// Incorporar dentro de service cloud.firestore / match /databases/{database}/documents.
+// No reemplazar las reglas de las otras colecciones de Preguntados.
+match /roulette_players/{playerId} {
+  allow read, write: if false;
+}
+match /roulette_spins/{spinId} {
+  allow read, write: if false;
+}
