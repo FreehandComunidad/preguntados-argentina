@@ -9,8 +9,8 @@
 <section class="card"><div class="grid" style="align-items:center"><div><h2>Jugadores y tiros</h2><p class="muted">Estado actualizado desde el servidor.</p></div><div style="text-align:right"><button class="secondary" id="refreshBtn">ACTUALIZAR LISTA</button></div></div><div id="players" class="players muted">Todavía no se cargaron jugadores.</div></section>
 <section class="card"><h2>Herramientas</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Usuario</label><input id="resetName" maxlength="20" placeholder="Nombre exacto del jugador"><button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section></main></div>
 <script>
-const API_URL="https://yiznobpjkxsymqqazryr.supabase.co/functions/v1/roulette";
-const PUBLISHABLE_KEY="REEMPLAZAR_CON_SUPABASE_PUBLISHABLE_KEY";
+const API_URL="https://yiznobpjksymqqazryr.supabase.co/functions/v1/roulette";
+const PUBLISHABLE_KEY="sb_publishable_gIJ_EWPdSfm-GLEQmPcL1Q_AeQKNa2O";
 let adminKey="";
 const byId=id=>document.getElementById(id),val=id=>byId(id).value.trim();
 function status(id,msg,ok=false){const el=byId(id);el.textContent=msg;el.className="status "+(ok?"ok":"err");}
