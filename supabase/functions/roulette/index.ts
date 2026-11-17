@@ -134,7 +134,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
     const message = String((e as Error)?.message || "Error interno.");
     return json({ error:message }, errorStatus(message));
   }
-}});
+});
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return json({ ok: true });
