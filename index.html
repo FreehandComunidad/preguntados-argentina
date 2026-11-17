@@ -1354,8 +1354,8 @@ document.getElementById('rouletteResultOverlay')?.addEventListener('click',e=>{
   if(e.target.id==='rouletteResultOverlay') e.currentTarget.classList.remove('open');
 });
 document.getElementById('spinBtn')?.addEventListener('click',rouletteSpin);
-document.getElementById('username')?.addEventListener('input',()=>rouletteRefresh());
-document.getElementById('roulettePin')?.addEventListener('input',()=>rouletteRefresh());
+document.getElementById('username')?.addEventListener('change',()=>rouletteRefresh());
+document.getElementById('roulettePin')?.addEventListener('change',()=>rouletteRefresh());
 authReady.then(()=>rouletteRefresh());
 
 // Gestos para abrir el flyer de la comunidad sin interferir con el juego.
