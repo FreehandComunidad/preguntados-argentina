@@ -6,7 +6,7 @@
 - Proyecto Supabase: `freehand-roulette` (`yiznobpjxksymqqazryr`), región São Paulo.
 - Siete migraciones aplicadas, incluyendo esquema privado, giro atómico, aleatoriedad criptográfica, PIN, seguridad de funciones y corrección de probabilidades.
 - Tablas `roulette_players` y `roulette_spins` creadas con RLS activado.
-- Edge Function `roulette`: activa (versión 7).
+- Edge Function `roulette`: activa (versión 8), con endpoint de salud que verifica la presencia del secreto administrativo sin revelarlo.
 - `index.html`: Preguntados y ranking siguen usando Firebase; la ruleta usa Supabase.
 - `roulette-admin.html`: preparado para Supabase.
 - No se publicó nada en `main` ni se desconectó Firebase.
@@ -31,7 +31,7 @@ La Edge Function valida la Publishable key con `withSupabase` y obtiene el clien
 
 ## Pendiente
 
-La simulación ejercitó directamente la función transaccional de PostgreSQL. Todavía falta una prueba HTTP real desde un navegador para comprobar inicio administrativo, creación de jugador, PIN, aprobación de carga y regalo de ciclo. En los registros todavía no aparecen invocaciones HTTP a la función de ruleta.
+La simulación ejercitó directamente la función transaccional de PostgreSQL. Se agregó un endpoint de salud HTTP y una página de prueba local (`roulette-http-test.html`) para comprobar desde Chrome el secreto administrativo, creación de jugador, PIN, aprobación de carga, restablecimiento y giro. La prueba HTTP queda pendiente de ejecución desde el navegador del administrador.
 
 Antes de activar la versión nueva para jugadores, hacer esa prueba desde una vista previa de la rama `migracion-supabase`. No hacer merge a `main` hasta terminar la prueba.
 
