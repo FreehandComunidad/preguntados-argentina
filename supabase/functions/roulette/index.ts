@@ -5,19 +5,6 @@ const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const adminSecret = Deno.env.get("ROULETTE_ADMIN_KEY")!;
 const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-const prizes = [
-  { key: "none", label: "SIN PREMIO", bonus: 0, fichas: 0 },
-  { key: "b5", label: "BONUS 5%", bonus: 5, fichas: 0 },
-  { key: "b10", label: "BONUS 10%", bonus: 10, fichas: 0 },
-  { key: "b15", label: "BONUS 15%", bonus: 15, fichas: 0 },
-  { key: "b20", label: "BONUS 20%", bonus: 20, fichas: 0 },
-  { key: "t1000", label: "1.000 FICHAS", bonus: 0, fichas: 1000 },
-  { key: "t3000", label: "3.000 FICHAS", bonus: 0, fichas: 3000 },
-  { key: "t5000", label: "5.000 FICHAS", bonus: 0, fichas: 5000 },
-  { key: "number", label: "NÚMERO A ELECCIÓN PARA EL SORTEO DEL CUATRICICLO", bonus: 0, fichas: 0 },
-];
-const first = [6000, 2000, 1000, 200, 100, 500, 150, 40, 10];
-const third = [5000, 1200, 800, 300, 200, 1700, 600, 150, 50];
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "content-type": "application/json", "access-control-allow-origin": "*",
     "access-control-allow-headers": "authorization, apikey, content-type, x-admin-key",
@@ -38,12 +25,12 @@ async function hash(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
-function randomPin() { const a = new Uint32Array(1); crypto.getRandomValues(a); return String(10000000 + (a[0] % 90000000)); }
-function pick(weights: number[]) {
-  const a = new Uint32Array(1); crypto.getRandomValues(a);
-  let n = a[0] % 10000;
-  for (let i=0;i<weights.length;i++) { if (n < weights[i]) return prizes[i]; n -= weights[i]; }
-  return prizes[0];
+function randomPin() {
+  const range = 90000000;
+  const limit = Math.floor(0x100000000 / range) * range;
+  const a = new Uint32Array(1);
+  do { crypto.getRandomValues(a); } while (a[0] >= limit);
+  return String(10000000 + (a[0] % range));
 }
 function requireAdmin(req: Request) {
   const supplied = req.headers.get("x-admin-key") || "";
@@ -123,18 +110,6 @@ Deno.serve(async (req) => {
       const { data, error } = await db.rpc("roulette_admin_grant_cycles", { p_id:id, p_count:count, p_source:action === "adminApproveLoad" ? "load-approved" : "admin" });
       if (error) throw error;
       return json(data);
-    }
-    if (action === "adminListPlayers") {
-      const { data, error } = await db.from("roulette_players").select("*").order("created_at", { ascending:false }).limit(250);
-      if (error) throw error;
-      return json({ players:(data || []).map((p:any) => {
-        const cycle=p.active_cycle||null, spins=cycle?.spins||[];
-        const thirdAvailable=spins.length===2 && spins.every((s:any)=>s.result==="SIN PREMIO");
-        return { username:p.username, active:!!cycle, used:spins.length,
-          spinsLeft:cycle?(spins.length===0?2:spins.length===1?1:thirdAvailable?1:0):0,
-          thirdAvailable, queuedCycles:p.queued_cycles, fichasBalance:p.fichas_balance,
-          bonusCount:(p.bonus_prizes||[]).length, quadBikeNumbers:p.quad_bike_numbers };
-      }) });
     }
     if (action === "adminResetPin") {
       const pin = randomPin(), pinHash = await hash(id + ":" + pin);
