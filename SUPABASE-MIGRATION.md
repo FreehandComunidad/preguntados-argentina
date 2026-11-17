@@ -5,7 +5,7 @@
 - Proyecto Supabase: `freehand-roulette` (`yiznobpjxksymqqazryr`), región São Paulo.
 - Migraciones aplicadas: esquema privado, giro atómico, aleatoriedad criptográfica, endurecimiento de funciones y bloqueo de PIN.
 - Tablas creadas: `roulette_players` y `roulette_spins`, ambas con RLS activado.
-- Edge Function `roulette`: desplegada y activa (versión 3).
+- Edge Function `roulette`: desplegada y activa (versión 6).
 - `index.html`: Preguntados y ranking permanecen en Firebase; las acciones de ruleta usan Supabase.
 - `roulette-admin.html`: panel de administración preparado para Supabase.
 - No se ha publicado nada a `main` ni se ha apagado Firebase.
@@ -19,7 +19,7 @@ Configurar el secreto de administración desde el Dashboard de Supabase:
 4. Guardarla en un gestor de contraseñas. No incluirla en HTML, GitHub, WhatsApp ni enviarla por este chat.
 5. Para ingresar a `roulette-admin.html`, introducir esa misma clave en el formulario de acceso.
 
-El servicio ya tiene las variables estándar de Supabase para acceder a la base de datos desde la Edge Function. La Publishable key está configurada sólo en los dos archivos de navegador. No se debe poner una Secret key ni una service_role key en archivos públicos.
+La Edge Function valida la Publishable key con `withSupabase` y obtiene el cliente privilegiado del servidor mediante el SDK oficial. La Publishable key está configurada sólo en los dos archivos de navegador. No se debe poner una Secret key ni una service_role key en archivos públicos.
 
 ## Pruebas realizadas
 - Se ejecutaron pruebas SQL dentro de bloques transaccionales y se eliminaron los jugadores/giro de prueba al terminar.
