@@ -25,7 +25,7 @@ grant all on public.roulette_spins to service_role;
 
 create or replace function public.roulette_apply_spin(p_player_id text,p_pin_hash text,p_prize_key text,p_result text,p_bonus integer,p_fichas integer)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
-declare p public.roulette_players%rowtype; c jsonb; spins jsonb; n integer; third_ok boolean; spin_no integer; cid uuid; remaining integer; completed boolean; queued integer; next_cycle jsonb; now_iso text:=now()::text;
+declare p public.roulette_players%rowtype; c jsonb; spins jsonb; n integer; third_ok boolean; third_after boolean; spin_no integer; cid uuid; remaining integer; completed boolean; queued integer; next_cycle jsonb; now_iso text:=now()::text;
 begin
  select * into p from public.roulette_players where id=p_player_id for update;
  if not found then raise exception 'PLAYER_NOT_FOUND'; end if;
@@ -37,7 +37,8 @@ begin
  if n>=3 or (n>=2 and not third_ok) then raise exception 'CYCLE_FINISHED'; end if;
  spin_no:=n+1; cid:=(c->>'id')::uuid;
  spins:=spins||jsonb_build_array(jsonb_build_object('spinNumber',spin_no,'key',p_prize_key,'result',p_result,'bonus',p_bonus,'createdAt',now_iso));
- remaining:=case when spin_no=1 then 1 when spin_no=2 and third_ok then 1 else 0 end; completed:=remaining=0; queued:=p.queued_cycles;
+ third_after:=spin_no=2 and spins->0->>'result'='SIN PREMIO' and p_result='SIN PREMIO';
+ remaining:=case when spin_no=1 then 1 when third_after then 1 else 0 end; completed:=remaining=0; queued:=p.queued_cycles;
  next_cycle:=c||jsonb_build_object('spins',spins);
  if completed then
   if queued>0 then queued:=queued-1; next_cycle:=jsonb_build_object('id',gen_random_uuid(),'source','queued','spins','[]'::jsonb,'status','active','createdAt',now_iso);
@@ -49,7 +50,7 @@ begin
  insert into public.roulette_spins(player_id,username,cycle_id,spin_number,prize_key,result,bonus_percent) values(p_player_id,p.username,cid,spin_no,p_prize_key,p_result,p_bonus);
  return jsonb_build_object('username',p.username,'cycleId',cid,'spinNumber',spin_no,
  'result',jsonb_build_object('key',p_prize_key,'label',p_result,'bonus',p_bonus),
- 'spinsLeft',remaining,'thirdAvailable',remaining=1 and spin_no=2,'cycleCompleted',completed,
+ 'spinsLeft',remaining,'thirdAvailable',third_after,'cycleCompleted',completed,
  'queuedCycles',queued,'fichasBalance',p.fichas_balance+p_fichas);
 end; $$;
 
