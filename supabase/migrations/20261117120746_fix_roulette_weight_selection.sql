@@ -76,4 +76,4 @@ begin
  'result',jsonb_build_object('key',prize_key,'label',prize_label,'bonus',prize_bonus),
  'spinsLeft',remaining,'thirdAvailable',third_after,'cycleCompleted',completed,
  'queuedCycles',queued,'fichasBalance',p.fichas_balance+prize_fichas);
-end; $function$
+end; $function$;
