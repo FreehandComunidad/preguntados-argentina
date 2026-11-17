@@ -61,10 +61,19 @@ Deno.serve(async (req) => {
 
     if (action === "status") {
       const c = await playerCredentials(body);
+      const { data: verification, error: verifyError } = await db.rpc("roulette_verify_player_pin", {
+        p_player_id: c.id, p_pin_hash: c.pinHash
+      });
+      if (verifyError) throw verifyError;
+      if (!verification?.ok) {
+        const code = verification?.code || "INVALID_CREDENTIALS";
+        const statusCode = code === "PLAYER_NOT_FOUND" ? 404 : code === "PIN_LOCKED" ? 429 : 403;
+        return json({ error: code, retryAt: verification?.retryAt, retryMinutes: verification?.retryMinutes,
+          attemptsRemaining: verification?.attemptsRemaining }, statusCode);
+      }
       const { data: p, error } = await db.from("roulette_players").select("*").eq("id", c.id).maybeSingle();
       if (error) throw error;
       if (!p) throw new Error("PLAYER_NOT_FOUND");
-      if (p.pin_hash !== c.pinHash) throw new Error("INVALID_CREDENTIALS");
       const cycle = p.active_cycle || null, spins = cycle?.spins || [];
       const thirdAvailable = spins.length === 2 && spins.every((s: any) => s.result === "SIN PREMIO");
       return json({ username: p.username, activeCycle: !!cycle, cycleId: cycle?.id || null,
@@ -82,6 +91,12 @@ Deno.serve(async (req) => {
         p_player_id: c.id, p_pin_hash: c.pinHash
       });
       if (error) throw error;
+      if (data?.error) {
+        const statusCode = data.error === "PLAYER_NOT_FOUND" ? 404 : data.error === "PIN_LOCKED" ? 429 :
+          data.error === "INVALID_CREDENTIALS" ? 403 : 409;
+        return json({ error:data.error, retryAt:data.retryAt, retryMinutes:data.retryMinutes,
+          attemptsRemaining:data.attemptsRemaining }, statusCode);
+      }
       return json(data);
     }
 
@@ -113,7 +128,7 @@ Deno.serve(async (req) => {
     }
     if (action === "adminResetPin") {
       const pin = randomPin(), pinHash = await hash(id + ":" + pin);
-      const { data, error } = await db.from("roulette_players").update({ pin_hash:pinHash,updated_at:new Date().toISOString() }).eq("id",id).select("username").maybeSingle();
+      const { data, error } = await db.from("roulette_players").update({ pin_hash:pinHash,pin_failed_attempts:0,pin_locked_until:null,updated_at:new Date().toISOString() }).eq("id",id).select("username").maybeSingle();
       if (error) throw error; if (!data) throw new Error("PLAYER_NOT_FOUND");
       return json({ username:data.username, pin });
     }
