@@ -856,7 +856,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const SUPABASE_ROULETTE_URL = "https://yiznobpjksymqqazryr.supabase.co/functions/v1/roulette";
+const SUPABASE_ROULETTE_URL = "https://yiznobpjxksymqqazryr.supabase.co/functions/v1/roulette";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_gIJ_EWPdSfm-GLEQmPcL1Q_AeQKNa2O";
 async function rouletteApi(action, payload){
  const response=await fetch(SUPABASE_ROULETTE_URL,{method:"POST",headers:{"content-type":"application/json","apikey":SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action,...payload})});
