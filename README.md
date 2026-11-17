@@ -19,7 +19,7 @@ Los giros tienen probabilidades independientes. Cada giro comienza con la tabla 
 
 | Premio | Probabilidad |
 |---|---:|
-| SIN PREMIO | 60% |
+| SIN PREMIO | 59,94% |
 | BONUS 5% | 20% |
 | BONUS 10% | 10% |
 | BONUS 15% | 2% |
@@ -28,13 +28,15 @@ Los giros tienen probabilidades independientes. Cada giro comienza con la tabla 
 | 3.000 fichas | 1,5% |
 | 5.000 fichas | 0,4% |
 | Número para sorteo del cuatriciclo | 0,1% |
+| 50.000 fichas | 0,05% |
+| 100.000 fichas | 0,01% |
 | **Total** | **100%** |
 
 ### Probabilidades del tercer giro especial
 
 | Premio | Probabilidad |
 |---|---:|
-| SIN PREMIO | 50% |
+| SIN PREMIO | 49,94% |
 | BONUS 5% | 12% |
 | BONUS 10% | 8% |
 | BONUS 15% | 3% |
@@ -43,7 +45,11 @@ Los giros tienen probabilidades independientes. Cada giro comienza con la tabla 
 | 3.000 fichas | 6% |
 | 5.000 fichas | 1,5% |
 | Número para sorteo del cuatriciclo | 0,5% |
+| 50.000 fichas | 0,05% |
+| 100.000 fichas | 0,01% |
 | **Total** | **100%** |
+
+Los premios grandes tienen probabilidades muy bajas e iguales en los giros normales y en el tercer giro especial: 50.000 fichas, 0,05% (1 en 2.000); 100.000 fichas, 0,01% (1 en 10.000). La probabilidad restante se descuenta de SIN PREMIO para mantener cada tabla en 100%.
 
 Los resultados de fichas incrementan `fichasBalance`; los bonus se guardan como entradas individuales en `bonusPrizes`; el premio del cuatriciclo incrementa `quadBikeNumbers`. Los giros quedan registrados en `roulette_spins`.
 
