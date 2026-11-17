@@ -1,30 +1,43 @@
-# Migración de ruleta a Supabase (rama migracion-supabase)
+# Migración de la ruleta FREEHAND a Supabase
 
-Esta rama separa la ruleta de Firebase sin modificar la conexión Firebase de Preguntados ni del ranking.
+## Estado actual
+- Rama de trabajo: `migracion-supabase`. La rama `main` no se modificó.
+- Proyecto Supabase: `freehand-roulette` (`yiznobpjxksymqqazryr`), región São Paulo.
+- Migraciones aplicadas: esquema privado, giro atómico y ajuste del generador criptográfico.
+- Tablas creadas: `roulette_players` y `roulette_spins`, ambas con RLS activado.
+- Edge Function `roulette`: desplegada y activa (versión 3).
+- `index.html`: Preguntados y ranking permanecen en Firebase; las acciones de ruleta usan Supabase.
+- `roulette-admin.html`: panel de administración preparado para Supabase.
+- No se ha publicado nada a `main` ni se ha apagado Firebase.
 
-## Archivos
-- `supabase/migrations/202611170001_roulette_schema.sql`: tablas privadas, RLS y operaciones transaccionales.
-- `supabase/functions/roulette/index.ts`: API de jugador y administración.
-- `supabase/config.toml`: configuración de la Edge Function.
-- `index.html`: conserva Firebase para Preguntados/ranking y envía la ruleta a Supabase.
-- `roulette-admin.html`: panel de administración sobre la misma API.
+## Pendiente antes de probar el panel
+Configurar el secreto de administración desde el Dashboard de Supabase:
 
-## Configuración manual pendiente en Supabase
-1. Abrir SQL Editor del proyecto y ejecutar el contenido completo de `supabase/migrations/202611170001_roulette_schema.sql`.
-2. En Edge Functions, desplegar la función llamada `roulette` desde `supabase/functions/roulette/index.ts`.
-3. Configurar secretos de la función:
-   - `SUPABASE_URL`: URL del proyecto.
-   - `SUPABASE_SERVICE_ROLE_KEY`: clave secreta del proyecto (solo del lado servidor).
-   - `ROULETTE_ADMIN_KEY`: una clave administrativa larga y privada.
-4. Copiar la Publishable key del proyecto y reemplazar el texto `REEMPLAZAR_CON_SUPABASE_PUBLISHABLE_KEY` en los dos HTML.
-5. Probar con un jugador de prueba antes de integrar a producción.
+1. Abrir [Edge Function Secrets](https://supabase.com/dashboard/project/yiznobpjxksymqqazryr/functions/secrets).
+2. Crear un secreto con nombre exacto `ROULETTE_ADMIN_KEY`.
+3. Como valor, usar una clave aleatoria larga (al menos 32 caracteres), distinta de la contraseña de la base de datos y de las API keys.
+4. Guardarla en un gestor de contraseñas. No incluirla en HTML, GitHub, WhatsApp ni enviarla por este chat.
+5. Para ingresar a `roulette-admin.html`, introducir esa misma clave en el formulario de acceso.
 
-## Seguridad
-- Nunca poner `service_role`, claves secretas, contraseña de base de datos o `ROULETTE_ADMIN_KEY` en HTML, GitHub, WhatsApp o mensajes.
-- La Publishable key sí está diseñada para estar en el navegador; las tablas tienen RLS activado y no conceden acceso a anon/authenticated.
-- La función valida el PIN del jugador y la clave administrativa. La clave administrativa se envía por HTTPS en el encabezado `x-admin-key`.
-- La función está configurada con `verify_jwt = false` porque los jugadores no inician sesión en Supabase Auth; la validación propia de usuario+PIN se hace dentro de la función.
-- La versión publicada y la rama `main` no se modifican en esta etapa.
+El servicio ya tiene las variables estándar de Supabase para acceder a la base de datos desde la Edge Function. La Publishable key está configurada sólo en los dos archivos de navegador. No se debe poner una Secret key ni una service_role key en archivos públicos.
 
-## Nota de despliegue
-La integración GitHub de Supabase no despliega por sí sola Edge Functions en el plan gratuito en todas las configuraciones. El despliegue puede hacerse con Supabase CLI o desde el flujo de despliegue de Edge Functions. No activar producción hasta verificar las pruebas.
+## Pruebas realizadas
+- Se ejecutaron pruebas SQL dentro de bloques transaccionales y se eliminaron los jugadores/giro de prueba al terminar.
+- Se comprobó la secuencia de dos giros, el desbloqueo y consumo del tercer giro especial.
+- Se comprobó que al terminar un ciclo se habilita el siguiente ciclo pendiente y disminuye la cola.
+- Se comprobó que no quedaron registros de prueba.
+- Se comprobó que los roles `anon` y `authenticated` no tienen permisos directos sobre las dos tablas ni sobre la función de giro; `service_role` sí.
+- La Edge Function está activa. La prueba funcional desde el navegador todavía requiere configurar `ROULETTE_ADMIN_KEY` y luego crear un jugador de prueba desde el panel.
+
+## Seguridad y arquitectura
+- La Publishable key se envía sólo en la cabecera `apikey`; no se usa como bearer token.
+- Las tablas privadas no tienen políticas RLS para usuarios públicos. Esto es intencional: los navegadores no acceden directamente a los datos; todo pasa por la Edge Function.
+- El cálculo de premios y el avance de ciclo ocurren dentro de una transacción PostgreSQL con bloqueo de fila y aleatoriedad criptográfica. Esto evita que dos solicitudes simultáneas consuman el mismo ciclo o usen la probabilidad equivocada.
+- El panel administra manualmente las cargas aprobadas por WhatsApp y los ciclos regalados. No integra pagos de forma automática.
+- No borrar todavía las Firebase Functions antiguas: dejarlas sin uso hasta finalizar pruebas y confirmar la migración.
+
+## Próximos pasos
+1. Configurar `ROULETTE_ADMIN_KEY` en Supabase.
+2. Probar la creación de un jugador de prueba y validar su PIN desde la página de la ruleta en una vista previa/branch de prueba.
+3. Probar aprobación de carga, regalo de ciclo, cola, restablecimiento de PIN y revisión de premios.
+4. Sólo después de esas pruebas, revisar el diff y decidir el merge a `main`.
