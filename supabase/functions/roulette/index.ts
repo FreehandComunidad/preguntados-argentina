@@ -138,6 +138,16 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return json({ ok: true });
+  const requestUrl = new URL(req.url);
+  if (req.method === "GET" && requestUrl.searchParams.get("health") === "1") {
+    return json({
+      status: "ok",
+      function: "roulette",
+      version: 8,
+      adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
+      timestamp: new Date().toISOString()
+    });
+  }
   const response = await handler(req);
   const headers = new Headers(response.headers);
   headers.set("access-control-allow-origin", "*");
