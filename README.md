@@ -1,3 +1,11 @@
+> **Rama de migración Supabase — estado actual**
+>
+> Esta rama `migracion-supabase` prepara la ruleta para Supabase. `index.html` conserva Firebase para Preguntados y el ranking, pero la ruleta y `roulette-admin.html` usan la Edge Function `roulette` de Supabase. La base de datos y la función están creadas y probadas. Antes de probar el panel, configurá el secreto `ROULETTE_ADMIN_KEY` siguiendo [SUPABASE-MIGRATION.md](SUPABASE-MIGRATION.md).
+>
+> Las instrucciones Firebase más abajo describen la implementación anterior que permanece en `main`; no las uses para desplegar esta rama de migración. No hacer merge a `main` hasta terminar las pruebas en navegador.
+>
+> ---
+>
 # FREEHAND · Ruleta administrada
 
 Esta entrega conserva la aplicación original de Preguntados y su estética verde/dorada. Los cambios se limitan a la ruleta, los premios, la identificación por PIN y la gestión de oportunidades.
