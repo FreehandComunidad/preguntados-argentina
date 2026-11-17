@@ -3,7 +3,7 @@
 ## Estado actual
 - Rama de trabajo: `migracion-supabase`. La rama `main` no se modificó.
 - Proyecto Supabase: `freehand-roulette` (`yiznobpjxksymqqazryr`), región São Paulo.
-- Migraciones aplicadas: esquema privado, giro atómico y ajuste del generador criptográfico.
+- Migraciones aplicadas: esquema privado, giro atómico, aleatoriedad criptográfica, endurecimiento de funciones y bloqueo de PIN.
 - Tablas creadas: `roulette_players` y `roulette_spins`, ambas con RLS activado.
 - Edge Function `roulette`: desplegada y activa (versión 3).
 - `index.html`: Preguntados y ranking permanecen en Firebase; las acciones de ruleta usan Supabase.
@@ -25,14 +25,14 @@ El servicio ya tiene las variables estándar de Supabase para acceder a la base 
 - Se ejecutaron pruebas SQL dentro de bloques transaccionales y se eliminaron los jugadores/giro de prueba al terminar.
 - Se comprobó la secuencia de dos giros, el desbloqueo y consumo del tercer giro especial.
 - Se comprobó que al terminar un ciclo se habilita el siguiente ciclo pendiente y disminuye la cola.
-- Se comprobó que no quedaron registros de prueba.
+- Se comprobó el bloqueo tras cinco PIN incorrectos y el desbloqueo tras 15 minutos; el panel permite restablecer PIN y quitar el bloqueo.\n- Se comprobó que no quedaron registros de prueba.
 - Se comprobó que los roles `anon` y `authenticated` no tienen permisos directos sobre las dos tablas ni sobre la función de giro; `service_role` sí.
 - La Edge Function está activa. La prueba funcional desde el navegador todavía requiere configurar `ROULETTE_ADMIN_KEY` y luego crear un jugador de prueba desde el panel.
 
 ## Seguridad y arquitectura
 - La Publishable key se envía sólo en la cabecera `apikey`; no se usa como bearer token.
 - Las tablas privadas no tienen políticas RLS para usuarios públicos. Esto es intencional: los navegadores no acceden directamente a los datos; todo pasa por la Edge Function.
-- El cálculo de premios y el avance de ciclo ocurren dentro de una transacción PostgreSQL con bloqueo de fila y aleatoriedad criptográfica. Esto evita que dos solicitudes simultáneas consuman el mismo ciclo o usen la probabilidad equivocada.
+- El cálculo de premios y el avance de ciclo ocurren dentro de una transacción PostgreSQL con bloqueo de fila y aleatoriedad criptográfica. Esto evita que dos solicitudes simultáneas consuman el mismo ciclo o usen la probabilidad equivocada.\n- Tras cinco PIN incorrectos, el acceso del jugador se bloquea durante 15 minutos; un PIN correcto reinicia el contador. El panel restablece PIN y contador.
 - El panel administra manualmente las cargas aprobadas por WhatsApp y los ciclos regalados. No integra pagos de forma automática.
 - No borrar todavía las Firebase Functions antiguas: dejarlas sin uso hasta finalizar pruebas y confirmar la migración.
 
