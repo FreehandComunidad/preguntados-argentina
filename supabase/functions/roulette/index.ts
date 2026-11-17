@@ -48,9 +48,8 @@ function errorStatus(message: string) {
   return 400;
 }
 
-Deno.serve(withSupabase({ auth: "publishable" }, async (req, ctx) => {
+const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
   const db = ctx.supabaseAdmin;
-  if (req.method === "OPTIONS") return json({ ok: true });
   if (req.method !== "POST") return json({ error: "Método no permitido." }, 405);
   try {
     const body = await req.json();
@@ -135,4 +134,14 @@ Deno.serve(withSupabase({ auth: "publishable" }, async (req, ctx) => {
     const message = String((e as Error)?.message || "Error interno.");
     return json({ error:message }, errorStatus(message));
   }
-}));
+}});
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return json({ ok: true });
+  const response = await handler(req);
+  const headers = new Headers(response.headers);
+  headers.set("access-control-allow-origin", "*");
+  headers.set("access-control-allow-headers", "authorization, apikey, content-type, x-admin-key");
+  headers.set("access-control-allow-methods", "POST, OPTIONS");
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+});
