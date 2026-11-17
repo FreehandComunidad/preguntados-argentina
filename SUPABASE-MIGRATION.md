@@ -1,43 +1,44 @@
 # Migración de la ruleta FREEHAND a Supabase
 
 ## Estado actual
+
 - Rama de trabajo: `migracion-supabase`. La rama `main` no se modificó.
 - Proyecto Supabase: `freehand-roulette` (`yiznobpjxksymqqazryr`), región São Paulo.
-- Migraciones aplicadas: siete en total, incluyendo esquema privado, giro atómico, aleatoriedad criptográfica, endurecimiento de funciones, bloqueo de PIN, permisos del trigger automático de RLS y corrección de selección acumulada de premios.
-- Tablas creadas: `roulette_players` y `roulette_spins`, ambas con RLS activado.
-- Edge Function `roulette`: desplegada y activa (versión 6).
-- `index.html`: Preguntados y ranking permanecen en Firebase; las acciones de ruleta usan Supabase.
-- `roulette-admin.html`: panel de administración preparado para Supabase.
-- No se ha publicado nada a `main` ni se ha apagado Firebase.
+- Siete migraciones aplicadas, incluyendo esquema privado, giro atómico, aleatoriedad criptográfica, PIN, seguridad de funciones y corrección de probabilidades.
+- Tablas `roulette_players` y `roulette_spins` creadas con RLS activado.
+- Edge Function `roulette`: activa (versión 7).
+- `index.html`: Preguntados y ranking siguen usando Firebase; la ruleta usa Supabase.
+- `roulette-admin.html`: preparado para Supabase.
+- No se publicó nada en `main` ni se desconectó Firebase.
 
-## Pendiente antes de probar el panel
-Configurar el secreto de administración desde el Dashboard de Supabase:
+## Secretos
 
-1. Abrir [Edge Function Secrets](https://supabase.com/dashboard/project/yiznobpjxksymqqazryr/functions/secrets).
-2. Crear un secreto con nombre exacto `ROULETTE_ADMIN_KEY`.
-3. Como valor, usar una clave aleatoria larga (al menos 32 caracteres), distinta de la contraseña de la base de datos y de las API keys.
-4. Guardarla en un gestor de contraseñas. No incluirla en HTML, GitHub, WhatsApp ni enviarla por este chat.
-5. Para ingresar a `roulette-admin.html`, introducir esa misma clave en el formulario de acceso.
+El administrador informó que configuró `ROULETTE_ADMIN_KEY` en Supabase. Debe permanecer privada y no incluirse en HTML ni en GitHub. La Publishable key sí está en los dos archivos de navegador y se envía únicamente en la cabecera `apikey`.
 
-La Edge Function valida la Publishable key con `withSupabase` y obtiene el cliente privilegiado del servidor mediante el SDK oficial. La Publishable key está configurada sólo en los dos archivos de navegador. No se debe poner una Secret key ni una service_role key en archivos públicos.
+La Edge Function valida la Publishable key con `withSupabase` y obtiene el cliente privilegiado del servidor mediante el SDK oficial. No se debe poner una Secret key ni una `service_role` key en archivos públicos.
 
 ## Pruebas realizadas
-- Se ejecutaron 50.000 simulaciones después de corregir la selección de premios: 10.000 giros normales y 40.000 giros especiales. El detalle queda registrado en [ROULETTE-TEST-REPORT-2026-11-17.md](ROULETTE-TEST-REPORT-2026-11-17.md).\n- Se detectó y corrigió una resta indebida en el algoritmo de pesos acumulados; la primera corrida afectada fue descartada y sus registros se eliminaron. La corrección está versionada en `supabase/migrations/20261117120746_fix_roulette_weight_selection.sql`.\n- Se ejecutaron pruebas SQL dentro de bloques transaccionales y se eliminaron los jugadores/giro de prueba al terminar.
-- Se comprobó la secuencia de dos giros, el desbloqueo y consumo del tercer giro especial. También se recorrieron los 10.000 valores posibles del selector y cada premio recibió exactamente el número de valores indicado por sus pesos.
-- Se comprobó que al terminar un ciclo se habilita el siguiente ciclo pendiente y disminuye la cola.
-- Se comprobó el bloqueo tras cinco PIN incorrectos y el desbloqueo tras 15 minutos; el panel permite restablecer PIN y quitar el bloqueo.\n- Se comprobó que no quedaron registros de prueba.
-- Se comprobó que los roles `anon` y `authenticated` no tienen permisos directos sobre las dos tablas ni sobre la función de giro; `service_role` sí.
-- La Edge Function está activa y `ROULETTE_ADMIN_KEY` fue configurada por el administrador. La prueba funcional por HTTP desde un navegador todavía está pendiente; esta sesión validó la función transaccional directamente en PostgreSQL.
+
+- Se realizaron 50.000 simulaciones válidas después de corregir la selección de premios: 10.000 giros normales y 40.000 giros especiales. Ver [ROULETTE-TEST-REPORT-2026-11-17.md](ROULETTE-TEST-REPORT-2026-11-17.md).
+- La primera simulación detectó que se restaba el peso anterior además de compararlo con el acumulado. Esa corrida se descartó y se borraron sus registros. La corrección está versionada en `supabase/migrations/20261117120746_fix_roulette_weight_selection.sql`.
+- Se recorrieron exhaustivamente los 10.000 valores posibles del selector. Cada premio recibió exactamente su cantidad configurada de valores, tanto para el giro normal como para el especial.
+- Se probaron 100 ciclos completos: el tercer giro sólo se desbloquea cuando los dos primeros son `SIN PREMIO`.
+- Se probó la cola: al terminar un ciclo, se activa el siguiente y baja el contador de pendientes.
+- Se comprobó el bloqueo tras cinco PIN incorrectos durante 15 minutos y el reinicio del contador al validar un PIN correcto.
+- Se comprobaron los permisos: `anon` y `authenticated` no pueden leer ni escribir directamente las tablas privadas ni ejecutar la función de giro; el backend privilegiado sí puede.
+- Se eliminaron todos los jugadores y giros de simulación. Las tablas quedaron sin registros de prueba.
+- El asesor de seguridad sólo informa que las tablas privadas tienen RLS activado y no tienen políticas para navegadores; es intencional. El asesor de salud no informó problemas.
+
+## Pendiente
+
+La simulación ejercitó directamente la función transaccional de PostgreSQL. Todavía falta una prueba HTTP real desde un navegador para comprobar inicio administrativo, creación de jugador, PIN, aprobación de carga y regalo de ciclo. En los registros todavía no aparecen invocaciones HTTP a la función de ruleta.
+
+Antes de activar la versión nueva para jugadores, hacer esa prueba desde una vista previa de la rama `migracion-supabase`. No hacer merge a `main` hasta terminar la prueba.
 
 ## Seguridad y arquitectura
-- La Publishable key se envía sólo en la cabecera `apikey`; no se usa como bearer token.
-- Las tablas privadas no tienen políticas RLS para usuarios públicos. Esto es intencional: los navegadores no acceden directamente a los datos; todo pasa por la Edge Function.
-- El cálculo de premios y el avance de ciclo ocurren dentro de una transacción PostgreSQL con bloqueo de fila y aleatoriedad criptográfica. Esto evita que dos solicitudes simultáneas consuman el mismo ciclo o usen la probabilidad equivocada.\n- Tras cinco PIN incorrectos, el acceso del jugador se bloquea durante 15 minutos; un PIN correcto reinicia el contador. El panel restablece PIN y contador.
-- El panel administra manualmente las cargas aprobadas por WhatsApp y los ciclos regalados. No integra pagos de forma automática.
-- No borrar todavía las Firebase Functions antiguas: dejarlas sin uso hasta finalizar pruebas y confirmar la migración.
 
-## Próximos pasos
-1. Configurar `ROULETTE_ADMIN_KEY` en Supabase.
-2. Probar la creación de un jugador de prueba y validar su PIN desde la página de la ruleta en una vista previa/branch de prueba.
-3. Probar aprobación de carga, regalo de ciclo, cola, restablecimiento de PIN y revisión de premios.
-4. Sólo después de esas pruebas, revisar el diff y decidir el merge a `main`.
+- Las tablas privadas no tienen políticas RLS para usuarios públicos. Los navegadores no acceden directamente a los datos; todo pasa por la Edge Function.
+- El cálculo de premios y el avance de ciclo ocurren dentro de una transacción PostgreSQL con bloqueo de fila y aleatoriedad criptográfica. Esto evita que dos solicitudes simultáneas consuman el mismo ciclo o usen la probabilidad equivocada.
+- Tras cinco PIN incorrectos, el acceso del jugador se bloquea durante 15 minutos; un PIN correcto reinicia el contador.
+- El panel administra manualmente las cargas aprobadas por WhatsApp y los ciclos regalados. No integra pagos de forma automática.
+- Mantener Firebase activo para Preguntados y el ranking. No borrar las Firebase Functions antiguas hasta finalizar las pruebas y confirmar la migración.
