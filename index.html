@@ -1312,7 +1312,7 @@ async function rouletteRefresh(){
   else if(left>0)result.textContent=`Tenés ${left} tiro${left===1?'':'s'} disponible${left===1?'':'s'}.`;
   else result.innerHTML='Oportunidad finalizada.<strong>¡Gracias por jugar!</strong>';
   if(connection){connection.className='roulette-connection ok';connection.textContent='● Jugador verificado';}
- }catch(e){console.error('ROULETTE STATUS',e);btn.disabled=true;result.textContent=e?.message?.includes('not-found')?'No encontramos ese usuario o PIN. Revisá los datos.':'No se pudo verificar tu cuenta. Intentá nuevamente.';if(connection){connection.className='roulette-connection err';connection.textContent='● No se pudo validar';}}
+ }catch(e){console.error('ROULETTE STATUS',e);btn.disabled=true;result.textContent=e?.message?.includes('PIN_LOCKED')?'Demasiados intentos incorrectos. Probá nuevamente dentro de 15 minutos.':e?.message?.includes('not-found')?'No encontramos ese usuario o PIN. Revisá los datos.':'No se pudo verificar tu cuenta. Intentá nuevamente.';if(connection){connection.className='roulette-connection err';connection.textContent='● No se pudo validar';}}
 }
 function rouletteShowOverlay(result, spinNumber){
   const overlay=document.getElementById('rouletteResultOverlay');
@@ -1347,7 +1347,7 @@ async function rouletteSpin(){
   const wheel=document.getElementById('rouletteWheel');wheel.style.transform=`rotate(${rouletteRotation}deg)`;
   const finish=async()=>{wheel.removeEventListener('transitionend',finish);const win=!!result.bonus||result.key==='number'||result.key.startsWith('t');const special=result.key==='number';const tokenPrize=result.key.startsWith('t');resultBox.className='roulette-result '+(win?'win':'');resultBox.innerHTML=tokenPrize?`🪙 ¡PREMIO!<strong>${result.label}</strong><span>Quedó registrado para acreditación.</span>`:special?`🎟️ ¡PREMIO ESPECIAL!<strong>${result.label}</strong><span>Coordiná el número por mensaje.</span>`:result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>${data.thirdAvailable?'Desbloqueaste un tiro extra especial.':data.spinsLeft>0?'Te queda un tiro.':'Oportunidad finalizada.'}</span>`;btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';rouletteBusy=false;await rouletteRefresh();rouletteShowOverlay(result,spinNumber);};
   wheel.addEventListener('transitionend',finish,{once:true});setTimeout(()=>{if(rouletteBusy)finish();},6500);
- }catch(e){console.error('ROULETTE SPIN',e);rouletteBusy=false;btn.textContent='🎡 GIRAR RULETA';resultBox.textContent=e?.message||'No hay tiros habilitados o la oportunidad ya finalizó.';await rouletteRefresh();}
+ }catch(e){console.error('ROULETTE SPIN',e);rouletteBusy=false;btn.textContent='🎡 GIRAR RULETA';resultBox.textContent=e?.message?.includes('PIN_LOCKED')?'Demasiados intentos incorrectos. Probá nuevamente dentro de 15 minutos.':e?.message||'No hay tiros habilitados o la oportunidad ya finalizó.';await rouletteRefresh();}
 }
 rouletteBuildLabels();
 document.getElementById('rouletteResultOverlay')?.addEventListener('click',e=>{
