@@ -72,31 +72,43 @@ Deno.serve(async (req) => {
     const action = String(body.action || "");
     if (action.startsWith("admin")) requireAdmin(req);
 
-    if (action === "status" || action === "spin") {
+    if (action === "status") {
       const c = await playerCredentials(body);
       const { data: p, error } = await db.from("roulette_players").select("*").eq("id", c.id).maybeSingle();
       if (error) throw error;
       if (!p) throw new Error("PLAYER_NOT_FOUND");
       if (p.pin_hash !== c.pinHash) throw new Error("INVALID_CREDENTIALS");
-      if (action === "status") {
-        const cycle = p.active_cycle || null, spins = cycle?.spins || [];
-        const thirdAvailable = spins.length === 2 && spins.every((s: any) => s.result === "SIN PREMIO");
-        return json({ username: p.username, activeCycle: !!cycle, cycleId: cycle?.id || null,
-          spinsLeft: cycle ? (spins.length === 0 ? 2 : spins.length === 1 ? 1 : thirdAvailable ? 1 : 0) : 0,
-          used: spins.length, thirdAvailable, queuedCycles: p.queued_cycles,
-          fichasBalance: p.fichas_balance, bonusCount: (p.bonus_prizes || []).length,
-          quadBikeNumbers: p.quad_bike_numbers, recentResults: spins.map((s: any) => ({ result:s.result,key:s.key,bonus:s.bonus })) });
-      }
-      const spins = p.active_cycle?.spins || [];
-      const special = spins.length === 2 && spins.every((s: any) => s.result === "SIN PREMIO");
-      const prize = pick(spins.length === 2 && special ? third : first);
-      const fichas = prize.fichas;
-      const { data, error: spinError } = await db.rpc("roulette_apply_spin", {
-        p_player_id: c.id, p_pin_hash: c.pinHash, p_prize_key: prize.key,
-        p_result: prize.label, p_bonus: prize.bonus, p_fichas: fichas
+      const cycle = p.active_cycle || null, spins = cycle?.spins || [];
+      const thirdAvailable = spins.length === 2 && spins.every((s: any) => s.result === "SIN PREMIO");
+      return json({ username: p.username, activeCycle: !!cycle, cycleId: cycle?.id || null,
+        spinsLeft: cycle ? (spins.length === 0 ? 2 : spins.length === 1 ? 1 : thirdAvailable ? 1 : 0) : 0,
+        used: spins.length, thirdAvailable, queuedCycles: p.queued_cycles,
+        fichasBalance: p.fichas_balance, bonusCount: (p.bonus_prizes || []).length,
+        quadBikeNumbers: p.quad_bike_numbers, recentResults: spins.map((s: any) => ({ result:s.result,key:s.key,bonus:s.bonus })) });
+    }
+
+    if (action === "spin") {
+      const c = await playerCredentials(body);
+      // Selection and commit happen under the same PostgreSQL row lock.
+      // The database transaction chooses the correct odds for the actual spin number.
+      const { data, error } = await db.rpc("roulette_apply_spin", {
+        p_player_id: c.id, p_pin_hash: c.pinHash
       });
-      if (spinError) throw spinError;
+      if (error) throw error;
       return json(data);
+    }
+
+    if (action === "adminListPlayers") {
+      const { data, error } = await db.from("roulette_players").select("*").order("created_at", { ascending:false }).limit(250);
+      if (error) throw error;
+      return json({ players:(data || []).map((p:any) => {
+        const cycle=p.active_cycle||null, spins=cycle?.spins||[];
+        const thirdAvailable=spins.length===2 && spins.every((s:any)=>s.result==="SIN PREMIO");
+        return { username:p.username, active:!!cycle, used:spins.length,
+          spinsLeft:cycle?(spins.length===0?2:spins.length===1?1:thirdAvailable?1:0):0,
+          thirdAvailable, queuedCycles:p.queued_cycles, fichasBalance:p.fichas_balance,
+          bonusCount:(p.bonus_prizes||[]).length, quadBikeNumbers:p.quad_bike_numbers };
+      }) });
     }
 
     const username = nameOf(body.username), id = slugOf(username);
