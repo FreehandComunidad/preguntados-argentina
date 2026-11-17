@@ -3,7 +3,7 @@
 ## Estado actual
 - Rama de trabajo: `migracion-supabase`. La rama `main` no se modificó.
 - Proyecto Supabase: `freehand-roulette` (`yiznobpjxksymqqazryr`), región São Paulo.
-- Migraciones aplicadas: seis en total, incluyendo esquema privado, giro atómico, aleatoriedad criptográfica, endurecimiento de funciones, bloqueo de PIN y permisos del trigger automático de RLS.
+- Migraciones aplicadas: siete en total, incluyendo esquema privado, giro atómico, aleatoriedad criptográfica, endurecimiento de funciones, bloqueo de PIN, permisos del trigger automático de RLS y corrección de selección acumulada de premios.
 - Tablas creadas: `roulette_players` y `roulette_spins`, ambas con RLS activado.
 - Edge Function `roulette`: desplegada y activa (versión 6).
 - `index.html`: Preguntados y ranking permanecen en Firebase; las acciones de ruleta usan Supabase.
@@ -22,12 +22,12 @@ Configurar el secreto de administración desde el Dashboard de Supabase:
 La Edge Function valida la Publishable key con `withSupabase` y obtiene el cliente privilegiado del servidor mediante el SDK oficial. La Publishable key está configurada sólo en los dos archivos de navegador. No se debe poner una Secret key ni una service_role key en archivos públicos.
 
 ## Pruebas realizadas
-- Se ejecutaron pruebas SQL dentro de bloques transaccionales y se eliminaron los jugadores/giro de prueba al terminar.
-- Se comprobó la secuencia de dos giros, el desbloqueo y consumo del tercer giro especial.
+- Se ejecutaron 50.000 simulaciones después de corregir la selección de premios: 10.000 giros normales y 40.000 giros especiales. El detalle queda registrado en [ROULETTE-TEST-REPORT-2026-11-17.md](ROULETTE-TEST-REPORT-2026-11-17.md).\n- Se detectó y corrigió una resta indebida en el algoritmo de pesos acumulados; la primera corrida afectada fue descartada y sus registros se eliminaron. La corrección está versionada en `supabase/migrations/20261117120746_fix_roulette_weight_selection.sql`.\n- Se ejecutaron pruebas SQL dentro de bloques transaccionales y se eliminaron los jugadores/giro de prueba al terminar.
+- Se comprobó la secuencia de dos giros, el desbloqueo y consumo del tercer giro especial. También se recorrieron los 10.000 valores posibles del selector y cada premio recibió exactamente el número de valores indicado por sus pesos.
 - Se comprobó que al terminar un ciclo se habilita el siguiente ciclo pendiente y disminuye la cola.
 - Se comprobó el bloqueo tras cinco PIN incorrectos y el desbloqueo tras 15 minutos; el panel permite restablecer PIN y quitar el bloqueo.\n- Se comprobó que no quedaron registros de prueba.
 - Se comprobó que los roles `anon` y `authenticated` no tienen permisos directos sobre las dos tablas ni sobre la función de giro; `service_role` sí.
-- La Edge Function está activa. La prueba funcional desde el navegador todavía requiere configurar `ROULETTE_ADMIN_KEY` y luego crear un jugador de prueba desde el panel.
+- La Edge Function está activa y `ROULETTE_ADMIN_KEY` fue configurada por el administrador. La prueba funcional por HTTP desde un navegador todavía está pendiente; esta sesión validó la función transaccional directamente en PostgreSQL.
 
 ## Seguridad y arquitectura
 - La Publishable key se envía sólo en la cabecera `apikey`; no se usa como bearer token.
