@@ -842,7 +842,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, getDocs, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyDStVY2-PEgM5nezY9BLMxXlfl8pgXgCaM",
@@ -856,9 +856,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const functions = getFunctions(app, "us-central1");
-const rouletteStatusCall = httpsCallable(functions, "getRouletteStatus");
-const rouletteSpinCall = httpsCallable(functions, "spinRoulette");
+const SUPABASE_ROULETTE_URL = "https://yiznobpjkxsymqqazryr.supabase.co/functions/v1/roulette";
+const SUPABASE_PUBLISHABLE_KEY = "REEMPLAZAR_CON_SUPABASE_PUBLISHABLE_KEY";
+async function rouletteApi(action, payload){
+ const response=await fetch(SUPABASE_ROULETTE_URL,{method:"POST",headers:{"content-type":"application/json","apikey":SUPABASE_PUBLISHABLE_KEY,"authorization":"Bearer "+SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action,...payload})});
+ const data=await response.json();if(!response.ok)throw new Error(data.error||"No se pudo completar la operación.");return data;
+}
 let firebaseUser = null;
 let authReady = (async()=>{
   if(!auth.currentUser){
@@ -1295,7 +1298,7 @@ function rouletteCanHaveThird(spins){return spins.length===2 && spins.every(s=>s
 function rouletteBuildLabels(){} // Las etiquetas ya están impresas en la ilustración nueva.
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 function rouletteCredentials(){return {username:rouletteNormalizeName(document.getElementById('username')?.value||''),pin:(document.getElementById('roulettePin')?.value||'').trim()};}
-async function rouletteGetStatus(){const c=rouletteCredentials();if(!c.username||!c.pin)return null;await authReady;const r=await rouletteStatusCall(c);return r.data;}
+async function rouletteGetStatus(){const c=rouletteCredentials();if(!c.username||!c.pin)return null;return await rouletteApi("status",c);}
 async function rouletteRefresh(){
  const spinsLeft=document.getElementById('spinsLeft'),playerLabel=document.getElementById('playerLabel'),result=document.getElementById('rouletteResult'),btn=document.getElementById('spinBtn'),connection=document.getElementById('rouletteConnection');
  if(!spinsLeft||!playerLabel||!result||!btn)return;
@@ -1338,7 +1341,7 @@ async function rouletteSpin(){
  if(rouletteBusy)return;const c=rouletteCredentials();if(!c.username||!c.pin){alert('Ingresá tu usuario y el PIN que te entregó FREEHAND.');return;}
  rouletteBusy=true;const btn=document.getElementById('spinBtn'),resultBox=document.getElementById('rouletteResult');btn.disabled=true;btn.textContent='🎡 GIRANDO…';resultBox.textContent='La suerte está girando…';
  try{
-  await authReady;const response=await rouletteSpinCall(c);const data=response.data;const result=data.result;const spinNumber=data.spinNumber;
+  const data=await rouletteApi("spin",c);const result=data.result;const spinNumber=data.spinNumber;
   const sectors={none:[36,72,90,108,144,180,216,234,270,306,324,342],number:[0],b20:[18],b5:[54],b10:[252],b15:[198],t1000:[288],t3000:[126],t5000:[162]};
   const choices=sectors[result.key]||sectors.none;const sector=choices[Math.floor(Math.random()*choices.length)];const current=((rouletteRotation%360)+360)%360;const target=((360-sector)-current+360)%360;rouletteRotation+=360*(8+Math.floor(Math.random()*3))+target;
   const wheel=document.getElementById('rouletteWheel');wheel.style.transform=`rotate(${rouletteRotation}deg)`;
