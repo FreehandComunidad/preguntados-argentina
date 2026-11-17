@@ -1,9 +1,6 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { withSupabase } from "npm:@supabase/server@^1";
 
-const url = Deno.env.get("SUPABASE_URL")!;
-const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const adminSecret = Deno.env.get("ROULETTE_ADMIN_KEY")!;
-const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "content-type": "application/json", "access-control-allow-origin": "*",
@@ -51,7 +48,8 @@ function errorStatus(message: string) {
   return 400;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSupabase({ auth: "publishable" }, async (req, ctx) => {
+  const db = ctx.supabaseAdmin;
   if (req.method === "OPTIONS") return json({ ok: true });
   if (req.method !== "POST") return json({ error: "Método no permitido." }, 405);
   try {
@@ -137,4 +135,4 @@ Deno.serve(async (req) => {
     const message = String((e as Error)?.message || "Error interno.");
     return json({ error:message }, errorStatus(message));
   }
-});
+}));
