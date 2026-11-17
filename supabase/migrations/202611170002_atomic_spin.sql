@@ -21,7 +21,7 @@ begin
  if spin_no=3 then weights:=array[5000,1200,800,300,200,1700,600,150,50];
  else weights:=array[6000,2000,1000,200,100,500,150,40,10]; end if;
  loop
-  random_bytes:=gen_random_bytes(4);
+  random_bytes:=extensions.gen_random_bytes(4);
   random_value:=get_byte(random_bytes,0)::bigint*16777216+get_byte(random_bytes,1)::bigint*65536+get_byte(random_bytes,2)::bigint*256+get_byte(random_bytes,3)::bigint;
   exit when random_value<4294960000;
  end loop;
