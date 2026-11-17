@@ -19,10 +19,13 @@ const RESULTS = [
   { key: 't3000', label: '3.000 FICHAS', bonus: 0 },
   { key: 't5000', label: '5.000 FICHAS', bonus: 0 },
   { key: 'number', label: 'NÚMERO A ELECCIÓN PARA EL SORTEO DEL CUATRICICLO', bonus: 0 },
+  { key: 't50000', label: '50.000 FICHAS', bonus: 0 },
+  { key: 't100000', label: '100.000 FICHAS', bonus: 0 },
 ];
-// Enteros en diezmilésimas de porcentaje: suman exactamente 10.000 (=100%).
-const FIRST = [6000, 2000, 1000, 200, 100, 500, 150, 40, 10];
-const THIRD = [5000, 1200, 800, 300, 200, 1700, 600, 150, 50];
+// Pesos en unidades de 0,01%: cada tabla suma exactamente 10.000 (100%).
+// Los premios de 50.000 y 100.000 fichas tienen probabilidades de 0,05% y 0,01% por giro.
+const FIRST = [5994, 2000, 1000, 200, 100, 500, 150, 40, 10, 5, 1];
+const THIRD = [4994, 1200, 800, 300, 200, 1700, 600, 150, 50, 5, 1];
 
 function requireAuth(request) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Iniciá la sesión para jugar.');
@@ -131,7 +134,7 @@ exports.spinRoulette = onCall({ region: REGION }, async (request) => {
     const spinNumber = spins.length + 1;
     const result = pickResult(spinNumber === 3);
     const entry = { spinNumber, key: result.key, result: result.label, bonus: result.bonus, createdAt: new Date().toISOString() };
-    const fichas = result.key === 't1000' ? 1000 : result.key === 't3000' ? 3000 : result.key === 't5000' ? 5000 : 0;
+    const fichas = ({ t1000: 1000, t3000: 3000, t5000: 5000, t50000: 50000, t100000: 100000 })[result.key] || 0;
     const bonusPrizes = Array.isArray(player.bonusPrizes) ? [...player.bonusPrizes] : [];
     if (result.bonus > 0) bonusPrizes.push({ percent: result.bonus, cycleId: cycle.id, spinNumber, createdAt: new Date().toISOString() });
     const quadBikeNumbers = Number(player.quadBikeNumbers || 0) + (result.key === 'number' ? 1 : 0);
