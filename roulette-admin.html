@@ -1,7 +1,11 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06140d"><title>FREEHAND · Gestión de ruleta</title>
 <style>
-*{box-sizing:border-box}:root{--bg:#06140d;--card:#0a2417;--line:rgba(245,200,75,.22);--gold:#f5c84b;--neon:#57ff8a;--muted:#aebdb4;--red:#ef5b62}body{margin:0;min-height:100vh;background:radial-gradient(900px 420px at 50% -12%,rgba(25,102,57,.52),transparent 65%),linear-gradient(180deg,#06130c,#030906);color:#f8fbf8;font-family:Inter,system-ui,Arial}.wrap{max-width:1000px;margin:auto;padding:26px 16px 60px}header{text-align:center;margin-bottom:24px}h1{margin:0;color:var(--gold);font-size:clamp(24px,5vw,36px)}header p{color:var(--muted)}.card{border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#123320e8,#07160eea);padding:20px;margin:14px 0;box-shadow:0 16px 42px #0007}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}label{display:block;color:#d9e5dd;font-size:13px;font-weight:800;margin:12px 0 5px}input,select{width:100%;padding:13px;border:1px solid var(--line);background:#04100a;color:#fff;border-radius:12px;font-size:15px}button{border:0;border-radius:12px;padding:13px 16px;font-weight:900;background:linear-gradient(135deg,#ffe37a,#f5b82f);color:#171006;cursor:pointer;margin-top:12px}button.secondary{background:#143a25;color:#eaf7ed;border:1px solid var(--line)}button.danger{background:#5b1720;color:white}button:disabled{opacity:.5;cursor:not-allowed}.muted{color:var(--muted);font-size:13px}.status{padding:10px 12px;border-radius:12px;background:#ffffff0a;margin-top:12px;white-space:pre-wrap}.ok{color:var(--neon)}.err{color:#ff9b9b}.pin{font-size:26px;font-weight:1000;letter-spacing:5px;color:var(--gold);text-align:center;padding:16px;border:1px dashed var(--gold);border-radius:12px;margin-top:12px}.hidden{display:none}.players{display:grid;gap:8px}.player{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border-bottom:1px solid #ffffff12;padding:12px 0}.player strong{display:block}.player small{color:var(--muted)}.player button{margin:3px 0 3px 6px;padding:9px 11px;font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#163a25;border:1px solid var(--line);font-size:11px;color:var(--gold)}@media(max-width:520px){.player{grid-template-columns:1fr}.player-actions{display:flex;flex-wrap:wrap}.card{padding:16px}}
+*{box-sizing:border-box}:root{--bg:#06140d;--card:#0a2417;--line:rgba(245,200,75,.22);--gold:#f5c84b;--neon:#57ff8a;--muted:#aebdb4;--red:#ef5b62}body{margin:0;min-height:100vh;background:radial-gradient(900px 420px at 50% -12%,rgba(25,102,57,.52),transparent 65%),linear-gradient(180deg,#06130c,#030906);color:#f8fbf8;font-family:Inter,system-ui,Arial}.wrap{max-width:1000px;margin:auto;padding:26px 16px 60px}header{text-align:center;margin-bottom:24px}h1{margin:0;color:var(--gold);font-size:clamp(24px,5vw,36px)}header p{color:var(--muted)}.card{border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#123320e8,#07160eea);padding:20px;margin:14px 0;box-shadow:0 16px 42px #0007}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}label{display:block;color:#d9e5dd;font-size:13px;font-weight:800;margin:12px 0 5px}input,select{width:100%;padding:13px;border:1px solid var(--line);background:#04100a;color:#fff;border-radius:12px;font-size:15px}button{border:0;border-radius:12px;padding:13px 16px;font-weight:900;background:linear-gradient(135deg,#ffe37a,#f5b82f);color:#171006;cursor:pointer;margin-top:12px}button.secondary{background:#143a25;color:#eaf7ed;border:1px solid var(--line)}button.danger{background:#5b1720;color:white}button:disabled{opacity:.5;cursor:not-allowed}.muted{color:var(--muted);font-size:13px}.status{padding:10px 12px;border-radius:12px;background:#ffffff0a;margin-top:12px;white-space:pre-wrap}.ok{color:var(--neon)}.err{color:#ff9b9b}.pin{font-size:26px;font-weight:1000;letter-spacing:5px;color:var(--gold);text-align:center;padding:16px;border:1px dashed var(--gold);border-radius:12px;margin-top:12px}.hidden{display:none}.players{display:grid;gap:8px}.player{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border-bottom:1px solid #ffffff12;padding:12px 0}.player strong{display:block}.player small{color:var(--muted)}
+.player-bonuses{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bonus-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid rgba(245,200,75,.38);border-radius:999px;background:rgba(245,200,75,.09);color:#ffe18a;font-size:11px;font-weight:850;letter-spacing:.02em}
+.bonus-chip time{color:#b8c8bd;font-size:10px;font-weight:550;letter-spacing:0}
+.no-bonuses{display:block;margin-top:7px;color:#809188;font-size:11px}.player button{margin:3px 0 3px 6px;padding:9px 11px;font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#163a25;border:1px solid var(--line);font-size:11px;color:var(--gold)}@media(max-width:520px){.player{grid-template-columns:1fr}.player-actions{display:flex;flex-wrap:wrap}.card{padding:16px}}
 </style></head><body><div class="wrap"><header><h1>FREEHAND · GESTIÓN DE RULETA</h1><p>Panel privado de altas, oportunidades y control de jugadores</p></header>
 <section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Firebase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR AL PANEL</button><div class="status" id="loginStatus"></div></section>
 <main id="panel" class="hidden"><div class="grid"><section class="card"><h2>Crear jugador</h2><p class="muted">Creá el usuario y entregale su PIN por WhatsApp. El PIN se muestra una sola vez.</p><label for="newName">Nombre o usuario</label><input id="newName" maxlength="20" placeholder="Ej. jugador123"><button id="createBtn">CREAR JUGADOR Y GENERAR PIN</button><div id="createdResult" class="hidden"><div class="pin" id="newPin"></div><p class="muted" id="pinHelp"></p><button class="secondary" id="copyPinBtn">COPIAR PIN</button></div><div class="status" id="createStatus"></div></section>
@@ -46,7 +50,52 @@ byId('createBtn').onclick=async()=>{try{const r=(await call('adminCreatePlayer')
 byId('copyPinBtn').onclick=async()=>{await navigator.clipboard.writeText(byId('newPin').textContent);status('createStatus','PIN copiado.',true);};
 async function grant(which){try{const name=val('grantName'),count=which==='adminApproveLoad'?1:Number(val('grantCount'));const r=(await call(which)(adminArgs({username:name,count}))).data;status('grantStatus',`${which==='adminApproveLoad'?'Carga aprobada':'Oportunidad regalada'} para ${r.username}. Ciclos en espera: ${r.queuedCycles}.`,true);await refresh();}catch(e){status('grantStatus',e.message||'No se pudo habilitar.');}}
 byId('approveBtn').onclick=()=>grant('adminApproveLoad');byId('giftBtn').onclick=()=>grant('adminGrantCycles');
-async function refresh(){try{const r=(await call('adminListPlayers')(adminArgs())).data;const box=byId('players');if(!r.players.length){box.textContent='No hay jugadores registrados.';return;}box.innerHTML='';for(const p of r.players){const row=document.createElement('div');row.className='player';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=p.username;const small=document.createElement('small');small.textContent=`${p.active?'Oportunidad activa':'Sin oportunidad activa'} · ${p.spinsLeft} tiros · ${p.queuedCycles} en espera · ${Number(p.fichasBalance||0).toLocaleString('es-AR')} fichas · ${p.bonusCount||0} bonos${p.thirdAvailable?' · Tiro especial desbloqueado':''}`;info.append(strong,small);const actions=document.createElement('div');actions.className='player-actions';const b=document.createElement('button');b.className='secondary';b.textContent='HABILITAR 1';b.onclick=()=>{byId('grantName').value=p.username;byId('grantCount').value='1';grant('adminGrantCycles');};const c=document.createElement('button');c.className='secondary';c.textContent='APROBAR CARGA';c.onclick=()=>{byId('grantName').value=p.username;byId('grantCount').value='1';grant('adminApproveLoad');};actions.append(b,c);row.append(info,actions);box.append(row);}}catch(e){byId('players').textContent=e.message||'No se pudo cargar la lista.';}}
+async function refresh(){
+ try{
+  const r=(await call('adminListPlayers')(adminArgs())).data;
+  const box=byId('players');
+  if(!r.players.length){box.textContent='No hay jugadores registrados.';return;}
+  box.innerHTML='';
+  for(const p of r.players){
+   const row=document.createElement('div');row.className='player';
+   const info=document.createElement('div');
+   const strong=document.createElement('strong');strong.textContent=p.username;
+   const small=document.createElement('small');
+   const bonuses=Array.isArray(p.bonusPrizes)?p.bonusPrizes:[];
+   small.textContent=(p.active?'Oportunidad activa':'Sin oportunidad activa')+' · '+p.spinsLeft+' tiros · '+p.queuedCycles+' en espera · '+Number(p.fichasBalance||0).toLocaleString('es-AR')+' fichas · '+(bonuses.length||p.bonusCount||0)+' bonos'+(p.thirdAvailable?' · Tiro especial desbloqueado':'');
+   info.append(strong,small);
+   if(bonuses.length){
+    const bonusList=document.createElement('div');bonusList.className='player-bonuses';
+    bonuses.forEach(bonus=>{
+     const chip=document.createElement('span');chip.className='bonus-chip';
+     const percent=Math.max(0,Math.min(100,Number(bonus.percent)||0));
+     const spin=Number(bonus.spinNumber)||0;
+     chip.append(document.createTextNode('BONUS '+percent+'%'+(spin?' · TIRO '+spin:'')));
+     if(bonus.createdAt){
+      const date=new Date(bonus.createdAt);
+      if(!Number.isNaN(date.getTime())){
+       const time=document.createElement('time');
+       time.dateTime=date.toISOString();
+       time.textContent=date.toLocaleDateString('es-AR');
+       chip.append(time);
+      }
+     }
+     bonusList.append(chip);
+    });
+    info.append(bonusList);
+   }else{
+    const none=document.createElement('span');none.className='no-bonuses';none.textContent='Todavía no obtuvo bonos.';
+    info.append(none);
+   }
+   const actions=document.createElement('div');actions.className='player-actions';
+   const b=document.createElement('button');b.className='secondary';b.textContent='HABILITAR 1';
+   b.onclick=()=>{byId('grantName').value=p.username;byId('grantCount').value='1';grant('adminGrantCycles');};
+   const c=document.createElement('button');c.className='secondary';c.textContent='APROBAR CARGA';
+   c.onclick=()=>{byId('grantName').value=p.username;byId('grantCount').value='1';grant('adminApproveLoad');};
+   actions.append(b,c);row.append(info,actions);box.append(row);
+  }
+ }catch(e){byId('players').textContent=e.message||'No se pudo cargar la lista.';}
+}
 byId('refreshBtn').onclick=refresh;
 byId('resetPinBtn').onclick=async()=>{try{const r=(await call('adminResetPin')(adminArgs({username:val('resetName')}))).data;byId('resetResult').textContent='Nuevo PIN para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).'; }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}};
 byId('logoutBtn').onclick=()=>{adminKey='';byId('adminKey').value='';byId('panel').classList.add('hidden');byId('loginCard').classList.remove('hidden');status('loginStatus','Sesión administrativa cerrada.',true);};
