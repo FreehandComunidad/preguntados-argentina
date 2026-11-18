@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350" role="img" aria-labelledby="title desc">
+<title id="title">Premios que podés ganar en la ruleta FREEHAND</title>
+<desc id="desc">Diez premios numerados: 100.000 fichas, 50.000 fichas, 5.000 fichas, 3.000 fichas, 1.000 fichas, bonus 20%, 15%, 10%, 5% y número a elección para el sorteo del cuatriciclo.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071d11"/><stop offset=".55" stop-color="#031008"/><stop offset="1" stop-color="#06170d"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0ad"/><stop offset=".25" stop-color="#dcae45"/><stop offset=".62" stop-color="#8d5c18"/><stop offset="1" stop-color="#ffe49a"/></linearGradient>
+ <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#123d25"/><stop offset="1" stop-color="#06180e"/></linearGradient>
+ <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e5aaff"/><stop offset=".5" stop-color="#a34bd2"/><stop offset="1" stop-color="#59257b"/></linearGradient>
+ <linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a0ffb6"/><stop offset=".48" stop-color="#27d968"/><stop offset="1" stop-color="#087139"/></linearGradient>
+ <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffb8e3"/><stop offset=".5" stop-color="#db4b9d"/><stop offset="1" stop-color="#852359"/></linearGradient>
+ <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a8f4ff"/><stop offset=".5" stop-color="#40aecd"/><stop offset="1" stop-color="#17617b"/></linearGradient>
+ <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe2a1"/><stop offset=".5" stop-color="#e49a36"/><stop offset="1" stop-color="#925017"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-25%" width="140%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="8"/><feOffset dy="7"/><feComponentTransfer><feFuncA type="linear" slope=".35"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <pattern id="lines" width="100" height="100" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)"><path d="M0 0V100" stroke="#27e96c" stroke-opacity=".055" stroke-width="3"/></pattern>
+</defs>
+<rect width="1080" height="1350" rx="54" fill="url(#bg)"/>
+<rect width="1080" height="1350" rx="54" fill="url(#lines)"/>
+<rect x="23" y="23" width="1034" height="1304" rx="42" fill="none" stroke="url(#gold)" stroke-width="5"/>
+<rect x="39" y="39" width="1002" height="1272" rx="34" fill="none" stroke="#fff0b0" stroke-opacity=".34" stroke-width="1.5"/>
+<g fill="#36f17b" stroke="#c4ffd5" stroke-width="3">
+ <circle cx="145" cy="125" r="21"/><circle cx="182" cy="125" r="21"/><circle cx="145" cy="162" r="21"/><circle cx="182" cy="162" r="21"/>
+ <circle cx="898" cy="125" r="21"/><circle cx="935" cy="125" r="21"/><circle cx="898" cy="162" r="21"/><circle cx="935" cy="162" r="21"/>
+</g>
+<g stroke="#31e875" stroke-width="5" fill="none" stroke-linecap="round"><path d="M163 158l25 45"/><path d="M916 158l-25 45"/></g>
+<text x="540" y="119" fill="url(#gold)" stroke="#68430e" stroke-width="1.5" paint-order="stroke" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="900" text-anchor="middle" letter-spacing="2">FREEHAND</text>
+<text x="540" y="166" fill="#f6fbf7" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="800" text-anchor="middle" letter-spacing="7">COMUNIDAD</text>
+<path d="M300 194H780" stroke="#26dc6c" stroke-width="3" stroke-linecap="round"/>
+<rect x="78" y="219" width="924" height="104" rx="27" fill="url(#plate)" stroke="url(#gold)" stroke-width="3"/>
+<rect x="88" y="229" width="904" height="84" rx="21" fill="none" stroke="#50f28a" stroke-opacity=".38" stroke-width="2"/>
+<text x="540" y="279" fill="#fff3d5" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="37" text-anchor="middle">PREMIOS QUE PODÉS GANAR</text>
+<text x="540" y="303" fill="#9de8b7" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="1.5">CONOCÉ LOS PREMIOS DE LA RULETA FREEHAND</text>
+<g filter="url(#shadow)">
+ <rect x="70" y="355" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="556" y="355" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="70" y="526" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="556" y="526" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="70" y="697" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="556" y="697" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="70" y="868" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="556" y="868" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="70" y="1039" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="556" y="1039" width="454" height="151" rx="24" fill="#06190f" stroke="url(#gold)" stroke-width="3"/>
+</g>
+<g fill="none" stroke-width="8" stroke-linecap="round">
+ <path d="M88 379V482" stroke="#ffc94e"/><path d="M574 379V482" stroke="url(#purple)"/>
+ <path d="M88 550V653" stroke="url(#green)"/><path d="M574 550V653" stroke="url(#green)"/>
+ <path d="M88 721V824" stroke="url(#green)"/><path d="M574 721V824" stroke="url(#pink)"/>
+ <path d="M88 892V995" stroke="url(#purple)"/><path d="M574 892V995" stroke="url(#blue)"/>
+ <path d="M88 1063V1166" stroke="url(#orange)"/><path d="M574 1063V1166" stroke="url(#blue)"/>
+</g>
+<g fill="#092415" stroke-width="3">
+ <circle cx="139" cy="430" r="31" stroke="#ffc94e"/><circle cx="625" cy="430" r="31" stroke="#c88cff"/>
+ <circle cx="139" cy="601" r="31" stroke="#42f58a"/><circle cx="625" cy="601" r="31" stroke="#42f58a"/>
+ <circle cx="139" cy="772" r="31" stroke="#42f58a"/><circle cx="625" cy="772" r="31" stroke="#ed77c2"/>
+ <circle cx="139" cy="943" r="31" stroke="#c88cff"/><circle cx="625" cy="943" r="31" stroke="#69dafa"/>
+ <circle cx="139" cy="1114" r="31" stroke="#ffbe54"/><circle cx="625" cy="1114" r="31" stroke="#69dafa"/>
+</g>
+<g font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="900" text-anchor="middle">
+ <g fill="#ffc94e"><text x="139" y="437">01</text></g><g fill="#d8a4ff"><text x="625" y="437">02</text></g>
+ <g fill="#65ff9f"><text x="139" y="608">03</text><text x="625" y="608">04</text><text x="139" y="779">05</text></g>
+ <g fill="#ff91d0"><text x="625" y="779">06</text></g><g fill="#d6a6ff"><text x="139" y="950">07</text></g>
+ <g fill="#75dffc"><text x="625" y="950">08</text><text x="625" y="1121">10</text></g><g fill="#ffc45d"><text x="139" y="1121">09</text></g>
+</g>
+<g font-family="Arial,Helvetica,sans-serif" font-weight="900">
+ <text x="190" y="421" fill="#ffd66e" font-size="43">100.000</text><text x="190" y="460" fill="#f7fbf8" font-size="24">FICHAS</text>
+ <text x="676" y="421" fill="#d8a4ff" font-size="43">50.000</text><text x="676" y="460" fill="#f7fbf8" font-size="24">FICHAS</text>
+ <text x="190" y="592" fill="#72f6a2" font-size="43">5.000</text><text x="190" y="631" fill="#f7fbf8" font-size="24">FICHAS</text>
+ <text x="676" y="592" fill="#72f6a2" font-size="43">3.000</text><text x="676" y="631" fill="#f7fbf8" font-size="24">FICHAS</text>
+ <text x="190" y="763" fill="#72f6a2" font-size="43">1.000</text><text x="190" y="802" fill="#f7fbf8" font-size="24">FICHAS</text>
+ <text x="676" y="756" fill="#f6f7f4" font-size="24">BONUS</text><text x="676" y="806" fill="#ff91d0" font-size="43">20%</text>
+ <text x="190" y="927" fill="#f6f7f4" font-size="24">BONUS</text><text x="190" y="977" fill="#d6a6ff" font-size="43">15%</text>
+ <text x="676" y="927" fill="#f6f7f4" font-size="24">BONUS</text><text x="676" y="977" fill="#75dffc" font-size="43">10%</text>
+ <text x="190" y="1098" fill="#f6f7f4" font-size="24">BONUS</text><text x="190" y="1148" fill="#ffc45d" font-size="43">5%</text>
+ <text x="676" y="1097" fill="#f6f7f4" font-size="23">NÚMERO A ELECCIÓN</text><text x="676" y="1135" fill="#75dffc" font-size="17">PARA EL SORTEO DEL</text><text x="676" y="1162" fill="#75dffc" font-size="17">CUATRICICLO</text>
+</g>
+<rect x="130" y="1223" width="820" height="77" rx="24" fill="url(#plate)" stroke="url(#gold)" stroke-width="2.5"/>
+<text x="540" y="1256" fill="#edf7ef" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="900" text-anchor="middle">LOS PREMIOS SE DEFINEN AL GIRAR LA RULETA</text>
+<text x="540" y="1282" fill="#9bbca5" font-family="Arial,Helvetica,sans-serif" font-size="14" text-anchor="middle">Cada giro tiene sus propias probabilidades.</text>
+</svg>
