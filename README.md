@@ -121,7 +121,6 @@ El contador se empezó a registrar el 19/11/2026. Se conservaron dos aprobacione
 ## Mejoras externas pendientes de conexión
 
 - Migración de alojamiento a Cloudflare Pages: requiere conectar la cuenta Cloudflare con GitHub y autorizar este repositorio. GitHub Pages sigue siendo el alojamiento actual.
-- Cloudflare Web Analytics, Turnstile y PostHog: necesitan crear proyectos/widgets y guardar sus claves en la cuenta correspondiente; Turnstile requiere validación del token también en servidor.
 - Turnstile: el widget y la validación en servidor requieren crear la cuenta/widget y guardar el `sitekey` y el secreto en Supabase Edge Function Secrets.
 - Web Analytics y PostHog: requieren activar un proyecto y sus identificadores/tokens. No se registran PIN, contraseñas ni claves con herramientas analíticas.
 - Copias de seguridad programadas y prueba de restauración: requieren definir un destino seguro y credenciales de almacenamiento.
