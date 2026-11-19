@@ -29,11 +29,53 @@ function randomPin() {
   do { crypto.getRandomValues(a); } while (a[0] >= limit);
   return String(a[0] % range).padStart(4, "0");
 }
-function requireAdmin(req: Request) {
-  const supplied = req.headers.get("x-admin-key") || "";
-  if (!adminSecret || supplied.length !== adminSecret.length) throw new Error("Clave de administración incorrecta.");
-  let diff = 0; for (let i=0;i<supplied.length;i++) diff |= supplied.charCodeAt(i) ^ adminSecret.charCodeAt(i);
-  if (diff) throw new Error("Clave de administración incorrecta.");
+function constantTimeEqual(left:string,right:string){
+  if(left.length!==right.length)return false;
+  let diff=0;for(let i=0;i<left.length;i++)diff|=left.charCodeAt(i)^right.charCodeAt(i);
+  return diff===0;
+}
+function randomHex(bytesLength:number){
+  const bytes=new Uint8Array(bytesLength);crypto.getRandomValues(bytes);
+  return [...bytes].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+async function passwordDigest(password:string,saltHex:string){
+  const salt=new Uint8Array(saltHex.match(/.{2}/g)?.map(x=>parseInt(x,16))||[]);
+  const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:120000,hash:"SHA-256"},key,256);
+  return [...new Uint8Array(bits)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+async function requireAdmin(req: Request,db:any){
+  const supplied=req.headers.get("x-admin-key")||"";
+  if(adminSecret&&constantTimeEqual(supplied,adminSecret)){
+    return {role:"owner",username:"Administrador principal",userId:null,isMaster:true,tokenHash:null};
+  }
+  if(!supplied||supplied.length>256)throw new Error("ADMIN_SESSION_INVALID");
+  const tokenHash=await hash(supplied);
+  const {data:session,error:sessionError}=await db.from("roulette_admin_sessions")
+    .select("admin_user_id").eq("token_hash",tokenHash).is("revoked_at",null)
+    .gt("expires_at",new Date().toISOString()).maybeSingle();
+  if(sessionError)throw sessionError;
+  if(!session)throw new Error("ADMIN_SESSION_INVALID");
+  const {data:user,error:userError}=await db.from("roulette_admin_users")
+    .select("id,username,role,is_active").eq("id",session.admin_user_id).maybeSingle();
+  if(userError)throw userError;
+  if(!user||!user.is_active)throw new Error("ADMIN_SESSION_INVALID");
+  const {error:updateError}=await db.from("roulette_admin_sessions")
+    .update({last_used_at:new Date().toISOString()}).eq("token_hash",tokenHash);
+  if(updateError)throw updateError;
+  return {role:user.role,username:user.username,userId:user.id,isMaster:false,tokenHash};
+}
+const ADMIN_READ_ONLY_ACTIONS=new Set([
+  "adminListPlayers","adminListPrizes","adminListPrizeEvents","adminGetPlayerProfile",
+  "adminListCatalog","adminGetReports","adminListNotifications","adminListAdminUsers"
+]);
+const ADMIN_OWNER_ONLY_ACTIONS=new Set([
+  "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminCancelLoad",
+  "adminCreateAdminUser","adminUpdateAdminUser","adminListAdminUsers"
+]);
+function authorizeAdminAction(action:string,identity:any){
+  if(identity.role==="auditor"&&!ADMIN_READ_ONLY_ACTIONS.has(action)&&action!=="adminLogout")throw new Error("ADMIN_FORBIDDEN");
+  if(identity.role==="operator"&&ADMIN_OWNER_ONLY_ACTIONS.has(action))throw new Error("ADMIN_FORBIDDEN");
 }
 async function playerCredentials(body: any) {
   const username = nameOf(body.username), pin = String(body.pin || "").trim();
@@ -43,7 +85,8 @@ async function playerCredentials(body: any) {
 }
 function errorStatus(message: string) {
   if (message.includes("PLAYER_NOT_FOUND") || message.includes("BONUS_NOT_FOUND")) return 404;
-  if (message.includes("INVALID_CREDENTIALS")) return 403;
+  if (message.includes("INVALID_CREDENTIALS") || message.includes("ADMIN_INVALID_CREDENTIALS") ||
+      message.includes("ADMIN_SESSION_INVALID") || message.includes("ADMIN_FORBIDDEN")) return 403;
   if (message.includes("NO_ACTIVE_CYCLE") || message.includes("CYCLE_FINISHED") ||
       message.includes("NO_CANCELLABLE_LOAD")) return 409;
   return 400;
@@ -55,7 +98,32 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
   try {
     const body = await req.json();
     const action = String(body.action || "");
-    if (action.startsWith("admin")) requireAdmin(req);
+    let adminContext:any=null;
+
+    if(action==="adminLogin"){
+      const username=String(body.username||"").trim().toLowerCase();
+      const password=String(body.password||"");
+      if(!/^[a-z0-9._-]{3,30}$/.test(username)||password.length<10||password.length>128)return json({error:"ADMIN_INVALID_CREDENTIALS"},403);
+      const {data:user,error:userError}=await db.from("roulette_admin_users")
+        .select("id,username,password_salt,password_hash,role,is_active")
+        .eq("username",username).maybeSingle();
+      if(userError)throw userError;
+      if(!user||!user.is_active)return json({error:"ADMIN_INVALID_CREDENTIALS"},403);
+      const candidate=await passwordDigest(password,user.password_salt);
+      if(!constantTimeEqual(candidate,user.password_hash))return json({error:"ADMIN_INVALID_CREDENTIALS"},403);
+      const token=randomHex(32),tokenHash=await hash(token);
+      const expiresAt=new Date(Date.now()+12*60*60*1000).toISOString();
+      const {error:sessionInsertError}=await db.from("roulette_admin_sessions").insert({token_hash:tokenHash,admin_user_id:user.id,expires_at:expiresAt});
+      if(sessionInsertError)throw sessionInsertError;
+      const {error:loginUpdateError}=await db.from("roulette_admin_users").update({last_login_at:new Date().toISOString()}).eq("id",user.id);
+      if(loginUpdateError)throw loginUpdateError;
+      return json({token,username:user.username,role:user.role,expiresAt});
+    }
+
+    if(action.startsWith("admin")){
+      adminContext=await requireAdmin(req,db);
+      authorizeAdminAction(action,adminContext);
+    }
 
     if (action === "status") {
       const c = await playerCredentials(body);
@@ -136,6 +204,61 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
         }
       }
       return json(data);
+    }
+
+    if(action==="adminListAdminUsers"){
+      const {data,error}=await db.from("roulette_admin_users")
+        .select("id,username,role,is_active,created_by,created_at,last_login_at")
+        .order("created_at",{ascending:false}).limit(100);
+      if(error)throw error;
+      return json({users:data||[]});
+    }
+
+    if(action==="adminCreateAdminUser"){
+      const username=String(body.username||"").trim().toLowerCase();
+      const password=String(body.password||"");
+      const role=String(body.role||"operator");
+      if(!/^[a-z0-9._-]{3,30}$/.test(username))throw new Error("El usuario administrativo debe tener entre 3 y 30 caracteres (letras, números, punto, guion o guion bajo).");
+      if(password.length<10||password.length>128)throw new Error("La contraseña debe tener entre 10 y 128 caracteres.");
+      if(!["owner","operator","auditor"].includes(role))throw new Error("El rol administrativo no es válido.");
+      const salt=randomHex(16),passwordHash=await passwordDigest(password,salt);
+      const {data,error}=await db.from("roulette_admin_users")
+        .insert({username,password_salt:salt,password_hash:passwordHash,role,is_active:true,created_by:adminContext.username})
+        .select("id,username,role,is_active,created_at").single();
+      if(error){
+        if(String(error.message||"").includes("duplicate key"))throw new Error("Ya existe una cuenta administrativa con ese usuario.");
+        throw error;
+      }
+      return json({user:data});
+    }
+
+    if(action==="adminUpdateAdminUser"){
+      const userId=String(body.userId||"").trim();
+      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId))throw new Error("No se pudo identificar la cuenta administrativa.");
+      const role=String(body.role||"");
+      const isActive=body.isActive===true;
+      if(!["owner","operator","auditor"].includes(role))throw new Error("El rol administrativo no es válido.");
+      if(adminContext.userId===userId&&(!isActive||role!=="owner"))throw new Error("No podés quitarte a vos mismo el acceso de propietario. Usá otra cuenta propietaria.");
+      const update:any={role,is_active:isActive,updated_at:new Date().toISOString()};
+      if(body.password){
+        const password=String(body.password);
+        if(password.length<10||password.length>128)throw new Error("La nueva contraseña debe tener entre 10 y 128 caracteres.");
+        const salt=randomHex(16);update.password_salt=salt;update.password_hash=await passwordDigest(password,salt);
+      }
+      const {data,error}=await db.from("roulette_admin_users").update(update).eq("id",userId).select("id,username,role,is_active").maybeSingle();
+      if(error)throw error;
+      if(!data)throw new Error("ADMIN_USER_NOT_FOUND");
+      const {error:revokeError}=await db.from("roulette_admin_sessions").update({revoked_at:new Date().toISOString()}).eq("admin_user_id",userId).is("revoked_at",null);
+      if(revokeError)throw revokeError;
+      return json({user:data,sessionsRevoked:true});
+    }
+
+    if(action==="adminLogout"){
+      if(adminContext.tokenHash){
+        const {error}=await db.from("roulette_admin_sessions").update({revoked_at:new Date().toISOString()}).eq("token_hash",adminContext.tokenHash);
+        if(error)throw error;
+      }
+      return json({ok:true});
     }
 
     if (action === "adminGetPlayerProfile") {
