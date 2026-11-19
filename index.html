@@ -759,7 +759,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 <p class="small">Tus tiros son habilitados por FREEHAND. Si los dos primeros son SIN PREMIO, se activa un tiro extra especial.</p>
 <img id="roulettePrizeGuide" src="./assets/freehand-prize-guide.svg?v=1" alt="Premios FREEHAND numerados: 100.000 fichas, 50.000 fichas, 5.000 fichas, 3.000 fichas, 1.000 fichas, bonus 20%, bonus 15%, bonus 10%, bonus 5% y número a elección para el sorteo del cuatriciclo." loading="eager" fetchpriority="high" decoding="async" style="display:block;width:100%;max-width:420px;height:auto;margin:12px auto 18px;border:1px solid rgba(245,200,75,.32);border-radius:18px;box-shadow:0 9px 28px rgba(0,0,0,.28);">
 <input id="username" maxlength="20" autocomplete="nickname" placeholder="Tu nombre de usuario">
-<input id="roulettePin" maxlength="8" inputmode="numeric" autocomplete="one-time-code" placeholder="Tu PIN de acceso">
+<input id="roulettePin" maxlength="8" minlength="4" inputmode="numeric" pattern="[0-9]{4}|[0-9]{8}" autocomplete="one-time-code" placeholder="PIN de acceso (4 dígitos; cuentas anteriores: 8)">
 <div class="roulette-wrap">
   <div class="roulette-stage" aria-label="Ruleta de premios">
     <div class="roulette-pointer" aria-hidden="true"></div>

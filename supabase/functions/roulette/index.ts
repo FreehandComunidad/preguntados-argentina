@@ -23,11 +23,11 @@ async function hash(value: string) {
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 function randomPin() {
-  const range = 90000000;
+  const range = 10000;
   const limit = Math.floor(0x100000000 / range) * range;
   const a = new Uint32Array(1);
   do { crypto.getRandomValues(a); } while (a[0] >= limit);
-  return String(10000000 + (a[0] % range));
+  return String(a[0] % range).padStart(4, "0");
 }
 function requireAdmin(req: Request) {
   const supplied = req.headers.get("x-admin-key") || "";
@@ -37,7 +37,7 @@ function requireAdmin(req: Request) {
 }
 async function playerCredentials(body: any) {
   const username = nameOf(body.username), pin = String(body.pin || "").trim();
-  if (!/^\d{8}$/.test(pin)) throw new Error("El PIN debe tener 8 números.");
+  if (!/^(?:\d{4}|\d{8})$/.test(pin)) throw new Error("El PIN debe tener 4 números (o 8 para cuentas anteriores).");
   const id = slugOf(username);
   return { username, id, pinHash: await hash(id + ":" + pin) };
 }
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 8,
+      version: 13,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });

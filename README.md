@@ -75,7 +75,7 @@ Los premios grandes tienen probabilidades muy bajas en cada giro: 50.000 fichas 
 
 - Los datos existentes de jugadores y giros permanecen en Supabase.
 - RLS continúa habilitado en las dos tablas de ruleta; el acceso se realiza por la Edge Function con credenciales de servidor.
-- El PIN tiene 8 dígitos y se guarda como hash. Cinco intentos fallidos bloquean el PIN durante 15 minutos.
+- Los PIN nuevos y los PIN restablecidos tienen 4 dígitos y se guardan como hash. Por compatibilidad, los usuarios existentes pueden seguir usando su PIN anterior de 8 dígitos hasta que el administrador lo restablezca. Cinco intentos fallidos bloquean el PIN durante 15 minutos.
 
 
 ## Cargas aprobadas por usuario
