@@ -167,7 +167,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
         db.from("roulette_spins").select("id,spin_number,prize_key,result,bonus_percent,created_at")
           .eq("player_id",c.id).order("created_at",{ascending:false}).limit(40),
         db.from("roulette_prize_catalog").select("prize_key,label,prize_type,fichas_amount,bonus_percent,image_url,sort_order")
-          .eq("is_active",true).order("sort_order",{ascending:true})
+          .eq("is_active",true).order("sort_order",{ascending:true}).order("prize_key",{ascending:true})
       ]);
       if(spinHistoryResult.error)throw spinHistoryResult.error;
       if(catalogResult.error)throw catalogResult.error;
@@ -309,7 +309,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
     }
 
     if (action === "adminListCatalog") {
-      const {data,error}=await db.from("roulette_prize_catalog").select("*").order("sort_order",{ascending:true});
+      const {data,error}=await db.from("roulette_prize_catalog").select("*").order("sort_order",{ascending:true}).order("prize_key",{ascending:true});
       if(error)throw error;
       return json({items:data||[]});
     }
@@ -350,7 +350,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       const totalThird=active.reduce((sum:number,item:any)=>sum+item.probability_third,0);
       if(totalFirst!==10000||totalThird!==10000)throw new Error("Las probabilidades activas deben sumar exactamente 100,00% en los dos tipos de giro.");
       if(!active.some((item:any)=>item.prize_type==="none"))throw new Error("Debe quedar al menos un resultado SIN PREMIO activo.");
-      const {data,error}=await db.from("roulette_prize_catalog").upsert(clean,{onConflict:"prize_key"}).select("*").order("sort_order",{ascending:true});
+      const {data,error}=await db.from("roulette_prize_catalog").upsert(clean,{onConflict:"prize_key"}).select("*").order("sort_order",{ascending:true}).order("prize_key",{ascending:true});
       if(error)throw error;
       return json({items:data||[],probabilityFirst:totalFirst,probabilityThird:totalThird});
     }
@@ -586,7 +586,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 24,
+      version: 25,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });
