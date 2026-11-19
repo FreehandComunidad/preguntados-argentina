@@ -685,33 +685,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 }
 @media(max-width:360px){.quick-rail button{font-size:10.5px!important;padding-left:4px!important;padding-right:4px!important}.roulette-stage{width:82vw}}
 </style>
-<style id="freehand-feature-lock">#game,#board{display:none!important}.level-deck,#status,#boardBtn,.deck-scroll-hint,.decor,.note{display:none!important}</style><style id="freehand-roulette-label-fix">
-/* V6 — etiquetas radiales: cada premio sale desde el centro hacia el borde,
-   con separación y sin amontonarse. Solo modifica la presentación de los textos. */
-.roulette-label span{
-  left:50%!important;
-  top:17%!important;
-  width:18%!important;
-  min-width:0!important;
-  max-width:72px!important;
-  padding:0!important;
-  text-align:center!important;
-  white-space:pre-line!important;
-  font-size:8px!important;
-  line-height:1.05!important;
-  letter-spacing:.35px!important;
-  transform:translateX(-50%) rotate(-90deg)!important;
-  transform-origin:50% 50%!important;
-}
-.roulette-label.prize span{font-size:9px!important;font-weight:1000!important}
-.roulette-label.b20 span{font-size:9.5px!important}
-@media(max-width:520px){
-  .roulette-label span{top:18%!important;width:17%!important;font-size:7px!important;line-height:1.05!important}
-  .roulette-label.prize span{font-size:7.8px!important}
-  .roulette-label.b20 span{font-size:8.2px!important}
-}
-</style>
-<style id="freehand-roulette-motion-fix">
+<style id="freehand-feature-lock">#game,#board{display:none!important}.level-deck,#status,#boardBtn,.deck-scroll-hint,.decor,.note{display:none!important}</style><style id="freehand-roulette-motion-fix">
 /* FIX PUNTUAL: la ruleta debe conservar su transición aunque el dispositivo tenga reduced-motion.
    No modifica colores, tamaños, layout ni lógica de premios. */
 #rouletteWheel{
@@ -721,19 +695,29 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 </style>
 
 <style id="freehand-wheel-sharp-v2">
-/* Ruleta vectorial nítida: sin blur, sombras difusas ni texto rasterizado. */
-.roulette-wrap{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important}
-.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important;aspect-ratio:1/1!important;filter:none!important;isolation:isolate}
+/* Ruleta dinámica: sectores, etiquetas y premios nacen del mismo catálogo del servidor. */
+.roulette-wrap{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:14px!important}
+.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important;aspect-ratio:1/1!important;filter:drop-shadow(0 18px 34px rgba(0,0,0,.42))!important;isolation:isolate}
 .roulette-stage:before{display:none!important;content:none!important;filter:none!important}
-.roulette-ring{position:absolute!important;inset:0!important;padding:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important}
-.roulette-wheel{width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;background-color:transparent!important;background-image:url("./assets/roulette-wheel-sharp.svg?v=4")!important;background-position:center!important;background-size:100% 100%!important;background-repeat:no-repeat!important;image-rendering:auto!important}
+.roulette-ring{position:absolute!important;inset:0!important;padding:10px!important;border-radius:50%!important;background:linear-gradient(145deg,#fff0a5 0%,#b77818 18%,#f5d16d 38%,#986018 61%,#ffe98f 82%,#9f6a19 100%)!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.32),0 0 0 7px #07140d,0 0 0 9px rgba(240,203,112,.25),0 0 28px rgba(27,196,93,.12)!important}
+.roulette-wheel{position:relative!important;width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;border:2px solid #ffe6a0!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.10),inset 0 0 24px rgba(0,0,0,.24)!important;image-rendering:auto!important}
 .roulette-wheel:before{display:none!important;content:none!important}
-.roulette-hub{position:absolute!important;z-index:6!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;width:29%!important;height:29%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;box-sizing:border-box!important;border-radius:50%!important;background:linear-gradient(145deg,#123c25 0%,#07180f 58%,#020906 100%)!important;border:3px solid #f5d27a!important;box-shadow:0 0 0 5px #07140d,inset 0 0 0 1px #ffffff35!important;color:#fff7dd!important;font-family:Arial,Helvetica,sans-serif!important;font-size:clamp(10px,3.2vw,14px)!important;font-weight:900!important;letter-spacing:.8px!important;line-height:1.05!important;text-align:center!important;text-shadow:none!important;filter:none!important}
-.roulette-hub:before{content:"☘"!important;display:block!important;color:#5cff8e!important;font-size:clamp(19px,5vw,27px)!important;line-height:.85!important;text-shadow:none!important}
-.roulette-hub small{display:block!important;color:#eadca9!important;font-size:8px!important;letter-spacing:2px!important;margin:0!important;text-shadow:none!important}
-.roulette-pointer{filter:none!important;border-left-width:17px!important;border-right-width:17px!important;border-bottom:34px solid #ffe08a!important}
-.roulette-pointer:after{box-shadow:none!important;background:#fff1b4!important}
-@media(max-width:520px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important}}
+.roulette-label{position:absolute!important;inset:0!important;z-index:2!important;display:block!important;pointer-events:none!important;transform-origin:50% 50%!important}
+.roulette-label span{position:absolute!important;left:50%!important;top:16%!important;width:22%!important;max-width:78px!important;min-width:0!important;padding:0!important;transform:translateX(-50%)!important;transform-origin:50% 50%!important;text-align:center!important;white-space:pre-line!important;font-family:Arial,Helvetica,sans-serif!important;font-size:clamp(7px,2.25vw,10px)!important;line-height:1.1!important;letter-spacing:.1px!important;font-weight:900!important;color:#f5fff7!important;text-shadow:0 1px 3px #000,0 0 7px rgba(0,0,0,.55)!important}
+.roulette-label span:before{display:none!important;content:none!important}
+.roulette-label.prize span{color:#fff3c4!important;text-shadow:0 1px 3px #000,0 0 8px rgba(255,211,77,.26)!important}
+.roulette-label.b5 span{color:#d8ffe4!important}
+.roulette-label.b10 span{color:#fff0ad!important}
+.roulette-label.b15 span{color:#ffe1a9!important}
+.roulette-label.b20 span{color:#fff8dd!important;font-size:clamp(8px,2.45vw,10.5px)!important}
+.roulette-label.none-alt span{color:#e0eae3!important}
+.roulette-wheel.roulette-dense .roulette-label span{font-size:7px!important;line-height:1!important}
+.roulette-hub{position:absolute!important;z-index:6!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;width:29%!important;height:29%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;box-sizing:border-box!important;border-radius:50%!important;background:linear-gradient(145deg,#123c25 0%,#07180f 58%,#020906 100%)!important;border:3px solid #f5d27a!important;box-shadow:0 0 0 5px #07140d,0 0 21px rgba(255,216,123,.23),inset 0 1px 0 rgba(255,255,255,.35)!important;color:#fff7dd!important;font-family:Arial,Helvetica,sans-serif!important;font-size:clamp(10px,3.2vw,14px)!important;font-weight:900!important;letter-spacing:.8px!important;line-height:1.05!important;text-align:center!important;text-shadow:none!important;filter:none!important}
+.roulette-hub:before{content:"☘"!important;display:block!important;color:#8cffab!important;font-size:clamp(19px,5vw,27px)!important;line-height:.85!important;text-shadow:0 0 13px rgba(77,255,141,.23)!important}
+.roulette-hub small{display:block!important;color:#f3dfaa!important;font-size:8px!important;letter-spacing:2px!important;margin:0!important;text-shadow:none!important}
+.roulette-pointer{filter:drop-shadow(0 2px 4px rgba(0,0,0,.65)) drop-shadow(0 0 8px rgba(255,214,111,.35))!important;border-left-width:17px!important;border-right-width:17px!important;border-bottom:34px solid #fff0b1!important}
+.roulette-pointer:after{box-shadow:0 0 12px rgba(255,225,146,.8)!important;background:#fff5d4!important}
+@media(max-width:520px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important}.roulette-label span{top:16.5%!important;width:22%!important;font-size:clamp(6.8px,2.1vw,8.5px)!important}.roulette-label.b20 span{font-size:clamp(7.5px,2.2vw,9px)!important}}
 @media(max-width:360px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 18px)!important}}
 </style>
 
@@ -1512,33 +1496,80 @@ let rouletteRotation=0,rouletteBusy=false,rouletteUserData=null;
 function rouletteCanHaveThird(spins){return spins.length===2 && spins.every(s=>s.result==='SIN PREMIO');}
 function rouletteBuildLabels(catalog){
  const wheel=document.getElementById('rouletteWheel');if(!wheel)return;
- const items=(Array.isArray(catalog)&&catalog.length?catalog:ROULETTE_RESULTS.map(item=>({prize_key:item.key,label:item.label,prize_type:item.bonus?'bonus':item.key==='none'?'none':item.key==='number'?'raffle':'fichas',bonus_percent:item.bonus})));
+ const fallback=ROULETTE_RESULTS.map(item=>({
+  prize_key:item.key,label:item.label,
+  prize_type:item.bonus?'bonus':item.key==='none'?'none':item.key==='number'?'raffle':'fichas',
+  bonus_percent:item.bonus,
+  fichas_amount:item.key.startsWith('t')?Number(item.key.slice(1)):0
+ }));
+ const items=Array.isArray(catalog)&&catalog.length?catalog:fallback;
  wheel.innerHTML='';
  const segment=360/items.length;
- const colors=items.map((item,index)=>((index%2===0)?'#102e1d':'#173a24')+' '+(index*segment).toFixed(3)+'deg '+((index+1)*segment).toFixed(3)+'deg');
- wheel.style.background='conic-gradient(from '+(-segment/2)+'deg,'+colors.join(',')+')';
- const separator=document.createElement('div');separator.style.cssText='position:absolute;inset:0;border-radius:50%;pointer-events:none;background:repeating-conic-gradient(from '+(-segment/2)+'deg,transparent 0 '+(segment-.8)+'deg,#f5c84b2e '+(segment-.8)+'deg '+segment+'deg);z-index:2';
+ const colorFor=(item,index)=>{
+  const type=item.prize_type;
+  if(type==='none')return index%2===0?'#0b1b12':'#12291a';
+  if(type==='bonus')return Number(item.bonus_percent)>=15?'#8b6b26':(index%2===0?'#17613a':'#1d7544');
+  if(type==='raffle')return '#9a752b';
+  return index%2===0?'#08753e':'#0d8b49';
+ };
+ const colors=items.map((item,index)=>{
+  const start=(index*segment).toFixed(4),end=((index+1)*segment).toFixed(4);
+  return colorFor(item,index)+' '+start+'deg '+end+'deg';
+ });
+ wheel.style.background='conic-gradient(from '+(-segment/2).toFixed(4)+'deg,'+colors.join(',')+')';
+ const lineWidth=Math.max(.45,Math.min(1.2,segment*.035));
+ const separator=document.createElement('div');
+ separator.setAttribute('aria-hidden','true');
+ separator.style.cssText='position:absolute;inset:0;border-radius:50%;pointer-events:none;background:repeating-conic-gradient(from '+(-segment/2).toFixed(4)+'deg,transparent 0deg '+(segment-lineWidth).toFixed(4)+'deg,rgba(255,220,132,.82) '+(segment-lineWidth).toFixed(4)+'deg '+segment.toFixed(4)+'deg);z-index:1';
  wheel.append(separator);
+ const shortLabel=item=>{
+  const type=item.prize_type;
+  if(type==='none')return 'SIN\nPREMIO';
+  if(type==='bonus')return 'BONUS\n'+Number(item.bonus_percent||0)+'%';
+  if(type==='fichas'){
+   const amount=Number(item.fichas_amount||0);
+   return (amount>0?amount.toLocaleString('es-AR'):String(item.label||'FICHAS').replace(/\s*FICHAS$/i,''))+'\nFICHAS';
+  }
+  if(type==='raffle')return 'NÚMERO\nSORTEO';
+  let label=String(item.label||item.prize_key||'PREMIO').trim();
+  if(label.length>22)label=label.slice(0,20)+'…';
+  return label;
+ };
  items.forEach((item,index)=>{
-  const label=document.createElement('div');label.className='roulette-label'+(item.prize_type==='bonus'?' b'+Number(item.bonus_percent):item.prize_type==='none'?' none-alt':' prize');
+  const type=['none','bonus','fichas','raffle'].includes(item.prize_type)?item.prize_type:'none';
+  const label=document.createElement('div');
+  label.className='roulette-label '+(type==='bonus'?'b'+Number(item.bonus_percent):type==='none'?'none-alt':type==='fichas'||type==='raffle'?'prize':'');
+  label.dataset.prizeKey=String(item.prize_key||'');
+  label.title=String(item.label||item.prize_key||'Premio');
   label.style.transform='rotate('+(index*segment)+'deg)';
   if(item.image_url){
-   const image=document.createElement('img');image.src=item.image_url;image.alt='';image.loading='lazy';image.referrerPolicy='no-referrer';
-   image.style.cssText='position:absolute;left:50%;top:2.5%;transform:translateX(-50%);width:27px;height:27px;object-fit:contain;filter:drop-shadow(0 2px 4px #000b)';
+   const image=document.createElement('img');
+   image.src=item.image_url;image.alt='';image.loading='lazy';image.referrerPolicy='no-referrer';
+   image.style.cssText='position:absolute;left:50%;top:3%;transform:translateX(-50%);width:22px;height:22px;object-fit:contain;filter:drop-shadow(0 2px 4px #000b)';
    label.append(image);
   }
   const span=document.createElement('span');
-  let text=String(item.label||item.prize_key).replace(' FICHAS','').replace('BONUS ','');
-  if(text.length>18)text=text.slice(0,16)+'…';
-  span.textContent=text;if(item.image_url)span.style.top='19%';
+  span.textContent=shortLabel(item);
+  if(item.image_url)span.style.top='23%';
   label.append(span);wheel.append(label);
  });
  wheel.dataset.prizeKeys=items.map(x=>x.prize_key).join('|');
+ wheel.dataset.prizeCount=String(items.length);
+ wheel.classList.toggle('roulette-dense',items.length>16);
+ wheel.setAttribute('aria-label','Ruleta con '+items.length+' sectores de premios');
 }
 function rouletteSectorForPrize(key){
- const keys=(document.getElementById('rouletteWheel')?.dataset.prizeKeys||'').split('|');
- const index=keys.indexOf(key),total=keys.length||ROULETTE_RESULTS.length;
- return index<0?0:index*360/total;
+ const keys=(document.getElementById('rouletteWheel')?.dataset.prizeKeys||'').split('|').filter(Boolean);
+ const index=keys.indexOf(String(key));
+ if(index<0||!keys.length)return null;
+ return index*360/keys.length;
+}
+function rouletteResultType(result){
+ if(result?.prizeType)return result.prizeType;
+ if(Number(result?.bonus||0)>0)return 'bonus';
+ if(result?.key==='number')return 'raffle';
+ if(String(result?.key||'').startsWith('t'))return 'fichas';
+ return 'none';
 }
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 function rouletteCredentials(){return {username:rouletteNormalizeName(document.getElementById('username')?.value||''),pin:(document.getElementById('roulettePin')?.value||'').trim()};}
@@ -1619,15 +1650,18 @@ function rouletteShowOverlay(result, spinNumber){
   const icon=document.getElementById('rouletteOverlayIcon');
   const kicker=document.getElementById('rouletteOverlayKicker');
   const close=document.getElementById('rouletteOverlayClose');
-  const special=result.key==='number';
-  const tokenPrize=result.key.startsWith('t');
-  const win=!!result.bonus || special || tokenPrize;
+  const type=rouletteResultType(result);
+  const special=type==='raffle';
+  const tokenPrize=type==='fichas';
+  const bonus=type==='bonus';
+  const percent=Number(result.bonus||result.bonusPercent||0);
+  const win=special||tokenPrize||bonus;
   card.className='roulette-result-card '+(win?'win':'no-prize');
-  icon.textContent=special?'🎟️':(tokenPrize?'🪙':(result.bonus===5?'🎁':result.bonus===10?'⭐':result.bonus===15?'💎':result.bonus===20?'👑':'🍀'));
+  icon.textContent=special?'🎟️':(tokenPrize?'🪙':(bonus?(percent===5?'🎁':percent===10?'⭐':percent===15?'💎':'👑'):'🍀'));
   kicker.textContent=special?'¡PREMIO ESPECIAL!':(win?'¡PREMIO!':'Resultado de tu giro');
-  prize.textContent=result.label;
-  text.textContent=special?'Ganaste un número a elección para el sorteo del cuatriciclo. Coordiná el número por mensaje.':(tokenPrize?'Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.':(result.bonus?'Tu bonus quedó guardado para una próxima carga.':(spinNumber===2?'No salió premio en los dos tiros. ¡Desbloqueaste un tiro extra especial!':spinNumber===1?'Esta vez no salió premio. Te queda 1 tiro.':'Esta vez no salió premio.'))) ;
-  close.textContent=spinNumber===3?'FINALIZAR':(spinNumber===2 && !special?'CONTINUAR':'CONTINUAR');
+  prize.textContent=String(result.label||'Resultado registrado');
+  text.textContent=special?'Ganaste un número a elección para el sorteo del cuatriciclo. Coordiná el número por mensaje.':(tokenPrize?'Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.':(bonus?'Tu bonus quedó guardado para una próxima carga.':(spinNumber===2?'No salió premio en los dos tiros. ¡Desbloqueaste un tiro extra especial!':spinNumber===1?'Esta vez no salió premio. Te queda 1 tiro.':'Esta vez no salió premio.'))) ;
+  close.textContent=spinNumber===3?'FINALIZAR':'CONTINUAR';
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden','false');
   close.onclick=()=>{overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');document.querySelector('.roulette-stage')?.classList.remove('is-win');};
@@ -1637,11 +1671,47 @@ async function rouletteSpin(){
  if(rouletteBusy)return;const c=rouletteCredentials();if(!c.username||!c.pin){alert('Ingresá tu usuario y el PIN que te entregó FREEHAND.');return;}
  rouletteBusy=true;const stage=document.querySelector('.roulette-stage');stage?.classList.remove('is-spinning','is-win');const btn=document.getElementById('spinBtn'),resultBox=document.getElementById('rouletteResult');btn.disabled=true;btn.textContent='🎡 GIRANDO…';resultBox.textContent='La suerte está girando…';
  try{
-  const response=await rouletteSpinCall(c);const data=response.data;const result=data.result;const spinNumber=data.spinNumber;
-  const sector=rouletteSectorForPrize(result.key);const current=((rouletteRotation%360)+360)%360;const target=((360-sector)-current+360)%360;rouletteRotation+=360*(8+Math.floor(Math.random()*3))+target;
-  const wheel=document.getElementById('rouletteWheel');stage?.classList.add('is-spinning');wheel.style.transform=`rotate(${rouletteRotation}deg)`;
-  const finish=async()=>{wheel.removeEventListener('transitionend',finish);const win=!!result.bonus||result.prizeType==='bonus'||result.prizeType==='raffle'||result.prizeType==='fichas'||result.key==='number'||result.key.startsWith('t');stage?.classList.remove('is-spinning');stage?.classList.toggle('is-win',win);const special=result.prizeType==='raffle'||result.key==='number';const tokenPrize=result.prizeType==='fichas'||result.key.startsWith('t');resultBox.className='roulette-result '+(win?'win':'');resultBox.innerHTML=tokenPrize?`🪙 ¡PREMIO!<strong>${result.label}</strong><span>Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.</span>`:special?`🎟️ ¡PREMIO ESPECIAL!<strong>${result.label}</strong><span>Coordiná el número por mensaje.</span>`:result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>${data.thirdAvailable?'Desbloqueaste un tiro extra especial.':data.spinsLeft>0?'Te queda un tiro.':'Oportunidad finalizada.'}</span>`;btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';rouletteBusy=false;await rouletteRefresh();rouletteShowOverlay(result,spinNumber);};
-  wheel.addEventListener('transitionend',finish,{once:true});setTimeout(()=>{if(rouletteBusy)finish();},6500);
+  const response=await rouletteSpinCall(c);const data=response.data;const result=data?.result;const spinNumber=data?.spinNumber;
+  if(!result||!result.key)throw new Error('El servidor no devolvió un premio válido para este giro.');
+  let sector=rouletteSectorForPrize(result.key);
+  if(sector===null){
+   const freshStatus=await rouletteGetStatus();
+   if(freshStatus?.prizeCatalog?.length){rouletteUserData=freshStatus;rouletteBuildLabels(freshStatus.prizeCatalog);sector=rouletteSectorForPrize(result.key);}
+  }
+  if(sector===null){
+   console.error('ROULETTE SECTOR MISSING',result.key);
+   rouletteBusy=false;stage?.classList.remove('is-spinning','is-win');
+   resultBox.className='roulette-result';
+   resultBox.textContent='El premio quedó registrado por el servidor: '+String(result.label||result.key)+'. La rueda se está actualizando; no se asignó otro premio.';
+   btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';
+   await rouletteRefresh();rouletteShowOverlay(result,spinNumber);return;
+  }
+  const current=((rouletteRotation%360)+360)%360;
+  const target=((360-sector-current)%360+360)%360;
+  const extraTurns=8+Math.floor(Math.random()*3);
+  rouletteRotation+=360*extraTurns+target;
+  const wheel=document.getElementById('rouletteWheel');if(!wheel)throw new Error('No se encontró el componente visual de la ruleta.');
+  stage?.classList.add('is-spinning');wheel.style.transform='rotate('+rouletteRotation+'deg)';
+  let finished=false;
+  const finish=async()=>{
+   if(finished)return;finished=true;
+   stage?.classList.remove('is-spinning');
+   const type=rouletteResultType(result),special=type==='raffle',tokenPrize=type==='fichas',bonus=type==='bonus';
+   const win=special||tokenPrize||bonus;
+   stage?.classList.toggle('is-win',win);
+   resultBox.className='roulette-result '+(win?'win':'');
+   const title=document.createElement('strong');title.textContent=String(result.label||'Resultado registrado');
+   const detail=document.createElement('span');
+   if(tokenPrize){resultBox.append('🪙 ¡PREMIO!');detail.textContent='Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.';}
+   else if(special){resultBox.append('🎟️ ¡PREMIO ESPECIAL!');detail.textContent='Coordiná el número por mensaje.';}
+   else if(bonus){resultBox.append('🎉 ¡PREMIO!');detail.textContent='Guardado para una próxima carga.';}
+   else{resultBox.append('🍀 Esta vez no salió premio.');detail.textContent=data.thirdAvailable?'Desbloqueaste un tiro extra especial.':data.spinsLeft>0?'Te queda un tiro.':'Oportunidad finalizada.';}
+   resultBox.append(title,detail);
+   btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';
+   rouletteBusy=false;await rouletteRefresh();rouletteShowOverlay(result,spinNumber);
+  };
+  wheel.addEventListener('transitionend',finish,{once:true});
+  setTimeout(()=>{if(rouletteBusy)finish();},6800);
  }catch(e){console.error('ROULETTE SPIN',e);stage?.classList.remove('is-spinning','is-win');rouletteBusy=false;btn.textContent='🎡 GIRAR RULETA';resultBox.textContent=e?.message||'No hay tiros habilitados o la oportunidad ya finalizó.';await rouletteRefresh();}
 }
 rouletteBuildLabels(rouletteUserData?.prizeCatalog);
