@@ -6,8 +6,11 @@
 - `roulette-admin.html`: panel administrativo exclusivo de la ruleta.
 - **Supabase `freehand-roulette`** (ref `yiznobpjxksymqqazryr`, región `sa-east-1`): base de datos de la ruleta.
 - Edge Function activa `roulette`: valida PIN, consulta oportunidades, gira, administra jugadores y aprueba/regala ciclos.
-- Tablas privadas `public.roulette_players` y `public.roulette_spins`, ambas con RLS habilitado.
-- Funciones SQL transaccionales: `roulette_verify_player_pin`, `roulette_apply_spin`, `roulette_admin_create_player` y `roulette_admin_grant_cycles`.
+- Tablas privadas `public.roulette_players`, `public.roulette_spins`, `public.roulette_opportunities`, `public.roulette_prize_awards` y `public.roulette_prize_events`, protegidas con RLS y sin lectura directa para clientes.
+- Libro inmutable `public.roulette_fichas_ledger`: conserva créditos confirmados y ajustes con saldo anterior, importe, saldo posterior, fecha y responsable.
+- Catálogo administrable `public.roulette_prize_catalog`: nombres, tipos, cantidades, porcentajes, imágenes HTTPS, disponibilidad y probabilidades en puntos base. Los dos grupos de probabilidades activas deben sumar exactamente 10.000 (100,00%).
+- Funciones SQL transaccionales: `roulette_verify_player_pin`, `roulette_apply_spin`, `roulette_admin_create_player`, `roulette_admin_grant_cycles`, `roulette_admin_confirm_fichas_delivery` y `roulette_admin_adjust_fichas`.
+- La función Edge `roulette` (versión 20) entrega perfiles, reportes, alertas y catálogo exclusivamente al panel que presenta `ROULETTE_ADMIN_KEY`; el jugador sólo recibe su propio saldo, premios y giros tras validar su PIN.
 
 El jugador y el panel llaman directamente a `https://yiznobpjxksymqqazryr.supabase.co/functions/v1/roulette`. El navegador utiliza únicamente la clave **publishable**. La clave administrativa se envía en el encabezado `x-admin-key` y se valida contra el secreto `ROULETTE_ADMIN_KEY` guardado en Supabase; nunca se escribe en el HTML ni en GitHub.
 
@@ -59,7 +62,7 @@ Los premios grandes tienen probabilidades muy bajas en cada giro: 50.000 fichas 
 
 ## Archivos de backend en este repositorio
 
-- `supabase/functions/roulette/index.ts`: copia de la Edge Function activa en Supabase (versión 11).
+- `supabase/functions/roulette/index.ts`: copia del código de la Edge Function activa en Supabase (versión 20).
 - `supabase/migrations/20261117145923_add_50000_and_100000_fichas_prizes.sql`: migración aplicada sobre la base existente para agregar ambos premios a la selección y a la acreditación.
 - Las migraciones previas de creación del esquema, PIN, RLS y sorteo atómico ya constan en el historial del proyecto Supabase.
 
@@ -103,3 +106,20 @@ El contador se empezó a registrar el 19/11/2026. Se conservaron dos aprobacione
 - `public.roulette_prize_events` conserva el movimiento de cada premio y quién lo resolvió. Cada fila del panel incluye **VER MOVIMIENTOS** para consultar cuándo se obtuvo, acreditó, canjeó o asignó.
 - Premios históricos importados: las fichas ya acreditadas por el sistema anterior se marcan como entregadas sin volver a sumarlas; los bonos respetan su estado previo.
 - El mensaje de la ruleta aclara que una ganancia de fichas queda pendiente hasta que FREEHAND confirme la entrega.
+
+
+## Módulos comerciales implementados
+
+- **Ficha individual:** saldo, cargas aprobadas, oportunidades activas/en espera, bonos, premios, historial de giros y movimientos de billetera.
+- **Billetera:** confirmación de entrega y ajustes manuales auditados; nunca permite un saldo negativo. La carga histórica del libro se reconstruyó desde las entregas confirmadas y se concilió contra los saldos actuales.
+- **Catálogo:** el panel permite editar premios e imágenes, activar/desactivar entradas y ajustar probabilidades. La base valida el total antes de aceptar cambios y el sorteo sigue ejecutándose dentro de PostgreSQL.
+- **Reportes:** métricas agregadas, evolución diaria y mensual, exportación CSV y archivo compatible con Excel.
+- **Notificaciones:** premios que requieren entrega, canje o asignación, con señalización de pendientes antiguos.
+- **PWA:** `manifest.webmanifest` para jugadores, `manifest-admin.webmanifest` para administración, `sw.js` para caché de interfaz y `assets/freehand-app-icon.svg` como icono. La caché permite abrir la interfaz sin conexión; los giros, PIN y operaciones administrativas siempre necesitan conexión con el servidor.
+
+## Mejoras externas pendientes de conexión
+
+- Migración de alojamiento a Cloudflare Pages: requiere conectar la cuenta Cloudflare con GitHub y autorizar este repositorio. GitHub Pages sigue siendo el alojamiento actual.
+- Cloudflare Web Analytics, Turnstile y PostHog: necesitan crear proyectos/widgets y guardar sus claves en la cuenta correspondiente; Turnstile requiere validación del token también en servidor.
+- Roles administrativos: todavía existe una sola clave maestra `ROULETTE_ADMIN_KEY`. La creación de cuentas individuales y roles no está habilitada todavía.
+- Copias de seguridad programadas y prueba de restauración: requieren definir un destino seguro y credenciales de almacenamiento.
