@@ -74,11 +74,30 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       if (!p) throw new Error("PLAYER_NOT_FOUND");
       const cycle = p.active_cycle || null, spins = cycle?.spins || [];
       const thirdAvailable = spins.length === 2 && spins.every((s: any) => s.result === "SIN PREMIO");
+      const { data: prizeRows, error: prizeRowsError } = await db
+        .from("roulette_prize_awards")
+        .select("prize_type,prize_label,fichas_amount,bonus_percent,status,created_at,resolved_at")
+        .eq("player_id", c.id)
+        .in("prize_type", ["bonus", "fichas"])
+        .order("created_at", { ascending:false })
+        .limit(100);
+      if (prizeRowsError) throw prizeRowsError;
+      const prizeHistory = (prizeRows || []).map((a:any) => ({
+        prizeType:a.prize_type,
+        prizeLabel:a.prize_label,
+        fichasAmount:Number(a.fichas_amount||0),
+        bonusPercent:Number(a.bonus_percent||0),
+        status:a.status,
+        createdAt:a.created_at,
+        resolvedAt:a.resolved_at
+      }));
       return json({ username: p.username, activeCycle: !!cycle, cycleId: cycle?.id || null,
         spinsLeft: cycle ? (spins.length === 0 ? 2 : spins.length === 1 ? 1 : thirdAvailable ? 1 : 0) : 0,
         used: spins.length, thirdAvailable, queuedCycles: p.queued_cycles,
         fichasBalance: p.fichas_balance, bonusCount: (p.bonus_prizes || []).length,
-        quadBikeNumbers: p.quad_bike_numbers, bonusPrizes: (p.bonus_prizes || []).map((b:any) => ({ percent:Number(b.percent||0), cycleId:b.cycleId||null, spinNumber:Number(b.spinNumber||0), createdAt:b.createdAt||null })), recentResults: spins.map((s: any) => ({ result:s.result,key:s.key,bonus:s.bonus })) });
+        quadBikeNumbers: p.quad_bike_numbers, bonusPrizes: (p.bonus_prizes || []).map((b:any) => ({ percent:Number(b.percent||0), cycleId:b.cycleId||null, spinNumber:Number(b.spinNumber||0), createdAt:b.createdAt||null })),
+        prizeHistory,
+        recentResults: spins.map((s: any) => ({ result:s.result,key:s.key,bonus:s.bonus })) });
     }
 
     if (action === "spin") {
