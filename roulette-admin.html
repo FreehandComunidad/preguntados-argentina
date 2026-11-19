@@ -446,6 +446,7 @@ function adminArgs(extra={}){return {adminKey,...extra};}
 function applyAdminRole(){
  const isOwner=currentAdmin.role==='owner',isAuditor=currentAdmin.role==='auditor';
  ['createPlayerManagement','opportunitiesManagement'].forEach(id=>byId(id)?.classList.toggle('hidden',isAuditor));
+ document.querySelectorAll('[data-nav-target="createPlayerManagement"],[data-nav-target="opportunitiesManagement"]').forEach(element=>element.classList.toggle('hidden',isAuditor));
  document.querySelectorAll('[data-owner-only]').forEach(element=>element.classList.toggle('hidden',!isOwner));
  document.querySelectorAll('.catalog-row input,.catalog-row select').forEach(input=>input.disabled=!isOwner);
  if(!isOwner){byId('catalogSaveBtn').disabled=true;byId('catalogAddBtn').disabled=true;}
