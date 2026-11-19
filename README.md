@@ -83,3 +83,11 @@ Los premios grandes tienen probabilidades muy bajas en cada giro: 50.000 fichas 
 La tabla `public.roulette_players` tiene el contador `approved_loads_count`. La acción administrativa `adminApproveLoad` llama a `roulette_admin_grant_cycles` con `p_source='load-approved'`; esa función incrementa el contador en la misma transacción que habilita el ciclo. Los regalos administrativos (`p_source='admin'`) no incrementan este contador. La Edge Function `roulette` devuelve el valor como `approvedLoads` y el panel lo muestra por jugador.
 
 El contador se empezó a registrar el 19/11/2026. Se conservaron dos aprobaciones anteriores que pudieron identificarse con certeza (Gaby y julioponce: una cada uno). Las aprobaciones históricas ya finalizadas no se podían reconstruir de forma fiable porque el esquema anterior no conservaba el origen de cada ciclo completado ni de las oportunidades en cola.
+
+
+## Archivo de bonos utilizados y anulación de cargas
+
+- Los bonos pendientes se muestran hasta que el administrador elige **MARCAR USADO**. La acción mueve el bono de `bonus_prizes` a `used_bonus_prizes`, registra `usedAt` y lo retira de la lista principal; el panel conserva solamente un contador de bonos archivados.
+- La tabla privada `public.roulette_opportunities` registra el origen de cada oportunidad (`load-approved`, `admin` o `legacy`) y su estado (`active`, `queued`, `completed`, `cancelled`).
+- **ANULAR ÚLTIMA CARGA** solo puede cancelar una oportunidad pagada que todavía esté en cola o esté activa sin ningún giro. Si ya tuvo giros, no se puede anular. Las oportunidades regaladas y las oportunidades históricas sin origen verificable no se tocan.
+- Los ciclos y colas anteriores a este registro se preservaron como `legacy`, para no confundirlos con cargas pagadas ni con regalos.

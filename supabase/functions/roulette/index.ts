@@ -42,9 +42,10 @@ async function playerCredentials(body: any) {
   return { username, id, pinHash: await hash(id + ":" + pin) };
 }
 function errorStatus(message: string) {
-  if (message.includes("PLAYER_NOT_FOUND")) return 404;
+  if (message.includes("PLAYER_NOT_FOUND") || message.includes("BONUS_NOT_FOUND")) return 404;
   if (message.includes("INVALID_CREDENTIALS")) return 403;
-  if (message.includes("NO_ACTIVE_CYCLE") || message.includes("CYCLE_FINISHED")) return 409;
+  if (message.includes("NO_ACTIVE_CYCLE") || message.includes("CYCLE_FINISHED") ||
+      message.includes("NO_CANCELLABLE_LOAD")) return 409;
   return 400;
 }
 
@@ -100,13 +101,49 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
     if (action === "adminListPlayers") {
       const { data, error } = await db.from("roulette_players").select("*").order("created_at", { ascending:false }).limit(250);
       if (error) throw error;
+
+      const { data: loadRows, error: loadError } = await db
+        .from("roulette_opportunities")
+        .select("id,player_id,status")
+        .eq("source", "load-approved")
+        .in("status", ["active", "queued"]);
+      if (loadError) throw loadError;
+
+      const playersById = new Map((data || []).map((p:any) => [p.id, p]));
+      const cancellableLoads = new Map<string, number>();
+      for (const opportunity of loadRows || []) {
+        let canCancel = opportunity.status === "queued";
+        if (opportunity.status === "active") {
+          const owner:any = playersById.get(opportunity.player_id);
+          const cycle = owner?.active_cycle || null;
+          const spins = cycle?.spins || [];
+          canCancel = cycle?.opportunityId === opportunity.id && spins.length === 0;
+        }
+        if (canCancel) {
+          cancellableLoads.set(
+            opportunity.player_id,
+            (cancellableLoads.get(opportunity.player_id) || 0) + 1
+          );
+        }
+      }
+
       return json({ players:(data || []).map((p:any) => {
         const cycle=p.active_cycle||null, spins=cycle?.spins||[];
         const thirdAvailable=spins.length===2 && spins.every((s:any)=>s.result==="SIN PREMIO");
-        return { username:p.username, active:!!cycle, used:spins.length,
+        return {
+          username:p.username, active:!!cycle, used:spins.length,
           spinsLeft:cycle?(spins.length===0?2:spins.length===1?1:thirdAvailable?1:0):0,
           thirdAvailable, queuedCycles:p.queued_cycles, fichasBalance:p.fichas_balance,
-          bonusCount:(p.bonus_prizes||[]).length, approvedLoads:Number(p.approved_loads_count||0), bonusPrizes:(p.bonus_prizes||[]).map((b:any)=>({percent:Number(b.percent||0),cycleId:b.cycleId||null,spinNumber:Number(b.spinNumber||0),createdAt:b.createdAt||null})), quadBikeNumbers:p.quad_bike_numbers };
+          bonusCount:(p.bonus_prizes||[]).length,
+          usedBonusCount:(p.used_bonus_prizes||[]).length,
+          approvedLoads:Number(p.approved_loads_count||0),
+          cancellableLoads:cancellableLoads.get(p.id)||0,
+          bonusPrizes:(p.bonus_prizes||[]).map((b:any)=>({
+            percent:Number(b.percent||0),cycleId:b.cycleId||null,
+            spinNumber:Number(b.spinNumber||0),createdAt:b.createdAt||null
+          })),
+          quadBikeNumbers:p.quad_bike_numbers
+        };
       }) });
     }
 
@@ -123,6 +160,30 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       if (error) throw error;
       return json(data);
     }
+    if (action === "adminMarkBonusUsed") {
+      const username = nameOf(body.username), id = slugOf(username);
+      const cycleId = String(body.cycleId || "").trim();
+      const spinNumber = Number(body.spinNumber);
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cycleId)) {
+        throw new Error("No se pudo identificar el bono seleccionado.");
+      }
+      if (!Number.isInteger(spinNumber) || spinNumber < 1 || spinNumber > 3) {
+        throw new Error("El número de tiro del bono no es válido.");
+      }
+      const { data, error } = await db.rpc("roulette_admin_mark_bonus_used", {
+        p_id: id, p_cycle_id: cycleId, p_spin_number: spinNumber
+      });
+      if (error) throw error;
+      return json(data);
+    }
+
+    if (action === "adminCancelLoad") {
+      const username = nameOf(body.username), id = slugOf(username);
+      const { data, error } = await db.rpc("roulette_admin_cancel_last_load", { p_id: id });
+      if (error) throw error;
+      return json(data);
+    }
+
     if (action === "adminResetPin") {
       const pin = randomPin(), pinHash = await hash(id + ":" + pin);
       const { data, error } = await db.from("roulette_players").update({ pin_hash:pinHash,pin_failed_attempts:0,pin_locked_until:null,updated_at:new Date().toISOString() }).eq("id",id).select("username").maybeSingle();
@@ -132,7 +193,14 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
     return json({ error:"Acción desconocida." }, 400);
   } catch (e) {
     const message = String((e as Error)?.message || "Error interno.");
-    return json({ error:message }, errorStatus(message));
+    const friendly = message.includes("NO_CANCELLABLE_LOAD")
+      ? "No hay una carga aprobada pendiente que pueda anularse. Si ya tuvo algún giro, no se puede retirar."
+      : message.includes("BONUS_NOT_FOUND")
+        ? "Ese bono ya no figura entre los bonos pendientes."
+        : message.includes("INVALID_OPPORTUNITY_SOURCE")
+          ? "El origen de la oportunidad no es válido."
+          : message;
+    return json({ error:friendly }, errorStatus(message));
   }
 });
 
@@ -143,7 +211,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 13,
+      version: 15,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });

@@ -15,7 +15,12 @@
 .bonus-chip time{color:#b8c8bd;font-size:10px;font-weight:550;letter-spacing:0}
 .no-bonuses{display:block;margin-top:7px;color:#809188;font-size:11px}
 .approved-load-count{display:inline-flex;align-items:center;gap:7px;margin-top:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(54,225,122,.38);background:rgba(31,173,86,.11);color:#b3f6c9;font-size:11px;font-weight:850}
-.approved-load-count b{color:#fff0a4;font-size:15px}.player button{margin:3px 0 3px 6px;padding:9px 11px;font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#163a25;border:1px solid var(--line);font-size:11px;color:var(--gold)}@media(max-width:520px){.player{grid-template-columns:1fr}.player-actions{display:flex;flex-wrap:wrap}.card{padding:16px}}
+.approved-load-count b{color:#fff0a4;font-size:15px}
+.used-bonus-count{display:block;margin-top:7px;color:#8fa99a;font-size:11px}
+.bonus-item{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bonus-use-button{margin:0!important;padding:6px 9px!important;font-size:10px!important;letter-spacing:.2px}
+.player-actions .cancel-load-button{background:#5b1720!important;color:#ffe9e9!important;border:1px solid rgba(255,120,120,.35)!important}
+@media(max-width:520px){.bonus-item{align-items:flex-start}.bonus-use-button{margin:0!important}}.player button{margin:3px 0 3px 6px;padding:9px 11px;font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#163a25;border:1px solid var(--line);font-size:11px;color:var(--gold)}@media(max-width:520px){.player{grid-template-columns:1fr}.player-actions{display:flex;flex-wrap:wrap}.card{padding:16px}}
 </style></head><body><div class="wrap"><header><h1>FREEHAND · GESTIÓN DE RULETA</h1><p>Panel privado de altas, oportunidades y control de jugadores</p></header>
 <section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Firebase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR AL PANEL</button><div class="status" id="loginStatus"></div></section>
 <main id="panel" class="hidden"><div class="grid"><section class="card"><h2>Crear jugador</h2><p class="muted">Creá el usuario y entregale sus datos por WhatsApp. Los usuarios nuevos reciben un PIN de 4 dígitos.</p><label for="newName">Nombre o usuario</label><input id="newName" maxlength="20" placeholder="Ej. jugador123"><button id="createBtn">CREAR JUGADOR Y GENERAR PIN</button><div id="createdResult" class="hidden"><div class="access-data"><div class="access-row"><div><span>USUARIO</span><strong id="newUsername"></strong></div><button class="secondary" id="copyUserBtn" type="button">COPIAR USUARIO</button></div><div class="access-row"><div><span>PIN DE 4 DÍGITOS</span><strong class="pin-value" id="newPin"></strong></div><button class="secondary" id="copyPinBtn" type="button">COPIAR PIN</button></div><div class="access-row"><div><span>LINK DE LA RULETA</span><a id="newLink" href="https://freehandcomunidad.github.io/preguntados-argentina/" target="_blank" rel="noopener noreferrer">Abrir ruleta FREEHAND ↗</a></div><button class="secondary" id="copyLinkBtn" type="button">COPIAR LINK</button></div></div><p class="muted" id="pinHelp"></p><button id="copyAllBtn" type="button">COPIAR TODO PARA WHATSAPP</button></div><div class="status" id="createStatus"></div></section>
@@ -114,9 +119,16 @@ async function refresh(){
    const loadNumber=document.createElement('b');loadNumber.textContent=String(Number(p.approvedLoads)||0);
    loadCount.append(loadNumber,document.createTextNode(' cargas aprobadas'));
    info.append(loadCount);
+   const usedCount=Number(p.usedBonusCount)||0;
+   if(usedCount>0){
+    const usedLabel=document.createElement('span');usedLabel.className='used-bonus-count';
+    usedLabel.textContent='Bonos ya utilizados y archivados: '+usedCount;
+    info.append(usedLabel);
+   }
    if(bonuses.length){
     const bonusList=document.createElement('div');bonusList.className='player-bonuses';
     bonuses.forEach(bonus=>{
+     const entry=document.createElement('div');entry.className='bonus-item';
      const chip=document.createElement('span');chip.className='bonus-chip';
      const percent=Math.max(0,Math.min(100,Number(bonus.percent)||0));
      const spin=Number(bonus.spinNumber)||0;
@@ -130,7 +142,19 @@ async function refresh(){
        chip.append(time);
       }
      }
-     bonusList.append(chip);
+     const usedButton=document.createElement('button');
+     usedButton.type='button';usedButton.className='secondary bonus-use-button';
+     usedButton.textContent='MARCAR USADO';
+     usedButton.disabled=!bonus.cycleId||!spin;
+     usedButton.onclick=async()=>{
+      if(!window.confirm('¿Confirmás que el jugador ya utilizó este BONUS '+percent+'%? Dejará de figurar entre los bonos pendientes.'))return;
+      try{
+       await call('adminMarkBonusUsed')(adminArgs({username:p.username,cycleId:bonus.cycleId,spinNumber:spin}));
+       await refresh();
+      }catch(e){window.alert(e.message||'No se pudo archivar el bono.');}
+     };
+     entry.append(chip,usedButton);
+     bonusList.append(entry);
     });
     info.append(bonusList);
    }else{
@@ -142,7 +166,21 @@ async function refresh(){
    b.onclick=()=>{byId('grantName').value=p.username;byId('grantCount').value='1';grant('adminGrantCycles');};
    const c=document.createElement('button');c.className='secondary';c.textContent='APROBAR CARGA';
    c.onclick=()=>{byId('grantName').value=p.username;byId('grantCount').value='1';grant('adminApproveLoad');};
-   actions.append(b,c);row.append(info,actions);box.append(row);
+   actions.append(b,c);
+   if(Number(p.cancellableLoads)>0){
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='danger cancel-load-button';
+    cancel.textContent='ANULAR ÚLTIMA CARGA';
+    cancel.onclick=async()=>{
+     if(!window.confirm('¿Anular la última carga aprobada de '+p.username+'? Solo se puede anular si esa oportunidad todavía no tuvo ningún giro. Las oportunidades regaladas no se modifican.'))return;
+     try{
+      const res=(await call('adminCancelLoad')(adminArgs({username:p.username}))).data;
+      window.alert('Carga anulada para '+res.username+'. Cargas aprobadas restantes: '+res.approvedLoads+'.');
+      await refresh();
+     }catch(e){window.alert(e.message||'No se pudo anular la carga.');}
+    };
+    actions.append(cancel);
+   }
+   row.append(info,actions);box.append(row);
   }
  }catch(e){byId('players').textContent=e.message||'No se pudo cargar la lista.';}
 }
