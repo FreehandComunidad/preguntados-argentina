@@ -124,6 +124,155 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
 .content-card button.utility-button:not(.action-btn){margin:0;padding:10px 13px;background:#102a1a;border-color:var(--line2);color:#dcebe0}
 .content-card .player button{margin:0!important;padding:9px 11px!important}
 .content-card button:not(.action-btn):hover{transform:translateY(-1px);filter:brightness(1.07)}
+
+/* Mobile-first navigation dock and compact award cards */
+.mobile-dock,.mobile-more-overlay{display:none}
+@media(max-width:760px){
+ html{scroll-padding-top:72px;scroll-padding-bottom:112px}
+ body{font-size:14px}
+ .admin-app{display:block;min-height:100vh}
+ .sidebar{display:none}
+ .main-column{width:100%;min-width:0}
+ .topbar{position:sticky;top:0;z-index:30;height:58px;min-height:58px;padding:0 16px;background:rgba(4,15,8,.94);border-bottom:1px solid rgba(221,190,107,.18);backdrop-filter:blur(18px)}
+ .breadcrumb{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+ .breadcrumb span{color:#587362;padding:0 4px}
+ .topbar-actions{flex:none}
+ .secure-label{display:none}
+ .admin-identity{gap:0}
+ .admin-identity>span:last-child{display:none}
+ .admin-avatar{width:34px;height:34px;border-radius:11px}
+ .dashboard{width:100%;padding:15px 14px calc(116px + env(safe-area-inset-bottom))}
+ .welcome-panel{min-height:132px;padding:20px 18px;border-radius:15px}
+ .welcome-panel:after{width:230px;height:150px;top:-8px;opacity:.23}
+ .welcome-copy h1{font-size:27px;margin:8px 0 6px}
+ .welcome-copy p{font-size:11px;line-height:1.55;max-width:270px}
+ .welcome-side{display:none}
+ .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0 20px}
+ .metric-card{display:flex;flex-direction:row;align-items:center;gap:9px;min-width:0;min-height:88px;padding:11px 10px;border-radius:13px}
+ .metric-icon{width:35px;height:35px;border-radius:10px}
+ .metric-icon svg{width:18px;height:18px}
+ .metric-copy{min-width:0;overflow:hidden}
+ .metric-copy span{font-size:8px;line-height:1.3;letter-spacing:.065em;white-space:normal}
+ .metric-copy strong{font-size:19px;margin-top:6px}
+ .metric-copy small{font-size:8px;line-height:1.3;white-space:normal}
+ .content-card{padding:16px 13px;margin:14px 0;border-radius:15px;scroll-margin-top:72px}
+ .section-heading{align-items:center;gap:10px;margin-bottom:15px}
+ .section-heading h2{font-size:19px}
+ .section-description{font-size:10px;line-height:1.5}
+ .section-heading .utility-button{width:auto;flex:none;padding:10px 12px}
+ .prize-toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:11px;padding:12px 0;margin:0 0 12px}
+ .prize-tabs{display:flex;width:100%;gap:6px;overflow-x:auto;overflow-y:hidden;padding:1px 1px 7px;scrollbar-width:thin;scroll-snap-type:x proximity}
+ .prize-tab{flex:0 0 auto;min-height:39px;padding:9px 12px;font-size:9px;white-space:nowrap;scroll-snap-align:start}
+ .search-box{width:100%;height:43px}
+ .search-box input{font-size:12px}
+ .table-scroll{overflow:visible;border:0;border-radius:0}
+ .prize-table{display:block;width:100%;min-width:0;border-collapse:separate}
+ .prize-table thead{display:none}
+ .prize-table tbody{display:grid;gap:10px}
+ .prize-table tbody tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 12px;padding:12px;border:1px solid rgba(210,188,123,.16);border-radius:13px;background:linear-gradient(145deg,rgba(11,33,19,.97),rgba(5,17,10,.98));box-shadow:0 9px 22px rgba(0,0,0,.16)}
+ .prize-table td{display:block;min-width:0;padding:5px 1px;border:0;vertical-align:top}
+ .prize-table td:before{content:attr(data-label);display:block;margin-bottom:5px;color:#718879;font-size:8px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+ .prize-table td:nth-child(1),.prize-table td:nth-child(2),.prize-table td:nth-child(5){grid-column:1/-1}
+ .table-date strong{font-size:11px}
+ .table-date small{font-size:9px}
+ .player-cell{gap:8px}
+ .player-avatar{width:29px;height:29px;border-radius:9px}
+ .player-name{font-size:12px}
+ .prize-label-cell{gap:7px;min-width:0;align-items:center}
+ .prize-type-icon{width:30px;height:30px;border-radius:9px;font-size:14px}
+ .prize-label-text{font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+ .prize-status{display:inline-flex;max-width:100%;padding:6px 7px;white-space:normal;font-size:8px;line-height:1.3;letter-spacing:.035em}
+ .prize-status:before{width:6px;height:6px;flex:none}
+ .action-cell{display:flex;align-items:center;justify-content:flex-start;gap:7px;flex-wrap:wrap;min-width:0;width:100%}
+ .prize-amount{width:100%;font-size:11px}
+ .action-btn{min-height:41px;padding:9px 10px;font-size:9px;white-space:normal;text-align:center}
+ .action-cell .action-primary{flex:1;min-width:0}
+ .action-cell .action-secondary{flex:1;min-width:0}
+ .action-cell .action-quiet{width:40px;min-width:40px;flex:none;padding:9px}
+ .action-cell .action-quiet svg{width:16px;height:16px}
+ .number-entry{flex:1;width:90px;min-width:90px;height:41px;font-size:12px}
+ .prize-empty{padding:30px 12px}
+ .table-count{align-items:flex-start;flex-direction:column;gap:5px;padding:11px 2px 2px}
+ .table-count strong{font-size:9px}
+ #prizeStatus{font-size:11px;line-height:1.5}
+ .grid{grid-template-columns:minmax(0,1fr);gap:12px}
+ .content-card label{font-size:9px;margin-top:14px}
+ .content-card input,.content-card select{height:46px;font-size:13px}
+ .content-card button:not(.action-btn){min-height:43px;padding:12px 13px;font-size:10px}
+ .content-card .grid button{width:100%}
+ #players{gap:10px;margin-top:13px}
+ .player{grid-template-columns:minmax(0,1fr);gap:12px;padding:13px;border-radius:12px}
+ .player strong{font-size:13px;overflow-wrap:anywhere}
+ .player small{font-size:10px;line-height:1.55}
+ .player-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-content:stretch;gap:7px}
+ .player button{width:100%;min-height:41px;margin:0!important;padding:9px 8px!important;font-size:9px!important}
+ .player .cancel-load-button{grid-column:1/-1}
+ .approved-load-count{font-size:9px}
+ .player-bonuses{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+ .bonus-item{align-items:center;flex-wrap:wrap}
+ .bonus-use-button{min-height:35px!important;width:auto!important}
+ .access-row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:11px}
+ .access-row>div{flex:1 1 150px;min-width:0}
+ .access-row button{flex:0 0 auto;min-height:38px}
+ .access-row strong,.access-row a{font-size:11px}
+ .access-row .pin-value{font-size:21px}
+ #copyAllBtn{width:100%}
+ .app-footer{flex-direction:column;gap:7px;padding-bottom:8px;font-size:8px}
+ .modal-overlay{padding:10px}
+ .modal-card{max-height:82dvh;border-radius:17px}
+ .modal-head{padding:17px}
+ .modal-body{padding:15px 17px}
+ .mobile-dock{position:fixed;left:50%;bottom:calc(8px + env(safe-area-inset-bottom));z-index:50;transform:translateX(-50%);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:min(470px,calc(100vw - 20px));padding:7px;border:1px solid rgba(218,190,119,.27);border-radius:17px;background:rgba(5,19,10,.94);box-shadow:0 15px 45px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.06);backdrop-filter:blur(20px)}
+ .mobile-dock-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:52px;margin:0;padding:5px 3px;border:1px solid transparent;border-radius:11px;background:transparent;color:#93a99a;font-size:8px;font-weight:850;letter-spacing:.015em}
+ .mobile-dock-item svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+ .mobile-dock-item.active{border-color:rgba(40,220,117,.18);background:linear-gradient(145deg,rgba(40,220,117,.18),rgba(19,93,43,.11));color:#c8ffd5}
+ .mobile-dock-item.active svg{filter:drop-shadow(0 0 5px rgba(40,220,117,.5))}
+ .mobile-more-overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;padding:12px 10px calc(82px + env(safe-area-inset-bottom));background:rgba(1,7,3,.72);backdrop-filter:blur(8px)}
+ .mobile-more-sheet{width:min(500px,100%);max-height:min(72dvh,620px);overflow-y:auto;padding:18px;border:1px solid var(--line2);border-radius:20px;background:linear-gradient(150deg,#102a19,#06120a);box-shadow:0 25px 70px rgba(0,0,0,.58)}
+ .mobile-more-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+ .mobile-more-head strong{font-size:15px;color:#f5f7ef}
+ .mobile-more-head small{display:block;margin-top:4px;color:#8da294;font-size:9px}
+ .mobile-more-close{display:grid;place-items:center;width:36px;height:36px;min-height:36px;margin:0;border:1px solid var(--line);border-radius:10px;background:#ffffff08;color:#e8f2e9;font-size:19px}
+ .mobile-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .mobile-more-link{display:flex;align-items:center;gap:10px;min-height:55px;margin:0;padding:10px;border:1px solid rgba(255,255,255,.075);border-radius:11px;background:rgba(255,255,255,.025);color:#deebe0;text-align:left;font-size:10px;font-weight:800}
+ .mobile-more-link svg{width:18px;height:18px;flex:none;stroke:#9ee8b1;fill:none;stroke-width:1.7}
+ .mobile-more-link:active{background:rgba(40,220,117,.12)}
+ .mobile-more-logout{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:44px;margin-top:12px;padding:10px;border:1px solid rgba(240,116,120,.22);border-radius:10px;background:rgba(240,116,120,.07);color:#ffbdc0;font-size:10px;font-weight:900}
+}
+@media(max-width:420px){
+ .dashboard{padding:12px 11px calc(112px + env(safe-area-inset-bottom))}
+ .topbar{height:54px;min-height:54px;padding:0 12px}
+ .welcome-panel{min-height:124px;padding:17px 15px}
+ .welcome-copy h1{font-size:24px}
+ .welcome-copy p{font-size:10px}
+ .stats-grid{gap:7px;margin:10px 0 16px}
+ .metric-card{min-height:83px;padding:9px 8px;gap:7px}
+ .metric-icon{width:30px;height:30px;border-radius:9px}
+ .metric-icon svg{width:16px;height:16px}
+ .metric-copy span{font-size:7px;letter-spacing:.035em}
+ .metric-copy strong{font-size:17px;margin-top:5px}
+ .metric-copy small{font-size:7px;margin-top:4px}
+ .content-card{padding:14px 11px;margin:12px 0}
+ .section-heading h2{font-size:17px}
+ .section-description{font-size:9px}
+ .section-heading .utility-button{padding:9px 10px;font-size:9px}
+ .prize-tab{padding:8px 10px;font-size:8px}
+ .prize-table tbody tr{padding:10px;gap:4px 8px}
+ .prize-table td{padding:4px 1px}
+ .prize-status{font-size:7px;padding:5px 6px}
+ .action-btn{font-size:8px;padding:8px 7px}
+ .mobile-dock{width:calc(100vw - 16px);bottom:calc(6px + env(safe-area-inset-bottom));padding:6px}
+ .mobile-dock-item{min-height:49px;font-size:7px}
+ .mobile-dock-item svg{width:18px;height:18px}
+}
+@media(max-width:350px){
+ .metric-card{align-items:flex-start;flex-direction:column;min-height:100px;padding:9px}
+ .metric-icon{width:27px;height:27px}
+ .metric-copy strong{font-size:16px}
+ .mobile-dock-item{font-size:6px}
+ .mobile-more-sheet{padding:14px}
+ .mobile-more-link{font-size:9px;gap:7px;padding:9px}
+}
 </style></head><body><div id="loginScreen" class="login-screen"><div class="login-layout"><section class="login-brand-panel"><div class="brand-lockup"><svg class="brand-clover" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="cloverFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9eff73"/><stop offset=".55" stop-color="#31e278"/><stop offset="1" stop-color="#087d3d"/></linearGradient></defs><g fill="url(#cloverFill)" stroke="#b8ff9a" stroke-width="1.1"><path d="M31.7 29.5C14.5 30.5 8.6 22.4 11.6 13.8 14.8 4.7 27.1 5.2 32 20.7 36.9 5.2 49.2 4.7 52.4 13.8c3 8.6-2.9 16.7-20.1 15.7Z"/><path d="M34.5 31.7C33.5 14.5 41.6 8.6 50.2 11.6c9.1 3.2 8.6 15.5-6.9 20.4 15.5 4.9 16 17.2 6.9 20.4-8.6 3-16.7-2.9-15.7-20.1Z"/><path d="M32.3 34.5C49.5 33.5 55.4 41.6 52.4 50.2c-3.2 9.1-15.5 8.6-20.4-6.9-4.9 15.5-17.2 16-20.4 6.9-3-8.6 2.9-16.7 20.1-15.7Z"/><path d="M29.5 32.3C30.5 49.5 22.4 55.4 13.8 52.4 4.7 49.2 5.2 36.9 20.7 32c-15.5-4.9-16-17.2-6.9-20.4 8.6-3 16.7 2.9 15.7 20.1Z"/></g><path d="M32 31v21c0 4-2 7-6 9" fill="none" stroke="#6be68a" stroke-width="3.2" stroke-linecap="round"/></svg><div class="brand-wordmark"><strong>FREEHAND</strong><span>COMUNIDAD</span></div></div><div class="login-tagline"><div class="section-eyebrow">CENTRO DE CONTROL</div><h1>Tu comunidad.<br>Tu administración.</h1><p>Un espacio seguro para gestionar jugadores, oportunidades y cada premio de FREEHAND.</p></div></section><div class="login-card-wrap"><section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Supabase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR AL PANEL</button><div class="status" id="loginStatus"></div></section></div></div></div><div id="adminApp" class="admin-app hidden"><aside class="sidebar"><div class="side-brand"><svg class="brand-clover" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="cloverFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9eff73"/><stop offset=".55" stop-color="#31e278"/><stop offset="1" stop-color="#087d3d"/></linearGradient></defs><g fill="url(#cloverFill)" stroke="#b8ff9a" stroke-width="1.1"><path d="M31.7 29.5C14.5 30.5 8.6 22.4 11.6 13.8 14.8 4.7 27.1 5.2 32 20.7 36.9 5.2 49.2 4.7 52.4 13.8c3 8.6-2.9 16.7-20.1 15.7Z"/><path d="M34.5 31.7C33.5 14.5 41.6 8.6 50.2 11.6c9.1 3.2 8.6 15.5-6.9 20.4 15.5 4.9 16 17.2 6.9 20.4-8.6 3-16.7-2.9-15.7-20.1Z"/><path d="M32.3 34.5C49.5 33.5 55.4 41.6 52.4 50.2c-3.2 9.1-15.5 8.6-20.4-6.9-4.9 15.5-17.2 16-20.4 6.9-3-8.6 2.9-16.7 20.1-15.7Z"/><path d="M29.5 32.3C30.5 49.5 22.4 55.4 13.8 52.4 4.7 49.2 5.2 36.9 20.7 32c-15.5-4.9-16-17.2-6.9-20.4 8.6-3 16.7 2.9 15.7 20.1Z"/></g><path d="M32 31v21c0 4-2 7-6 9" fill="none" stroke="#6be68a" stroke-width="3.2" stroke-linecap="round"/></svg><div class="brand-wordmark"><strong>FREEHAND</strong><span>COMUNIDAD</span></div></div><div class="sidebar-label">MENÚ PRINCIPAL</div><nav class="sidebar-nav" aria-label="Navegación principal">
 <button class="nav-link active" type="button" data-nav-target="sectionOverview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></svg><span>Panel general</span></button>
 <button class="nav-link" type="button" data-nav-target="prizeManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18v11H3zM2 6h20v4H2zM12 6v15M12 6H7.5a2.5 2.5 0 1 1 2.3-3.5L12 6Zm0 0h4.5a2.5 2.5 0 1 0-2.3-3.5L12 6Z"/></svg><span>Premios y entregas</span></button>
@@ -153,6 +302,25 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
 </section><section class="content-card" id="createPlayerManagement"><h2>Crear jugador</h2><p class="muted">Creá el usuario y entregale sus datos por WhatsApp. Los usuarios nuevos reciben un PIN de 4 dígitos.</p><label for="newName">Nombre o usuario</label><input id="newName" maxlength="20" placeholder="Ej. jugador123"><button id="createBtn">CREAR JUGADOR Y GENERAR PIN</button><div id="createdResult" class="hidden"><div class="access-data"><div class="access-row"><div><span>USUARIO</span><strong id="newUsername"></strong></div><button class="secondary" id="copyUserBtn" type="button">COPIAR USUARIO</button></div><div class="access-row"><div><span>PIN DE 4 DÍGITOS</span><strong class="pin-value" id="newPin"></strong></div><button class="secondary" id="copyPinBtn" type="button">COPIAR PIN</button></div><div class="access-row"><div><span>LINK DE LA RULETA</span><a id="newLink" href="https://freehandcomunidad.github.io/preguntados-argentina/" target="_blank" rel="noopener noreferrer">Abrir ruleta FREEHAND ↗</a></div><button class="secondary" id="copyLinkBtn" type="button">COPIAR LINK</button></div></div><p class="muted" id="pinHelp"></p><button id="copyAllBtn" type="button">COPIAR TODO PARA WHATSAPP</button></div><div class="status" id="createStatus"></div></section><section class="content-card" id="opportunitiesManagement"><h2>Habilitar oportunidad</h2><p class="muted">Cada carga aprobada o regalo agrega un ciclo: dos tiros y un tercero solo si los primeros dos son SIN PREMIO. Los ciclos extra quedan en cola.</p><label for="grantName">Usuario</label><input id="grantName" maxlength="20" placeholder="Nombre exacto del jugador"><label for="grantCount">Cantidad de oportunidades</label><select id="grantCount"><option value="1">1 oportunidad</option><option value="2">2 oportunidades</option><option value="3">3 oportunidades</option><option value="5">5 oportunidades</option><option value="10">10 oportunidades</option></select><div class="grid"><button id="approveBtn">APROBAR CARGA</button><button id="giftBtn" class="secondary">REGALAR OPORTUNIDAD</button></div><div class="status" id="grantStatus"></div></section><section class="content-card" id="playersManagement"><div class="grid" style="align-items:center"><div><h2>Jugadores y tiros</h2><p class="muted">Estado actualizado desde el servidor. El contador de cargas aprobadas registra desde el 19/11/2026; las aprobaciones anteriores finalizadas no tenían historial individual.</p></div><div style="text-align:right"><button class="secondary" id="refreshBtn">ACTUALIZAR LISTA</button></div></div><div id="players" class="players muted">Todavía no se cargaron jugadores.</div></section><section class="content-card" id="securityManagement"><h2>Seguridad y acceso</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Usuario</label><input id="resetName" maxlength="20" placeholder="Nombre exacto del jugador"><button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section>
 <footer class="app-footer"><span>FREEHAND COMUNIDAD</span><span>Panel de administración · Gestión segura de premios</span></footer>
 </main></div></div>
+
+<nav class="mobile-dock hidden" id="mobileDock" aria-label="Navegación móvil">
+ <button class="mobile-dock-item active" type="button" data-nav-target="sectionOverview" data-dock-primary="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></svg><span>Inicio</span></button>
+ <button class="mobile-dock-item" type="button" data-nav-target="prizeManagement" data-dock-primary="true"><svg viewBox="0 0 24 24"><path d="M3 10h18v11H3zM2 6h20v4H2zM12 6v15"/></svg><span>Premios</span></button>
+ <button class="mobile-dock-item" type="button" data-nav-target="playersManagement" data-dock-primary="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6m3-3h-6"/></svg><span>Jugadores</span></button>
+ <button class="mobile-dock-item" id="mobileMoreToggle" type="button" aria-controls="mobileMoreOverlay" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><path d="M4 5h16M4 19h16"/></svg><span>Más</span></button>
+</nav>
+<div class="mobile-more-overlay hidden" id="mobileMoreOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="mobileMoreTitle">
+ <section class="mobile-more-sheet">
+  <div class="mobile-more-head"><div><strong id="mobileMoreTitle">Más opciones</strong><small>Herramientas de administración</small></div><button class="mobile-more-close" id="mobileMoreClose" type="button" aria-label="Cerrar menú">×</button></div>
+  <div class="mobile-more-grid">
+   <button class="mobile-more-link" type="button" data-nav-target="prizeManagement" data-nav-view="archive"><svg viewBox="0 0 24 24"><path d="M4 4h16v4H4zM5 8v12h14V8M9 12h6"/></svg><span>Historial / Archivo</span></button>
+   <button class="mobile-more-link" type="button" data-nav-target="opportunitiesManagement"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Cargas y oportunidades</span></button>
+   <button class="mobile-more-link" type="button" data-nav-target="createPlayerManagement"><svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v8M15 12h8"/></svg><span>Crear nuevo usuario</span></button>
+   <button class="mobile-more-link" type="button" data-nav-target="securityManagement"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Seguridad y acceso</span></button>
+  </div>
+  <button class="mobile-more-logout" id="mobileLogoutBtn" type="button"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 17l5-5-5-5M15 12H3M21 4v16" stroke="currentColor" fill="none" stroke-width="1.8"/></svg>Cerrar sesión</button>
+ </section>
+</div>
 <div id="prizeHistoryModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="prizeHistoryTitle" aria-hidden="true"><div class="modal-card"><div class="modal-head"><div><div class="section-eyebrow">REGISTRO DE AUDITORÍA</div><h3 id="prizeHistoryTitle">Movimientos del premio</h3></div><button class="modal-close" id="closePrizeHistory" type="button" aria-label="Cerrar">×</button></div><div class="modal-body"><div id="prizeHistoryEvents" class="event-list"></div></div></div></div><script type="module">
 const SUPABASE_URL='https://yiznobpjxksymqqazryr.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_gIJ_EWPdSfm-GLEQmPcL1Q_AeQKNa2O';
@@ -186,7 +354,7 @@ const byId=id=>document.getElementById(id);const val=id=>byId(id).value.trim();
 function status(id,msg,ok=false){const el=byId(id);el.textContent=msg;el.className='status '+(ok?'ok':'err');}
 function adminArgs(extra={}){return {adminKey,...extra};}
 // Keep admin key only in memory; establish auth first and then probe server key.
-byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{await call('adminListPlayers')(adminArgs());byId('loginScreen').classList.add('hidden');byId('adminApp').classList.remove('hidden');byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await Promise.all([refresh(),refreshPrizes()]);}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
+byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{await call('adminListPlayers')(adminArgs());byId('loginScreen').classList.add('hidden');byId('adminApp').classList.remove('hidden');byId('mobileDock').classList.remove('hidden');byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await Promise.all([refresh(),refreshPrizes()]);}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
 const PLAYER_ROULETTE_URL='https://freehandcomunidad.github.io/preguntados-argentina/';
 async function copyAccessText(value,label){
  try{
@@ -281,19 +449,19 @@ function renderPrizeRows(){
  }else{
   rows.forEach(a=>{
    const tr=document.createElement('tr');
-   const dateCell=document.createElement('td');dateCell.className='table-date';
+   const dateCell=document.createElement('td');dateCell.className='table-date';dateCell.dataset.label='Fecha';
    const created=new Date(a.created_at);
    const dateText=document.createElement('strong');dateText.textContent=Number.isNaN(created.getTime())?'—':created.toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
    const timeText=document.createElement('small');timeText.textContent=Number.isNaN(created.getTime())?'':created.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
    dateCell.append(dateText,timeText);
-   const playerCell=document.createElement('td'),playerWrap=document.createElement('div');playerWrap.className='player-cell';
+   const playerCell=document.createElement('td'),playerWrap=document.createElement('div');playerCell.dataset.label='Jugador';playerWrap.className='player-cell';
    const avatar=document.createElement('span');avatar.className='player-avatar';avatar.textContent=String(a.username||'FH').split(/[^a-z0-9]+/i).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'FH';
    const name=document.createElement('span');name.className='player-name';name.textContent=a.username||'Jugador';playerWrap.append(avatar,name);playerCell.append(playerWrap);
-   const prizeCell=document.createElement('td'),prizeWrap=document.createElement('div');prizeWrap.className='prize-label-cell';
+   const prizeCell=document.createElement('td'),prizeWrap=document.createElement('div');prizeCell.dataset.label='Premio';prizeWrap.className='prize-label-cell';
    const typeIcon=document.createElement('span');typeIcon.className='prize-type-icon '+(a.prize_type==='bonus'?'bonus':a.prize_type==='raffle'?'raffle':'');typeIcon.textContent=a.prize_type==='fichas'?'◈':a.prize_type==='bonus'?'%':'✦';
    const prizeLabel=document.createElement('span');prizeLabel.className='prize-label-text';prizeLabel.textContent=a.prize_label||a.prize_key;prizeWrap.append(typeIcon,prizeLabel);prizeCell.append(prizeWrap);
-   const statusCell=document.createElement('td'),state=document.createElement('span');state.className='prize-status '+(pendingStatuses.includes(a.status)?'pending':a.status==='cancelled'?'cancelled':'done');state.textContent=statusNames[a.status]||a.status;statusCell.append(state);
-   const actionsCell=document.createElement('td'),actions=document.createElement('div');actions.className='action-cell';
+   const statusCell=document.createElement('td'),state=document.createElement('span');statusCell.dataset.label='Estado';state.className='prize-status '+(pendingStatuses.includes(a.status)?'pending':a.status==='cancelled'?'cancelled':'done');state.textContent=statusNames[a.status]||a.status;statusCell.append(state);
+   const actionsCell=document.createElement('td'),actions=document.createElement('div');actionsCell.dataset.label='Acción';actions.className='action-cell';
    if(a.status==='pending_delivery'){
     const amount=document.createElement('span');amount.className='prize-amount';amount.textContent=Number(a.fichas_amount||0).toLocaleString('es-AR')+' fichas';
     const button=document.createElement('button');button.type='button';button.className='action-btn action-primary';button.innerHTML="<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg>"+'<span>Confirmar entrega</span>';
@@ -439,15 +607,39 @@ async function refresh(){
 }
 byId('refreshBtn').onclick=async()=>{await Promise.all([refresh(),refreshPrizes()]);};
 byId('resetPinBtn').onclick=async()=>{try{const r=(await call('adminResetPin')(adminArgs({username:val('resetName')}))).data;byId('resetResult').textContent='Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).'; }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}};
-byId('logoutBtn').onclick=()=>{adminKey='';byId('adminKey').value='';byId('panel').classList.add('hidden');byId('adminApp').classList.add('hidden');byId('loginScreen').classList.remove('hidden');byId('loginCard').classList.remove('hidden');status('loginStatus','Sesión administrativa cerrada.',true);};
+byId('logoutBtn').onclick=()=>{adminKey='';byId('adminKey').value='';byId('panel').classList.add('hidden');byId('adminApp').classList.add('hidden');byId('mobileDock').classList.add('hidden');closeMobileMore();byId('loginScreen').classList.remove('hidden');byId('loginCard').classList.remove('hidden');status('loginStatus','Sesión administrativa cerrada.',true);};
 
+function closeMobileMore(){
+ const overlay=byId('mobileMoreOverlay');
+ if(!overlay)return;
+ overlay.classList.add('hidden');
+ overlay.setAttribute('aria-hidden','true');
+ byId('mobileMoreToggle')?.setAttribute('aria-expanded','false');
+}
+function openMobileMore(){
+ const overlay=byId('mobileMoreOverlay');
+ if(!overlay)return;
+ overlay.classList.remove('hidden');
+ overlay.setAttribute('aria-hidden','false');
+ byId('mobileMoreToggle')?.setAttribute('aria-expanded','true');
+}
 function navigateAdmin(target,view){
- if(view)setPrizeView(view);
+ if(target==='prizeManagement')setPrizeView(view||'pending');
+ else if(view)setPrizeView(view);
  const element=byId(target);if(!element)return;
  const wantedView=view||'';
  document.querySelectorAll('.nav-link').forEach(button=>button.classList.toggle('active',button.dataset.navTarget===target&&(button.dataset.navView||'')===wantedView));
+ document.querySelectorAll('.mobile-dock-item[data-dock-primary]').forEach(button=>button.classList.toggle('active',button.dataset.navTarget===target));
+ const coreTargets=['sectionOverview','prizeManagement','playersManagement'];
+ byId('mobileMoreToggle')?.classList.toggle('active',!coreTargets.includes(target));
  element.scrollIntoView({behavior:'smooth',block:'start'});
+ closeMobileMore();
 }
 document.querySelectorAll('[data-nav-target]').forEach(button=>button.addEventListener('click',()=>navigateAdmin(button.dataset.navTarget,button.dataset.navView||null)));
+byId('mobileMoreToggle').onclick=openMobileMore;
+byId('mobileMoreClose').onclick=closeMobileMore;
+byId('mobileMoreOverlay').addEventListener('click',event=>{if(event.target.id==='mobileMoreOverlay')closeMobileMore();});
+byId('mobileLogoutBtn').onclick=()=>{closeMobileMore();byId('logoutBtn').click();};
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMobileMore();});
 byId('sidebarLogoutBtn').onclick=()=>byId('logoutBtn').click();
 </script></body></html>
