@@ -445,6 +445,7 @@ function status(id,msg,ok=false){const el=byId(id);el.textContent=msg;el.classNa
 function adminArgs(extra={}){return {adminKey,...extra};}
 function applyAdminRole(){
  const isOwner=currentAdmin.role==='owner',isAuditor=currentAdmin.role==='auditor';
+ ['createPlayerManagement','opportunitiesManagement'].forEach(id=>byId(id)?.classList.toggle('hidden',isAuditor));
  document.querySelectorAll('[data-owner-only]').forEach(element=>element.classList.toggle('hidden',!isOwner));
  document.querySelectorAll('.catalog-row input,.catalog-row select').forEach(input=>input.disabled=!isOwner);
  if(!isOwner){byId('catalogSaveBtn').disabled=true;byId('catalogAddBtn').disabled=true;}
@@ -456,7 +457,7 @@ function applyAdminRole(){
  document.querySelectorAll('.action-cell button,.action-cell input').forEach(control=>{
   if(isAuditor&&!control.classList.contains('action-quiet'))control.disabled=true;
  });
- ['approveBtn','giftBtn'].forEach(id=>{const button=byId(id);if(button)button.disabled=isAuditor;});
+ ['approveBtn','giftBtn','createBtn'].forEach(id=>{const button=byId(id);if(button)button.disabled=isAuditor;});
  const adjustForm=byId('profileAdjustForm');
  if(adjustForm)adjustForm.querySelectorAll('input,button').forEach(input=>input.disabled=!isOwner);
 }
@@ -732,6 +733,7 @@ function renderPlayerProfile(data){
   }catch(error){status('profileAdjustStatus',error.message||'No se pudo registrar el ajuste.');}
   finally{button.disabled=false;}
  });
+ applyAdminRole();
 }
 
 // =====================================
