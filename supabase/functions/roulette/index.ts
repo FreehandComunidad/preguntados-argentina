@@ -117,6 +117,115 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       return json(data);
     }
 
+    if (action === "adminGetPlayerProfile") {
+      const username = nameOf(body.username);
+      const id = slugOf(username);
+      const [playerResult, awardsResult, spinsResult, opportunitiesResult, ledgerResult] = await Promise.all([
+        db.from("roulette_players")
+          .select("id,username,active_cycle,queued_cycles,fichas_balance,approved_loads_count,bonus_prizes,used_bonus_prizes,quad_bike_numbers,created_at,last_spin_at")
+          .eq("id",id).maybeSingle(),
+        db.from("roulette_prize_awards").select("id,spin_id,cycle_id,spin_number,prize_key,prize_label,prize_type,fichas_amount,bonus_percent,status,created_at,resolved_at,resolved_by,resolution_note")
+          .eq("player_id",id).order("created_at",{ascending:false}).limit(500),
+        db.from("roulette_spins").select("id,cycle_id,spin_number,prize_key,result,bonus_percent,created_at")
+          .eq("player_id",id).order("created_at",{ascending:false}).limit(500),
+        db.from("roulette_opportunities").select("id,source,status,created_at,activated_at,completed_at,cancelled_at")
+          .eq("player_id",id).order("created_at",{ascending:false}).limit(500),
+        db.from("roulette_fichas_ledger").select("id,movement_type,amount_delta,balance_before,balance_after,description,actor,award_id,created_at")
+          .eq("player_id",id).order("created_at",{ascending:false}).limit(500)
+      ]);
+      for (const item of [playerResult,awardsResult,spinsResult,opportunitiesResult,ledgerResult]) {
+        if (item.error) throw item.error;
+      }
+      const p=playerResult.data;
+      if(!p) throw new Error("PLAYER_NOT_FOUND");
+      return json({
+        player:{
+          username:p.username,fichasBalance:Number(p.fichas_balance||0),
+          approvedLoads:Number(p.approved_loads_count||0),queuedCycles:Number(p.queued_cycles||0),
+          activeCycle:p.active_cycle||null,bonusPrizes:p.bonus_prizes||[],
+          usedBonusPrizes:p.used_bonus_prizes||[],quadBikeNumbers:Number(p.quad_bike_numbers||0),
+          createdAt:p.created_at,lastSpinAt:p.last_spin_at
+        },
+        awards:awardsResult.data||[],spins:spinsResult.data||[],
+        opportunities:opportunitiesResult.data||[],ledger:ledgerResult.data||[]
+      });
+    }
+
+    if (action === "adminListCatalog") {
+      const {data,error}=await db.from("roulette_prize_catalog").select("*").order("sort_order",{ascending:true});
+      if(error)throw error;
+      return json({items:data||[]});
+    }
+
+    if (action === "adminSaveCatalog") {
+      const rows=Array.isArray(body.items)?body.items:[];
+      if(rows.length<2||rows.length>40)throw new Error("El catálogo debe contener entre 2 y 40 premios.");
+      const seen=new Set();
+      const clean=rows.map((item:any,index:number)=>{
+        const prizeKey=String(item.prize_key||"").trim().toLowerCase();
+        const label=String(item.label||"").trim();
+        const prizeType=String(item.prize_type||"");
+        const fichasAmount=Number(item.fichas_amount||0);
+        const bonusPercent=Number(item.bonus_percent||0);
+        const probabilityFirst=Number(item.probability_first||0);
+        const probabilityThird=Number(item.probability_third||0);
+        const sortOrder=Number(item.sort_order??index);
+        const isActive=item.is_active===true;
+        const imageUrl=item.image_url?String(item.image_url).trim():null;
+        if(!/^[a-z0-9_-]{2,40}$/.test(prizeKey)||seen.has(prizeKey))throw new Error("Cada premio necesita una clave única de 2 a 40 caracteres.");
+        seen.add(prizeKey);
+        if(label.length<2||label.length>100)throw new Error("El nombre de cada premio debe tener entre 2 y 100 caracteres.");
+        if(!["none","bonus","fichas","raffle"].includes(prizeType))throw new Error("La categoría de un premio no es válida.");
+        if(!Number.isSafeInteger(fichasAmount)||fichasAmount<0||!Number.isInteger(bonusPercent)||bonusPercent<0||bonusPercent>100)throw new Error("El importe o porcentaje del premio no es válido.");
+        if(!Number.isInteger(probabilityFirst)||probabilityFirst<0||probabilityFirst>10000||!Number.isInteger(probabilityThird)||probabilityThird<0||probabilityThird>10000)throw new Error("Las probabilidades deben ser porcentajes válidos con hasta dos decimales.");
+        if(!Number.isInteger(sortOrder)||sortOrder<0||sortOrder>10000)throw new Error("El orden del premio no es válido.");
+        if(prizeType==="none"&&(fichasAmount!==0||bonusPercent!==0))throw new Error("SIN PREMIO no puede tener fichas ni porcentaje.");
+        if(prizeType==="bonus"&&(fichasAmount!==0||bonusPercent===0))throw new Error("Un bono debe tener un porcentaje y no puede tener fichas.");
+        if(prizeType==="fichas"&&(fichasAmount<=0||bonusPercent!==0))throw new Error("Un premio de fichas debe tener una cantidad mayor a cero.");
+        if(prizeType==="raffle"&&(fichasAmount!==0||bonusPercent!==0))throw new Error("Un premio de sorteo no puede sumar fichas ni porcentaje.");
+        if(imageUrl&&(!/^https:\/\//i.test(imageUrl)||imageUrl.length>1000))throw new Error("Las imágenes del catálogo deben usar una dirección HTTPS válida.");
+        return {prize_key:prizeKey,label,prize_type:prizeType,fichas_amount:fichasAmount,
+          bonus_percent:bonusPercent,probability_first:probabilityFirst,probability_third:probabilityThird,
+          image_url:imageUrl,is_active:isActive,sort_order:sortOrder,updated_at:new Date().toISOString()};
+      });
+      const active=clean.filter((item:any)=>item.is_active);
+      const totalFirst=active.reduce((sum:number,item:any)=>sum+item.probability_first,0);
+      const totalThird=active.reduce((sum:number,item:any)=>sum+item.probability_third,0);
+      if(totalFirst!==10000||totalThird!==10000)throw new Error("Las probabilidades activas deben sumar exactamente 100,00% en los dos tipos de giro.");
+      if(!active.some((item:any)=>item.prize_type==="none"))throw new Error("Debe quedar al menos un resultado SIN PREMIO activo.");
+      const {data,error}=await db.from("roulette_prize_catalog").upsert(clean,{onConflict:"prize_key"}).select("*").order("sort_order",{ascending:true});
+      if(error)throw error;
+      return json({items:data||[],probabilityFirst:totalFirst,probabilityThird:totalThird});
+    }
+
+    if (action === "adminGetReports") {
+      const [playersResult,spinsResult,awardsResult,opportunitiesResult,ledgerResult]=await Promise.all([
+        db.from("roulette_players").select("id,username,fichas_balance,approved_loads_count,queued_cycles,created_at,last_spin_at").order("created_at",{ascending:false}).limit(1000),
+        db.from("roulette_spins").select("id,username,prize_key,result,bonus_percent,created_at").order("created_at",{ascending:false}).limit(5000),
+        db.from("roulette_prize_awards").select("id,username,prize_type,prize_label,fichas_amount,bonus_percent,status,created_at,resolved_at").order("created_at",{ascending:false}).limit(5000),
+        db.from("roulette_opportunities").select("id,player_id,source,status,created_at,completed_at,cancelled_at").order("created_at",{ascending:false}).limit(5000),
+        db.from("roulette_fichas_ledger").select("id,username,movement_type,amount_delta,balance_before,balance_after,description,actor,created_at").order("created_at",{ascending:false}).limit(5000)
+      ]);
+      for(const item of [playersResult,spinsResult,awardsResult,opportunitiesResult,ledgerResult])if(item.error)throw item.error;
+      return json({generatedAt:new Date().toISOString(),players:playersResult.data||[],spins:spinsResult.data||[],
+        awards:awardsResult.data||[],opportunities:opportunitiesResult.data||[],ledger:ledgerResult.data||[]});
+    }
+
+    if (action === "adminListNotifications") {
+      const {data,error}=await db.from("roulette_prize_awards")
+        .select("id,username,prize_type,prize_label,fichas_amount,bonus_percent,status,created_at")
+        .in("status",["pending_delivery","pending_use","pending_assignment"])
+        .order("created_at",{ascending:true}).limit(200);
+      if(error)throw error;
+      const items=data||[];
+      const now=Date.now();
+      const stale=items.filter((item:any)=>now-new Date(item.created_at).getTime()>48*60*60*1000).length;
+      return json({items,pendingCount:items.length,staleCount:stale,
+        pendingFichas:items.filter((x:any)=>x.status==="pending_delivery").length,
+        pendingBonuses:items.filter((x:any)=>x.status==="pending_use").length,
+        pendingAssignments:items.filter((x:any)=>x.status==="pending_assignment").length});
+    }
+
     if (action === "adminListPlayers") {
       const { data, error } = await db.from("roulette_players").select("*").order("created_at", { ascending:false }).limit(250);
       if (error) throw error;
@@ -244,6 +353,17 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       return json(data);
     }
 
+    if (action === "adminAdjustFichas") {
+      const delta=Number(body.delta);
+      const note=typeof body.note==="string"?body.note.trim().slice(0,300):"";
+      if(!Number.isSafeInteger(delta)||delta===0)throw new Error("Ingresá una cantidad de fichas distinta de cero.");
+      const {data,error}=await db.rpc("roulette_admin_adjust_fichas",{
+        p_id:id,p_delta:delta,p_actor:"administrador",p_note:note
+      });
+      if(error)throw error;
+      return json(data);
+    }
+
     if (action === "adminMarkBonusUsed") {
       const username = nameOf(body.username), id = slugOf(username);
       const cycleId = String(body.cycleId || "").trim();
@@ -289,9 +409,15 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
               ? "Ese número ya fue asignado o el premio ya fue resuelto."
               : message.includes("INVALID_RAFFLE_NUMBER")
                 ? "Ingresá un número válido para el sorteo."
-                : message.includes("INVALID_OPPORTUNITY_SOURCE")
-                  ? "El origen de la oportunidad no es válido."
-                  : message;
+                : message.includes("INSUFFICIENT_FICHAS_BALANCE")
+                  ? "El ajuste dejaría el saldo del jugador por debajo de cero."
+                  : message.includes("FICHAS_ADJUSTMENT_REASON_REQUIRED")
+                    ? "Indicá el motivo del ajuste de fichas."
+                    : message.includes("INVALID_FICHAS_ADJUSTMENT")
+                      ? "El importe del ajuste no es válido."
+                      : message.includes("PRIZE_CATALOG_PROBABILITIES_MUST_TOTAL_100_PERCENT")
+                        ? "El catálogo tiene probabilidades inválidas. Deben sumar 100%."
+                        : message;
     return json({ error:friendly }, errorStatus(message));
   }
 });
