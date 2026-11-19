@@ -703,7 +703,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 .roulette-wheel{position:relative!important;width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;border:2px solid #ffe6a0!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.10),inset 0 0 24px rgba(0,0,0,.24)!important;image-rendering:auto!important}
 .roulette-wheel:before{display:none!important;content:none!important}
 .roulette-label{position:absolute!important;inset:0!important;z-index:2!important;display:block!important;pointer-events:none!important;transform-origin:50% 50%!important}
-.roulette-label span{position:absolute!important;left:50%!important;top:16%!important;width:22%!important;max-width:78px!important;min-width:0!important;padding:0!important;transform:translateX(-50%)!important;transform-origin:50% 50%!important;text-align:center!important;white-space:pre-line!important;font-family:Arial,Helvetica,sans-serif!important;font-size:clamp(7px,2.25vw,10px)!important;line-height:1.1!important;letter-spacing:.1px!important;font-weight:900!important;color:#f5fff7!important;text-shadow:0 1px 3px #000,0 0 7px rgba(0,0,0,.55)!important}
+.roulette-label span{position:absolute!important;left:50%!important;top:16%!important;width:18%!important;max-width:78px!important;min-width:0!important;padding:0!important;transform:translateX(-50%)!important;transform-origin:50% 50%!important;text-align:center!important;white-space:pre-line!important;font-family:Arial,Helvetica,sans-serif!important;font-size:clamp(7px,2.25vw,10px)!important;line-height:1.1!important;letter-spacing:.1px!important;font-weight:900!important;color:#f5fff7!important;text-shadow:0 1px 3px #000,0 0 7px rgba(0,0,0,.55)!important}
 .roulette-label span:before{display:none!important;content:none!important}
 .roulette-label.prize span{color:#fff3c4!important;text-shadow:0 1px 3px #000,0 0 8px rgba(255,211,77,.26)!important}
 .roulette-label.b5 span{color:#d8ffe4!important}
@@ -717,7 +717,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 .roulette-hub small{display:block!important;color:#f3dfaa!important;font-size:8px!important;letter-spacing:2px!important;margin:0!important;text-shadow:none!important}
 .roulette-pointer{filter:drop-shadow(0 2px 4px rgba(0,0,0,.65)) drop-shadow(0 0 8px rgba(255,214,111,.35))!important;border-left-width:17px!important;border-right-width:17px!important;border-bottom:34px solid #fff0b1!important}
 .roulette-pointer:after{box-shadow:0 0 12px rgba(255,225,146,.8)!important;background:#fff5d4!important}
-@media(max-width:520px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important}.roulette-label span{top:16.5%!important;width:22%!important;font-size:clamp(6.8px,2.1vw,8.5px)!important}.roulette-label.b20 span{font-size:clamp(7.5px,2.2vw,9px)!important}}
+@media(max-width:520px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important}.roulette-label span{top:16.5%!important;width:18%!important;font-size:clamp(6.8px,2.1vw,8.5px)!important}.roulette-label.b20 span{font-size:clamp(7.5px,2.2vw,9px)!important}}
 @media(max-width:360px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 18px)!important}}
 </style>
 
@@ -1550,6 +1550,9 @@ function rouletteBuildLabels(catalog){
   }
   const span=document.createElement('span');
   span.textContent=shortLabel(item);
+  // Mantener las etiquetas legibles en la mitad inferior de la rueda.
+  const labelAngle=index*segment;
+  span.style.transform='translateX(-50%)'+(labelAngle>90&&labelAngle<270?' rotate(180deg)':'');
   if(item.image_url)span.style.top='23%';
   label.append(span);wheel.append(label);
  });
