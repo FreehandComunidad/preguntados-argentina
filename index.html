@@ -1522,17 +1522,23 @@ function rouletteBuildLabels(catalog){
  items.forEach((item,index)=>{
   const label=document.createElement('div');label.className='roulette-label'+(item.prize_type==='bonus'?' b'+Number(item.bonus_percent):item.prize_type==='none'?' none-alt':' prize');
   label.style.transform='rotate('+(index*segment)+'deg)';
+  if(item.image_url){
+   const image=document.createElement('img');image.src=item.image_url;image.alt='';image.loading='lazy';image.referrerPolicy='no-referrer';
+   image.style.cssText='position:absolute;left:50%;top:2.5%;transform:translateX(-50%);width:27px;height:27px;object-fit:contain;filter:drop-shadow(0 2px 4px #000b)';
+   label.append(image);
+  }
   const span=document.createElement('span');
   let text=String(item.label||item.prize_key).replace(' FICHAS','').replace('BONUS ','');
   if(text.length>18)text=text.slice(0,16)+'…';
-  span.textContent=text;label.append(span);wheel.append(label);
+  span.textContent=text;if(item.image_url)span.style.top='19%';
+  label.append(span);wheel.append(label);
  });
  wheel.dataset.prizeKeys=items.map(x=>x.prize_key).join('|');
 }
 function rouletteSectorForPrize(key){
  const keys=(document.getElementById('rouletteWheel')?.dataset.prizeKeys||'').split('|');
  const index=keys.indexOf(key),total=keys.length||ROULETTE_RESULTS.length;
- return index<0?0:(index+.5)*360/total;
+ return index<0?0:index*360/total;
 }
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 function rouletteCredentials(){return {username:rouletteNormalizeName(document.getElementById('username')?.value||''),pin:(document.getElementById('roulettePin')?.value||'').trim()};}
@@ -1718,15 +1724,17 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommunity();});
 (function(){
  let deferredInstall=null;
  const installButton=document.getElementById('freehandInstallBtn');
+ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+ if(ios&&installButton){installButton.textContent='＋ CÓMO INSTALAR';installButton.classList.remove('hidden');}
  window.addEventListener('beforeinstallprompt',event=>{
   event.preventDefault();deferredInstall=event;
-  installButton?.classList.remove('hidden');
+  if(installButton){installButton.textContent='⬇ INSTALAR FREEHAND';installButton.classList.remove('hidden');}
  });
  installButton?.addEventListener('click',async()=>{
   if(deferredInstall){
    deferredInstall.prompt();await deferredInstall.userChoice;
    deferredInstall=null;installButton.classList.add('hidden');
-  }else if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
+  }else if(ios){
    alert('Para instalar FREEHAND en iPhone: abrí esta página en Safari, tocá Compartir y elegí “Agregar a pantalla de inicio”.');
   }
  });
