@@ -21,10 +21,54 @@
 .bonus-use-button{margin:0!important;padding:6px 9px!important;font-size:10px!important;letter-spacing:.2px}
 .player-actions .cancel-load-button{background:#5b1720!important;color:#ffe9e9!important;border:1px solid rgba(255,120,120,.35)!important}
 @media(max-width:520px){.bonus-item{align-items:flex-start}.bonus-use-button{margin:0!important}}.player button{margin:3px 0 3px 6px;padding:9px 11px;font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#163a25;border:1px solid var(--line);font-size:11px;color:var(--gold)}@media(max-width:520px){.player{grid-template-columns:1fr}.player-actions{display:flex;flex-wrap:wrap}.card{padding:16px}}
+
+.prize-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.prize-header h2{margin:0 0 5px}.prize-header p{margin:0}
+.prize-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:16px 0}
+.prize-stat{padding:13px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#0d2b1a,#06140c)}
+.prize-stat span{display:block;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.prize-stat strong{display:block;color:var(--gold);font-size:23px;font-weight:1000;margin-top:5px}
+.prize-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:15px 0}
+.prize-tabs{display:flex;gap:7px;flex-wrap:wrap}
+.prize-tab{margin:0;padding:9px 13px;background:#102b1b;border:1px solid var(--line);color:#dfeee4;font-size:11px}
+.prize-tab.active{background:linear-gradient(135deg,#dfffa0,#33df73);color:#06150b;border-color:#57ff8a}
+#prizeSearch{max-width:290px}.prize-list{display:grid;gap:10px}
+.prize-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:13px;border:1px solid #ffffff16;border-radius:14px;background:#04130b}
+.prize-row-main{min-width:0}
+.prize-row-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:900;color:#f5faf6}
+.prize-row-label{color:var(--gold);font-weight:1000}
+.prize-row-meta{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.5}
+.prize-state{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:#122d1c;color:#c9e8d2;font-size:10px;font-weight:850}
+.prize-state.pending{border-color:#d5a93d;background:#342606;color:#ffe18a}
+.prize-state.done{border-color:#43be72;background:#082a17;color:#a8f5bd}
+.prize-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.prize-actions button{margin:0;padding:10px 12px;font-size:11px}
+.prize-actions .confirm-delivery{background:linear-gradient(135deg,#fff0a5,#e5b431);color:#1d1605}
+.prize-actions .assign-number{background:#17452b;color:#e8fff0;border:1px solid #57ff8a}
+.prize-actions input{width:130px;padding:9px 10px}
+.prize-amount{font-size:18px;font-weight:1000;color:#f6d66f}
+.prize-empty{padding:24px 15px;text-align:center;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
+@media(max-width:620px){.prize-row{grid-template-columns:1fr}.prize-actions{justify-content:flex-start}.prize-actions input{width:125px}#prizeSearch{max-width:none}.prize-header>button{width:100%}}
 </style></head><body><div class="wrap"><header><h1>FREEHAND · GESTIÓN DE RULETA</h1><p>Panel privado de altas, oportunidades y control de jugadores</p></header>
-<section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Firebase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR AL PANEL</button><div class="status" id="loginStatus"></div></section>
+<section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Supabase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR AL PANEL</button><div class="status" id="loginStatus"></div></section>
 <main id="panel" class="hidden"><div class="grid"><section class="card"><h2>Crear jugador</h2><p class="muted">Creá el usuario y entregale sus datos por WhatsApp. Los usuarios nuevos reciben un PIN de 4 dígitos.</p><label for="newName">Nombre o usuario</label><input id="newName" maxlength="20" placeholder="Ej. jugador123"><button id="createBtn">CREAR JUGADOR Y GENERAR PIN</button><div id="createdResult" class="hidden"><div class="access-data"><div class="access-row"><div><span>USUARIO</span><strong id="newUsername"></strong></div><button class="secondary" id="copyUserBtn" type="button">COPIAR USUARIO</button></div><div class="access-row"><div><span>PIN DE 4 DÍGITOS</span><strong class="pin-value" id="newPin"></strong></div><button class="secondary" id="copyPinBtn" type="button">COPIAR PIN</button></div><div class="access-row"><div><span>LINK DE LA RULETA</span><a id="newLink" href="https://freehandcomunidad.github.io/preguntados-argentina/" target="_blank" rel="noopener noreferrer">Abrir ruleta FREEHAND ↗</a></div><button class="secondary" id="copyLinkBtn" type="button">COPIAR LINK</button></div></div><p class="muted" id="pinHelp"></p><button id="copyAllBtn" type="button">COPIAR TODO PARA WHATSAPP</button></div><div class="status" id="createStatus"></div></section>
 <section class="card"><h2>Habilitar oportunidad</h2><p class="muted">Cada carga aprobada o regalo agrega un ciclo: dos tiros y un tercero solo si los primeros dos son SIN PREMIO. Los ciclos extra quedan en cola.</p><label for="grantName">Usuario</label><input id="grantName" maxlength="20" placeholder="Nombre exacto del jugador"><label for="grantCount">Cantidad de oportunidades</label><select id="grantCount"><option value="1">1 oportunidad</option><option value="2">2 oportunidades</option><option value="3">3 oportunidades</option><option value="5">5 oportunidades</option><option value="10">10 oportunidades</option></select><div class="grid"><button id="approveBtn">APROBAR CARGA</button><button id="giftBtn" class="secondary">REGALAR OPORTUNIDAD</button></div><div class="status" id="grantStatus"></div></section></div>
+<section class="card" id="prizeManagement">
+ <div class="prize-header">
+  <div><h2>Premios y entregas</h2><p class="muted">Los premios de fichas se acreditan únicamente cuando confirmás la entrega. Lo resuelto pasa al archivo.</p></div>
+  <button class="secondary" id="prizeRefreshBtn" type="button">ACTUALIZAR PREMIOS</button>
+ </div>
+ <div class="prize-summary" id="prizeSummary"></div>
+ <div class="prize-toolbar">
+  <div class="prize-tabs">
+   <button id="prizesPendingTab" class="prize-tab active" type="button">PENDIENTES</button>
+   <button id="prizesArchiveTab" class="prize-tab" type="button">ARCHIVO</button>
+  </div>
+  <input id="prizeSearch" type="search" placeholder="Buscar jugador o premio…" aria-label="Buscar jugador o premio">
+ </div>
+ <div id="prizeRows" class="prize-list muted">Cargando premios…</div>
+ <div class="status" id="prizeStatus"></div>
+</section>
 <section class="card"><div class="grid" style="align-items:center"><div><h2>Jugadores y tiros</h2><p class="muted">Estado actualizado desde el servidor. El contador de cargas aprobadas registra desde el 19/11/2026; las aprobaciones anteriores finalizadas no tenían historial individual.</p></div><div style="text-align:right"><button class="secondary" id="refreshBtn">ACTUALIZAR LISTA</button></div></div><div id="players" class="players muted">Todavía no se cargaron jugadores.</div></section>
 <section class="card"><h2>Herramientas</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Usuario</label><input id="resetName" maxlength="20" placeholder="Nombre exacto del jugador"><button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section></main></div>
 <script type="module">
@@ -60,7 +104,7 @@ const byId=id=>document.getElementById(id);const val=id=>byId(id).value.trim();
 function status(id,msg,ok=false){const el=byId(id);el.textContent=msg;el.className='status '+(ok?'ok':'err');}
 function adminArgs(extra={}){return {adminKey,...extra};}
 // Keep admin key only in memory; establish auth first and then probe server key.
-byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{await call('adminListPlayers')(adminArgs());byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await refresh();}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
+byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{await call('adminListPlayers')(adminArgs());byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await Promise.all([refresh(),refreshPrizes()]);}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
 const PLAYER_ROULETTE_URL='https://freehandcomunidad.github.io/preguntados-argentina/';
 async function copyAccessText(value,label){
  try{
@@ -101,6 +145,133 @@ byId('copyAllBtn').onclick=()=>{
 };
 async function grant(which){try{const name=val('grantName'),count=which==='adminApproveLoad'?1:Number(val('grantCount'));const r=(await call(which)(adminArgs({username:name,count}))).data;status('grantStatus',`${which==='adminApproveLoad'?'Carga aprobada':'Oportunidad regalada'} para ${r.username}. Ciclos en espera: ${r.queuedCycles}.`,true);await refresh();}catch(e){status('grantStatus',e.message||'No se pudo habilitar.');}}
 byId('approveBtn').onclick=()=>grant('adminApproveLoad');byId('giftBtn').onclick=()=>grant('adminGrantCycles');
+let prizeAwards=[];
+let prizeSummary={};
+let prizeView='pending';
+function prizeDate(value){
+ if(!value)return 'Fecha no disponible';
+ const date=new Date(value);
+ return Number.isNaN(date.getTime())?'Fecha no disponible':date.toLocaleString('es-AR');
+}
+function renderPrizeSummary(){
+ const box=byId('prizeSummary');
+ const items=[
+  ['FICHAS POR ENTREGAR',Number(prizeSummary.pendingFichasTotal||0).toLocaleString('es-AR')],
+  ['ENTREGAS PENDIENTES',Number(prizeSummary.pendingFichasCount||0).toLocaleString('es-AR')],
+  ['BONOS PENDIENTES',Number(prizeSummary.pendingBonuses||0).toLocaleString('es-AR')],
+  ['PREMIOS ARCHIVADOS',Number(prizeSummary.archivedCount||0).toLocaleString('es-AR')]
+ ];
+ box.innerHTML='';
+ items.forEach(([label,value])=>{
+  const card=document.createElement('div');card.className='prize-stat';
+  const name=document.createElement('span');name.textContent=label;
+  const amount=document.createElement('strong');amount.textContent=value;
+  card.append(name,amount);box.append(card);
+ });
+}
+function renderPrizeRows(){
+ const box=byId('prizeRows');
+ const query=(byId('prizeSearch').value||'').trim().toLocaleLowerCase('es');
+ const pendingStatuses=['pending_delivery','pending_use','pending_assignment'];
+ const rows=prizeAwards.filter(a=>{
+  const pending=pendingStatuses.includes(a.status);
+  if(prizeView==='pending'&&!pending)return false;
+  if(prizeView==='archive'&&pending)return false;
+  const text=[a.username,a.prize_label,a.prize_key,a.assigned_number,a.resolution_note].join(' ').toLocaleLowerCase('es');
+  return !query||text.includes(query);
+ });
+ box.innerHTML='';
+ if(!rows.length){
+  const empty=document.createElement('div');empty.className='prize-empty';
+  empty.textContent=prizeView==='pending'?'No hay premios pendientes. ¡Todo está al día!':'Todavía no hay premios en el archivo.';
+  box.append(empty);return;
+ }
+ rows.forEach(a=>{
+  const row=document.createElement('div');row.className='prize-row';
+  const main=document.createElement('div');main.className='prize-row-main';
+  const title=document.createElement('div');title.className='prize-row-title';
+  const player=document.createElement('span');player.textContent=a.username||'Jugador';
+  const label=document.createElement('span');label.className='prize-row-label';label.textContent=a.prize_label||a.prize_key;
+  title.append(player,document.createTextNode(' · '),label);
+  const state=document.createElement('span');state.className='prize-state '+(pendingStatuses.includes(a.status)?'pending':'done');
+  const statusNames={
+   pending_delivery:'PENDIENTE DE ENTREGA',pending_use:'PENDIENTE DE CANJE',pending_assignment:'PENDIENTE DE ASIGNAR',
+   delivered:'ENTREGADO Y ACREDITADO',redeemed:'BONO CANJEADO',assigned:'NÚMERO ASIGNADO',cancelled:'ANULADO'
+  };
+  state.textContent=statusNames[a.status]||a.status;
+  const meta=document.createElement('div');meta.className='prize-row-meta';
+  meta.textContent='Obtenido: '+prizeDate(a.created_at)+' · Tiro '+a.spin_number;
+  if(a.resolved_at)meta.textContent+=' · Resuelto: '+prizeDate(a.resolved_at);
+  if(a.assigned_number)meta.textContent+=' · Número: '+a.assigned_number;
+  if(a.resolution_note)meta.textContent+=' · '+a.resolution_note;
+  main.append(title,state,meta);
+  const actions=document.createElement('div');actions.className='prize-actions';
+  if(a.status==='pending_delivery'){
+   const amount=document.createElement('span');amount.className='prize-amount';amount.textContent=Number(a.fichas_amount||0).toLocaleString('es-AR')+' fichas';
+   const button=document.createElement('button');button.type='button';button.className='confirm-delivery';button.textContent='CONFIRMAR ENTREGA';
+   button.onclick=async()=>{
+    if(!window.confirm('¿Confirmás la entrega de '+Number(a.fichas_amount||0).toLocaleString('es-AR')+' fichas a '+a.username+'? Se acreditarán ahora al saldo y esta acción no se podrá repetir.'))return;
+    button.disabled=true;
+    try{
+     const result=(await call('adminConfirmFichasDelivery')(adminArgs({awardId:a.id,note:'Entrega manual confirmada desde el panel.'}))).data;
+     status('prizeStatus',Number(result.creditedFichas).toLocaleString('es-AR')+' fichas acreditadas a '+result.username+'. Nuevo saldo: '+Number(result.fichasBalance).toLocaleString('es-AR')+'.',true);
+     await Promise.all([refresh(),refreshPrizes()]);
+    }catch(e){button.disabled=false;status('prizeStatus',e.message||'No se pudo confirmar la entrega.');}
+   };
+   actions.append(amount,button);
+  }else if(a.status==='pending_use'){
+   const button=document.createElement('button');button.type='button';button.className='assign-number';button.textContent='MARCAR CANJEADO';
+   button.onclick=async()=>{
+    if(!window.confirm('¿Confirmás que '+a.username+' ya utilizó el BONUS '+Number(a.bonus_percent||0)+'%? Pasará al archivo.'))return;
+    button.disabled=true;
+    try{
+     await call('adminMarkBonusUsed')(adminArgs({username:a.username,cycleId:a.cycle_id,spinNumber:a.spin_number}));
+     status('prizeStatus','Bono de '+a.username+' archivado como canjeado.',true);
+     await Promise.all([refresh(),refreshPrizes()]);
+    }catch(e){button.disabled=false;status('prizeStatus',e.message||'No se pudo marcar el bono.');}
+   };
+   actions.append(button);
+  }else if(a.status==='pending_assignment'){
+   const input=document.createElement('input');input.type='text';input.maxLength=30;input.placeholder='Número asignado';
+   const button=document.createElement('button');button.type='button';button.className='assign-number';button.textContent='ASIGNAR NÚMERO';
+   button.onclick=async()=>{
+    if(!input.value.trim()){input.focus();status('prizeStatus','Ingresá el número que le asignaste al jugador.');return;}
+    if(!window.confirm('¿Asignar el número '+input.value.trim()+' a '+a.username+'?'))return;
+    button.disabled=true;
+    try{
+     const result=(await call('adminAssignRaffleAward')(adminArgs({awardId:a.id,number:input.value.trim(),note:'Número asignado desde el panel.'}))).data;
+     status('prizeStatus','Número '+result.assignedNumber+' asignado a '+result.username+'.',true);
+     await refreshPrizes();
+    }catch(e){button.disabled=false;status('prizeStatus',e.message||'No se pudo asignar el número.');}
+   };
+   actions.append(input,button);
+  }else{
+   const badge=document.createElement('span');badge.className='prize-state done';badge.textContent=statusNames[a.status]||'ARCHIVADO';
+   actions.append(badge);
+  }
+  row.append(main,actions);box.append(row);
+ });
+}
+async function refreshPrizes(){
+ try{
+  const result=(await call('adminListPrizes')(adminArgs())).data;
+  prizeAwards=Array.isArray(result.awards)?result.awards:[];
+  prizeSummary=result.summary||{};
+  renderPrizeSummary();renderPrizeRows();
+  byId('prizeStatus').textContent='';
+ }catch(e){
+  byId('prizeRows').textContent=e.message||'No se pudieron cargar los premios.';
+  status('prizeStatus',e.message||'No se pudieron cargar los premios.');
+ }
+}
+byId('prizesPendingTab').onclick=()=>{
+ prizeView='pending';byId('prizesPendingTab').classList.add('active');byId('prizesArchiveTab').classList.remove('active');renderPrizeRows();
+};
+byId('prizesArchiveTab').onclick=()=>{
+ prizeView='archive';byId('prizesArchiveTab').classList.add('active');byId('prizesPendingTab').classList.remove('active');renderPrizeRows();
+};
+byId('prizeRefreshBtn').onclick=refreshPrizes;
+byId('prizeSearch').addEventListener('input',renderPrizeRows);
 async function refresh(){
  try{
   const r=(await call('adminListPlayers')(adminArgs())).data;
@@ -150,7 +321,7 @@ async function refresh(){
       if(!window.confirm('¿Confirmás que el jugador ya utilizó este BONUS '+percent+'%? Dejará de figurar entre los bonos pendientes.'))return;
       try{
        await call('adminMarkBonusUsed')(adminArgs({username:p.username,cycleId:bonus.cycleId,spinNumber:spin}));
-       await refresh();
+       await Promise.all([refresh(),refreshPrizes()]);
       }catch(e){window.alert(e.message||'No se pudo archivar el bono.');}
      };
      entry.append(chip,usedButton);
@@ -184,7 +355,7 @@ async function refresh(){
   }
  }catch(e){byId('players').textContent=e.message||'No se pudo cargar la lista.';}
 }
-byId('refreshBtn').onclick=refresh;
+byId('refreshBtn').onclick=async()=>{await Promise.all([refresh(),refreshPrizes()]);};
 byId('resetPinBtn').onclick=async()=>{try{const r=(await call('adminResetPin')(adminArgs({username:val('resetName')}))).data;byId('resetResult').textContent='Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).'; }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}};
 byId('logoutBtn').onclick=()=>{adminKey='';byId('adminKey').value='';byId('panel').classList.add('hidden');byId('loginCard').classList.remove('hidden');status('loginStatus','Sesión administrativa cerrada.',true);};
 </script></body></html>

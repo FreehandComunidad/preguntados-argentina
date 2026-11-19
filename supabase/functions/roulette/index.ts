@@ -147,7 +147,30 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       }) });
     }
 
-    const username = nameOf(body.username), id = slugOf(username);
+    if (action === "adminListPrizes") {
+      const { data, error } = await db
+        .from("roulette_prize_awards")
+        .select("*")
+        .order("created_at", { ascending:false })
+        .limit(1000);
+      if (error) throw error;
+      const awards = data || [];
+      const pending = awards.filter((a:any) => ["pending_delivery","pending_use","pending_assignment"].includes(a.status));
+      return json({
+        awards,
+        summary: {
+          pendingCount: pending.length,
+          pendingFichasCount: pending.filter((a:any) => a.status === "pending_delivery").length,
+          pendingFichasTotal: pending.filter((a:any) => a.status === "pending_delivery").reduce((sum:number,a:any) => sum + Number(a.fichas_amount||0),0),
+          pendingBonuses: pending.filter((a:any) => a.status === "pending_use").length,
+          pendingAssignments: pending.filter((a:any) => a.status === "pending_assignment").length,
+          archivedCount: awards.filter((a:any) => ["delivered","redeemed","assigned","cancelled"].includes(a.status)).length
+        }
+      });
+    }
+
+    const username = ["adminConfirmFichasDelivery","adminAssignRaffleAward"].includes(action) ? "" : nameOf(body.username);
+    const id = username ? slugOf(username) : "";
     if (action === "adminCreatePlayer") {
       const pin = randomPin(), pinHash = await hash(id + ":" + pin);
       const { error } = await db.rpc("roulette_admin_create_player", { p_id:id, p_username:username, p_pin_hash:pinHash });
@@ -160,6 +183,34 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       if (error) throw error;
       return json(data);
     }
+    if (action === "adminConfirmFichasDelivery") {
+      const awardId = String(body.awardId || "").trim();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(awardId)) {
+        throw new Error("No se pudo identificar el premio seleccionado.");
+      }
+      const note = typeof body.note === "string" ? body.note.trim().slice(0,300) : null;
+      const { data, error } = await db.rpc("roulette_admin_confirm_fichas_delivery", {
+        p_award_id: awardId, p_actor: "administrador", p_note: note
+      });
+      if (error) throw error;
+      return json(data);
+    }
+
+    if (action === "adminAssignRaffleAward") {
+      const awardId = String(body.awardId || "").trim();
+      const number = String(body.number || "").trim();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(awardId)) {
+        throw new Error("No se pudo identificar el premio seleccionado.");
+      }
+      if (!number || number.length > 30) throw new Error("Ingresá el número que asignaste.");
+      const note = typeof body.note === "string" ? body.note.trim().slice(0,300) : null;
+      const { data, error } = await db.rpc("roulette_admin_assign_raffle_award", {
+        p_award_id: awardId, p_number: number, p_actor: "administrador", p_note: note
+      });
+      if (error) throw error;
+      return json(data);
+    }
+
     if (action === "adminMarkBonusUsed") {
       const username = nameOf(body.username), id = slugOf(username);
       const cycleId = String(body.cycleId || "").trim();
@@ -195,11 +246,19 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
     const message = String((e as Error)?.message || "Error interno.");
     const friendly = message.includes("NO_CANCELLABLE_LOAD")
       ? "No hay una carga aprobada pendiente que pueda anularse. Si ya tuvo algún giro, no se puede retirar."
-      : message.includes("BONUS_NOT_FOUND")
+      : message.includes("BONUS_NOT_FOUND") || message.includes("BONUS_AWARD_NOT_PENDING")
         ? "Ese bono ya no figura entre los bonos pendientes."
-        : message.includes("INVALID_OPPORTUNITY_SOURCE")
-          ? "El origen de la oportunidad no es válido."
-          : message;
+        : message.includes("AWARD_NOT_FOUND")
+          ? "Ese premio ya no existe en el registro."
+          : message.includes("AWARD_NOT_PENDING_DELIVERY")
+            ? "Ese premio ya fue resuelto; no se puede acreditar dos veces."
+            : message.includes("AWARD_NOT_PENDING_ASSIGNMENT")
+              ? "Ese número ya fue asignado o el premio ya fue resuelto."
+              : message.includes("INVALID_RAFFLE_NUMBER")
+                ? "Ingresá un número válido para el sorteo."
+                : message.includes("INVALID_OPPORTUNITY_SOURCE")
+                  ? "El origen de la oportunidad no es válido."
+                  : message;
     return json({ error:friendly }, errorStatus(message));
   }
 });
@@ -211,7 +270,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 15,
+      version: 16,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });

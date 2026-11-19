@@ -91,3 +91,15 @@ El contador se empezó a registrar el 19/11/2026. Se conservaron dos aprobacione
 - La tabla privada `public.roulette_opportunities` registra el origen de cada oportunidad (`load-approved`, `admin` o `legacy`) y su estado (`active`, `queued`, `completed`, `cancelled`).
 - **ANULAR ÚLTIMA CARGA** solo puede cancelar una oportunidad pagada que todavía esté en cola o esté activa sin ningún giro. Si ya tuvo giros, no se puede anular. Las oportunidades regaladas y las oportunidades históricas sin origen verificable no se tocan.
 - Los ciclos y colas anteriores a este registro se preservaron como `legacy`, para no confundirlos con cargas pagadas ni con regalos.
+
+
+## Control manual de premios y archivo
+
+- Cada premio con resultado distinto de SIN PREMIO genera un registro único en `public.roulette_prize_awards`, vinculado a su giro y jugador.
+- **Fichas:** los nuevos premios (1.000, 3.000, 5.000, 50.000 y 100.000) quedan como `pending_delivery`. El saldo `fichas_balance` solo aumenta cuando el administrador usa **CONFIRMAR ENTREGA**. La función bloquea el premio y cambia su estado en una única transacción, evitando acreditaciones duplicadas.
+- **Bonos:** quedan como `pending_use`; **MARCAR CANJEADO** los retira de la lista pendiente, los conserva en `used_bonus_prizes` y archiva el premio como `redeemed`.
+- **Número para cuatriciclo:** queda como `pending_assignment`; el administrador registra el número elegido y queda archivado como `assigned`.
+- La pestaña **PENDIENTES** muestra solo premios que requieren acción. **ARCHIVO** conserva entregados, canjeados, asignados y anulados.
+- `public.roulette_prize_events` conserva el movimiento de cada premio y quién lo resolvió.
+- Premios históricos importados: las fichas ya acreditadas por el sistema anterior se marcan como entregadas sin volver a sumarlas; los bonos respetan su estado previo.
+- El mensaje de la ruleta aclara que una ganancia de fichas queda pendiente hasta que FREEHAND confirme la entrega.
