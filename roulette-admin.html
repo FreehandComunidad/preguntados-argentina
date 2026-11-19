@@ -91,7 +91,7 @@ byId('copyPinBtn').onclick=()=>{const d=getCreatedAccess();return copyAccessText
 byId('copyLinkBtn').onclick=()=>{const d=getCreatedAccess();return copyAccessText(d.link,'Link');};
 byId('copyAllBtn').onclick=()=>{
  const d=getCreatedAccess();
- const message='FREEHAND — DATOS PARA INGRESAR\\nUsuario: '+d.username+'\\nPIN: '+d.pin+'\\nLink: '+d.link;
+ const message='FREEHAND — DATOS PARA INGRESAR\nUsuario: '+d.username+'\nPIN: '+d.pin+'\nLink: '+d.link;
  return copyAccessText(message,'Datos de acceso');
 };
 async function grant(which){try{const name=val('grantName'),count=which==='adminApproveLoad'?1:Number(val('grantCount'));const r=(await call(which)(adminArgs({username:name,count}))).data;status('grantStatus',`${which==='adminApproveLoad'?'Carga aprobada':'Oportunidad regalada'} para ${r.username}. Ciclos en espera: ${r.queuedCycles}.`,true);await refresh();}catch(e){status('grantStatus',e.message||'No se pudo habilitar.');}}
