@@ -443,7 +443,12 @@ async function grant(which){try{const name=val('grantName'),count=which==='admin
 byId('approveBtn').onclick=()=>grant('adminApproveLoad');byId('giftBtn').onclick=()=>grant('adminGrantCycles');
 let prizeAwards=[];
 let prizeSummary={};
-let prizeView='pending';
+let prizeView='pending';let catalogItems=[];
+let reportData=null;
+let activeProfileUsername='';
+const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const formatNumber=value=>Number(value||0).toLocaleString('es-AR');
+
 function prizeDate(value){
  if(!value)return 'Fecha no disponible';
  const date=new Date(value);
@@ -568,6 +573,248 @@ byId('prizesPendingTab').onclick=()=>setPrizeView('pending');
 byId('prizesArchiveTab').onclick=()=>setPrizeView('archive');
 byId('prizesCancelledTab').onclick=()=>setPrizeView('cancelled');
 byId('prizeRefreshBtn').onclick=refreshPrizes;
+// =====================================
+// FICHA INDIVIDUAL Y LIBRO DE FICHAS
+// =====================================
+async function openPlayerProfile(username){
+ activeProfileUsername=username;
+ const modal=byId('playerProfileModal');
+ modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');
+ byId('profileTitle').textContent=username+' · Ficha completa';
+ byId('playerProfileBody').innerHTML='<div class="muted">Cargando actividad del jugador…</div>';
+ try{
+  const {data}=await call('adminGetPlayerProfile')(adminArgs({username}));
+  renderPlayerProfile(data);
+ }catch(error){
+  byId('playerProfileBody').textContent=error.message||'No se pudo cargar la ficha.';
+ }
+}
+function renderPlayerProfile(data){
+ const p=data.player||{},awards=data.awards||[],spins=data.spins||[],opportunities=data.opportunities||[],ledger=data.ledger||[];
+ const statusNames={pending_delivery:'Pendiente de entrega',delivered:'Fichas entregadas',pending_use:'Pendiente de canje',redeemed:'Bono canjeado',pending_assignment:'Pendiente de asignar',assigned:'Número asignado',cancelled:'Anulado'};
+ const opportunityNames={active:'Activa',queued:'En espera',completed:'Completada',cancelled:'Anulada'};
+ const pendingBonuses=awards.filter(x=>x.status==='pending_use').length;
+ const activeCycle=p.activeCycle||{};
+ const cycleSpins=Array.isArray(activeCycle.spins)?activeCycle.spins.length:0;
+ const summary=`<div class="profile-grid">
+  <div class="profile-stat"><small>Saldo de fichas</small><strong>${formatNumber(p.fichasBalance)}</strong></div>
+  <div class="profile-stat"><small>Cargas aprobadas</small><strong>${formatNumber(p.approvedLoads)}</strong></div>
+  <div class="profile-stat"><small>Oportunidades en espera</small><strong>${formatNumber(p.queuedCycles)}</strong></div>
+  <div class="profile-stat"><small>Bonos pendientes</small><strong>${formatNumber(pendingBonuses)}</strong></div>
+ </div>
+ <p class="muted" style="font-size:10px;line-height:1.6">Usuario: <b>${escapeHTML(p.username)}</b> · Alta: ${escapeHTML(prizeDate(p.createdAt))} · Último giro: ${escapeHTML(p.lastSpinAt?prizeDate(p.lastSpinAt):'Sin giros')} · Giros de la oportunidad activa: ${cycleSpins} · Números para sorteo: ${formatNumber(p.quadBikeNumbers)}</p>`;
+ const awardRows=awards.length?awards.map(a=>`<div class="profile-award"><div><strong>${escapeHTML(a.prize_label||a.prize_key)}</strong><small>${escapeHTML(prizeDate(a.created_at))} · Tiro ${Number(a.spin_number)||'—'}</small></div><span class="prize-status ${['pending_delivery','pending_use','pending_assignment'].includes(a.status)?'pending':a.status==='cancelled'?'cancelled':'done'}">${escapeHTML(statusNames[a.status]||a.status)}</span></div>`).join(''):'<div class="muted">Todavía no tiene premios registrados.</div>';
+ const opportunityRows=opportunities.length?opportunities.map(o=>`<tr><td>${escapeHTML(prizeDate(o.created_at))}</td><td>${escapeHTML(o.source)}</td><td>${escapeHTML(opportunityNames[o.status]||o.status)}</td></tr>`).join(''):'<tr><td colspan="3">Sin oportunidades registradas.</td></tr>';
+ const spinRows=spins.length?spins.map(x=>`<tr><td>${escapeHTML(prizeDate(x.created_at))}</td><td>${Number(x.spin_number)||'—'}</td><td>${escapeHTML(x.result)}</td><td>${Number(x.bonus_percent||0)?Number(x.bonus_percent)+'%':'—'}</td></tr>`).join(''):'<tr><td colspan="4">Sin giros registrados.</td></tr>';
+ const ledgerRows=ledger.length?ledger.map(x=>{
+  const delta=Number(x.amount_delta)||0;
+  return `<tr><td>${escapeHTML(prizeDate(x.created_at))}</td><td>${escapeHTML(x.description||x.movement_type)}</td><td class="${delta>0?'ledger-positive':'ledger-negative'}">${delta>0?'+':''}${formatNumber(delta)}</td><td>${formatNumber(x.balance_before)}</td><td><b>${formatNumber(x.balance_after)}</b></td><td>${escapeHTML(x.actor||'sistema')}</td></tr>`;
+ }).join(''):'<tr><td colspan="6">Todavía no hay movimientos de fichas.</td></tr>';
+ byId('playerProfileBody').innerHTML=summary+`
+ <div class="profile-columns">
+  <section class="profile-panel"><h4>Premios obtenidos y estado</h4>${awardRows}</section>
+  <section class="profile-panel"><h4>Oportunidades y cargas</h4><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Fecha</th><th>Origen</th><th>Estado</th></tr></thead><tbody>${opportunityRows}</tbody></table></div></section>
+ </div>
+ <section class="profile-panel"><h4>Historial de giros</h4><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Fecha</th><th>Tiro</th><th>Resultado</th><th>Bono</th></tr></thead><tbody>${spinRows}</tbody></table></div></section>
+ <section class="profile-panel"><h4>Billetera · Libro de movimientos</h4><p class="muted" style="font-size:9px">Cada movimiento conserva saldo anterior, variación, saldo posterior, fecha y responsable.</p><div class="profile-table-wrap"><table class="profile-table"><thead><tr><th>Fecha</th><th>Concepto</th><th>Movimiento</th><th>Anterior</th><th>Posterior</th><th>Responsable</th></tr></thead><tbody>${ledgerRows}</tbody></table></div></section>
+ <section class="profile-panel"><h4>Registrar ajuste manual de fichas</h4><p class="muted" style="font-size:9px">Usá un importe positivo para acreditar o negativo para descontar. No se permiten saldos negativos y el motivo queda auditado.</p>
+  <form id="profileAdjustForm" class="profile-adjust-form">
+   <div><label for="profileAdjustAmount">Cantidad (+ / −)</label><input id="profileAdjustAmount" type="number" step="1" min="-1000000000" max="1000000000" required placeholder="Ej. 500"></div>
+   <div class="reason-field"><label for="profileAdjustNote">Motivo obligatorio</label><input id="profileAdjustNote" type="text" maxlength="300" required placeholder="Ej. Corrección de saldo autorizada"></div>
+   <button type="submit">APLICAR AJUSTE</button>
+  </form><div id="profileAdjustStatus" class="status"></div>
+ </section>`;
+ byId('profileAdjustForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const delta=Number(val('profileAdjustAmount'));
+  const note=val('profileAdjustNote');
+  const button=byId('profileAdjustForm').querySelector('button[type="submit"]');
+  if(!Number.isSafeInteger(delta)||delta===0){status('profileAdjustStatus','Ingresá una cantidad distinta de cero.');return;}
+  if(!note){status('profileAdjustStatus','Indicá el motivo del ajuste.');return;}
+  if(!window.confirm((delta>0?'Acreditar ':'Descontar ')+formatNumber(Math.abs(delta))+' fichas a '+p.username+'?'))return;
+  button.disabled=true;
+  try{
+   const {data:result}=await call('adminAdjustFichas')(adminArgs({username:p.username,delta,note}));
+   status('profileAdjustStatus','Movimiento registrado. Saldo anterior: '+formatNumber(result.previousBalance)+' · Nuevo saldo: '+formatNumber(result.fichasBalance)+'.',true);
+   await Promise.all([refresh(),refreshPrizes(),refreshNotifications(),openPlayerProfile(p.username)]);
+  }catch(error){status('profileAdjustStatus',error.message||'No se pudo registrar el ajuste.');}
+  finally{button.disabled=false;}
+ });
+}
+
+// =====================================
+// CENTRO DE NOTIFICACIONES
+// =====================================
+async function refreshNotifications(){
+ try{
+  const {data}=await call('adminListNotifications')(adminArgs());
+  const items=Array.isArray(data.items)?data.items:[];
+  const badge=byId('notificationBadge');
+  badge.textContent=String(items.length);badge.classList.toggle('hidden',items.length===0);
+  byId('notificationSummary').innerHTML=[
+   items.length+' pendientes',
+   Number(data.pendingFichas||0)+' entregas de fichas',
+   Number(data.pendingBonuses||0)+' bonos por canjear',
+   Number(data.pendingAssignments||0)+' números por asignar',
+   Number(data.staleCount||0)+' con más de 48 h'
+  ].map(x=>'<span>'+escapeHTML(x)+'</span>').join('');
+  const box=byId('notificationItems');box.innerHTML='';
+  if(!items.length){box.innerHTML='<div class="prize-empty"><strong>No hay pendientes por resolver</strong><span>Cuando se genere un premio que requiera intervención aparecerá acá.</span></div>';return;}
+  items.forEach(item=>{
+   const stale=Date.now()-new Date(item.created_at).getTime()>48*60*60*1000;
+   const type=item.status==='pending_delivery'?'◈':item.status==='pending_use'?'%':'✦';
+   const state=item.status==='pending_delivery'?'Fichas pendientes de entrega':item.status==='pending_use'?'Bono pendiente de canje':'Número pendiente de asignación';
+   const amount=item.prize_type==='fichas'?formatNumber(item.fichas_amount)+' fichas':item.prize_type==='bonus'?'BONUS '+Number(item.bonus_percent||0)+'%':'Premio especial';
+   const row=document.createElement('div');row.className='notification-item'+(stale?' stale':'');
+   row.innerHTML='<span class="notification-icon">'+type+'</span><div class="notification-copy"><strong>'+escapeHTML(item.username)+' · '+escapeHTML(state)+'</strong><small>'+escapeHTML(amount)+' · '+escapeHTML(prizeDate(item.created_at))+(stale?' · Requiere atención':'')+'</small></div><button type="button" class="secondary notification-open">VER</button>';
+   row.querySelector('button').onclick=()=>{
+    byId('notificationModal').classList.add('hidden');byId('notificationModal').setAttribute('aria-hidden','true');
+    navigateAdmin('prizeManagement');
+    byId('prizeSearch').value=item.username;renderPrizeRows();
+   };
+   box.append(row);
+  });
+ }catch(error){console.error('NOTIFICATIONS',error);}
+}
+function openNotifications(){byId('notificationModal').classList.remove('hidden');byId('notificationModal').setAttribute('aria-hidden','false');}
+function closeNotifications(){byId('notificationModal').classList.add('hidden');byId('notificationModal').setAttribute('aria-hidden','true');}
+
+// =====================================
+// CATÁLOGO DE PREMIOS Y PROBABILIDADES
+// =====================================
+function catalogFormValues(){
+ return [...document.querySelectorAll('.catalog-row')].map(row=>{
+  const field=name=>row.querySelector('[data-field="'+name+'"]');
+  return {
+   prize_key:row.dataset.key,
+   label:field('label').value.trim(),
+   prize_type:field('prize_type').value,
+   fichas_amount:Number(field('fichas_amount').value||0),
+   bonus_percent:Number(field('bonus_percent').value||0),
+   probability_first:Math.round(Number(field('probability_first').value||0)*100),
+   probability_third:Math.round(Number(field('probability_third').value||0)*100),
+   image_url:field('image_url').value.trim()||null,
+   is_active:field('is_active').checked,
+   sort_order:Number(field('sort_order').value||0)
+  };
+ });
+}
+function updateCatalogTotals(){
+ const rows=catalogFormValues();
+ const active=rows.filter(x=>x.is_active);
+ const first=active.reduce((sum,x)=>sum+x.probability_first,0);
+ const third=active.reduce((sum,x)=>sum+x.probability_third,0);
+ byId('catalogFirstTotal').textContent='Primeros giros: '+(first/100).toFixed(2).replace('.',',')+'%';
+ byId('catalogThirdTotal').textContent='Tiro especial: '+(third/100).toFixed(2).replace('.',',')+'%';
+ const valid=first===10000&&third===10000&&active.some(x=>x.prize_type==='none');
+ const badge=byId('catalogValidity');badge.textContent=valid?'Probabilidades correctas':'Debe sumar 100,00% en ambos giros';
+ badge.classList.toggle('valid',valid);badge.classList.toggle('invalid',!valid);
+ byId('catalogSaveBtn').disabled=!valid;
+}
+function renderCatalogEditor(){
+ const box=byId('catalogEditor');box.innerHTML='';
+ if(!catalogItems.length){box.textContent='No se encontraron premios en el catálogo.';return;}
+ catalogItems.forEach((item,index)=>{
+  const row=document.createElement('div');row.className='catalog-row';row.dataset.key=item.prize_key;
+  row.innerHTML=`
+   <div class="catalog-field"><label>Nombre visible</label><input data-field="label" maxlength="100" value="${escapeHTML(item.label)}"></div>
+   <div class="catalog-field"><label>Tipo</label><select data-field="prize_type"><option value="none">Sin premio</option><option value="bonus">Bono</option><option value="fichas">Fichas</option><option value="raffle">Sorteo</option></select></div>
+   <div class="catalog-field"><label>Fichas</label><input data-field="fichas_amount" type="number" min="0" step="1" value="${Number(item.fichas_amount||0)}"></div>
+   <div class="catalog-field"><label>Bono %</label><input data-field="bonus_percent" type="number" min="0" max="100" step="1" value="${Number(item.bonus_percent||0)}"></div>
+   <div class="catalog-field"><label>Prob. giros 1–2 %</label><input data-field="probability_first" type="number" min="0" max="100" step="0.01" value="${(Number(item.probability_first||0)/100).toFixed(2)}"></div>
+   <div class="catalog-field"><label>Activo</label><input class="catalog-checkbox" data-field="is_active" type="checkbox" ${item.is_active?'checked':''}></div>
+   <div class="catalog-field"><label>Prob. tiro especial %</label><input data-field="probability_third" type="number" min="0" max="100" step="0.01" value="${(Number(item.probability_third||0)/100).toFixed(2)}"></div>
+   <div class="catalog-field"><label>Orden</label><input data-field="sort_order" type="number" min="0" max="10000" step="1" value="${Number(item.sort_order??index)}"></div>
+   <div class="catalog-field" style="grid-column:span 2"><label>Imagen HTTPS (opcional)</label><input data-field="image_url" type="url" maxlength="1000" placeholder="https://…" value="${escapeHTML(item.image_url||'')}"></div>`;
+  row.querySelector('[data-field="prize_type"]').value=item.prize_type;
+  row.querySelectorAll('input,select').forEach(input=>input.addEventListener('input',updateCatalogTotals));
+  box.append(row);
+ });
+ updateCatalogTotals();
+}
+async function loadCatalog(){
+ try{
+  const {data}=await call('adminListCatalog')(adminArgs());
+  catalogItems=Array.isArray(data.items)?data.items:[];
+  renderCatalogEditor();byId('catalogStatus').textContent='';
+ }catch(error){byId('catalogEditor').textContent=error.message||'No se pudo cargar el catálogo.';status('catalogStatus',error.message||'No se pudo cargar el catálogo.');}
+}
+async function saveCatalog(){
+ const items=catalogFormValues();
+ const button=byId('catalogSaveBtn');button.disabled=true;
+ try{
+  const {data}=await call('adminSaveCatalog')(adminArgs({items}));
+  catalogItems=data.items||items;renderCatalogEditor();
+  status('catalogStatus','Catálogo guardado. Ambas probabilidades suman exactamente 100%.',true);
+ }catch(error){status('catalogStatus',error.message||'No se pudo guardar el catálogo.');updateCatalogTotals();}
+ finally{updateCatalogTotals();}
+}
+
+// =====================================
+// ESTADÍSTICAS Y EXPORTACIÓN
+// =====================================
+function renderBar(title,items){
+ const max=Math.max(1,...items.map(x=>Number(x.value)||0));
+ return '<section class="report-trend"><h3>'+escapeHTML(title)+'</h3>'+
+  (items.length?items.map(x=>'<div class="report-bar-row"><span class="report-bar-label">'+escapeHTML(x.label)+'</span><span class="report-bar-track"><span class="report-bar-fill" style="display:block;width:'+Math.max(2,Math.round((Number(x.value)||0)/max*100))+'%"></span></span><b class="report-bar-value">'+formatNumber(x.value)+'</b></div>').join(''):'<div class="muted">Sin movimientos.</div>')+'</section>';
+}
+async function loadReports(){
+ byId('reportsMetrics').innerHTML='<div class="muted">Actualizando datos…</div>';
+ try{
+  const {data}=await call('adminGetReports')(adminArgs());reportData=data;
+  const players=data.players||[],spins=data.spins||[],awards=data.awards||[],ledger=data.ledger||[],opportunities=data.opportunities||[];
+  const totalBalance=players.reduce((sum,p)=>sum+Number(p.fichas_balance||0),0);
+  const loads=players.reduce((sum,p)=>sum+Number(p.approved_loads_count||0),0);
+  const pendingFichas=awards.filter(a=>a.status==='pending_delivery').reduce((sum,a)=>sum+Number(a.fichas_amount||0),0);
+  const pending=awards.filter(a=>['pending_delivery','pending_use','pending_assignment'].includes(a.status)).length;
+  const metrics=[
+   ['Jugadores',players.length,'Cuentas registradas'],
+   ['Giros realizados',spins.length,'Registros de ruleta'],
+   ['Fichas en saldos',formatNumber(totalBalance),'Saldo total actual'],
+   ['Fichas pendientes',formatNumber(pendingFichas),'Aún no acreditadas'],
+   ['Premios pendientes',pending,'Requieren intervención'],
+   ['Cargas aprobadas',formatNumber(loads),'Acumulado por jugador'],
+   ['Bonos canjeados',awards.filter(a=>a.status==='redeemed').length,'Bonos archivados'],
+   ['Movimientos de billetera',ledger.length,'Créditos y ajustes auditados']
+  ];
+  byId('reportsMetrics').innerHTML=metrics.map(m=>'<div class="report-metric"><small>'+escapeHTML(m[0])+'</small><strong>'+m[1]+'</strong><span>'+escapeHTML(m[2])+'</span></div>').join('');
+  const last7=Array.from({length:7},(_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(6-i));return d;});
+  const daily=last7.map(d=>{const key=d.toLocaleDateString('en-CA');return {label:d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}),value:spins.filter(x=>new Date(x.created_at).toLocaleDateString('en-CA')===key).length};});
+  const typeItems=[
+   {label:'Fichas',value:awards.filter(a=>a.prize_type==='fichas').length},
+   {label:'Bonos',value:awards.filter(a=>a.prize_type==='bonus').length},
+   {label:'Sorteos',value:awards.filter(a=>a.prize_type==='raffle').length}
+  ];
+  byId('reportsTrends').innerHTML=renderBar('Giros por día · últimos 7 días',daily)+renderBar('Premios por categoría',typeItems);
+  byId('reportsStatus').textContent='Datos actualizados: '+prizeDate(data.generatedAt);
+ }catch(error){status('reportsStatus',error.message||'No se pudieron cargar los reportes.');}
+}
+function reportExportRows(){
+ if(!reportData)return [];
+ const rows=[['Tipo','Fecha','Jugador','Concepto','Estado','Cantidad','Saldo anterior','Saldo posterior','Responsable']];
+ (reportData.players||[]).forEach(p=>rows.push(['Jugador',p.created_at,p.username,'Saldo de fichas','Registrado',p.fichas_balance,'','','']));
+ (reportData.spins||[]).forEach(s=>rows.push(['Giro',s.created_at,s.username,s.result,'Realizado',s.bonus_percent?('Bono '+s.bonus_percent+'%'):s.prize_key,'','','']));
+ (reportData.awards||[]).forEach(a=>rows.push(['Premio',a.created_at,a.username,a.prize_label,a.status,a.prize_type==='fichas'?a.fichas_amount:a.bonus_percent,'','','']));
+ (reportData.opportunities||[]).forEach(o=>rows.push(['Oportunidad',o.created_at,o.player_id,o.source,o.status,'','','','']));
+ (reportData.ledger||[]).forEach(l=>rows.push(['Billetera',l.created_at,l.username,l.description,l.movement_type,l.amount_delta,l.balance_before,l.balance_after,l.actor]));
+ return rows;
+}
+function downloadReport(kind){
+ const rows=reportExportRows();if(!rows.length){status('reportsStatus','Primero actualizá los reportes.');return;}
+ const esc=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+ let blob,name;
+ if(kind==='csv'){
+  const csv='\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});name='freehand-reporte-'+new Date().toISOString().slice(0,10)+'.csv';
+ }else{
+  const table='<table border="1">'+rows.map((row,i)=>'<tr>'+row.map(value=>i===0?'<th>'+esc(value)+'</th>':'<td>'+esc(value)+'</td>').join('')+'</tr>').join('')+'</table>';
+  const workbook='<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>';
+  blob=new Blob([workbook],{type:'application/vnd.ms-excel;charset=utf-8;'});name='freehand-reporte-'+new Date().toISOString().slice(0,10)+'.xls';
+ }
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+
+
 byId('prizeSearch').addEventListener('input',renderPrizeRows);
 function normalizePlayerSearch(value){
  return String(value||'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('es');
@@ -673,6 +920,22 @@ async function refresh(){
  }catch(e){byId('players').textContent=e.message||'No se pudo cargar la lista.';}
 }
 byId('playerSearch').addEventListener('input',filterPlayerRows);
+byId('notificationsBtn').onclick=openNotifications;
+byId('closeNotifications').onclick=closeNotifications;
+byId('notificationModal').addEventListener('click',event=>{if(event.target.id==='notificationModal')closeNotifications();});
+byId('closePlayerProfile').onclick=()=>{byId('playerProfileModal').classList.add('hidden');byId('playerProfileModal').setAttribute('aria-hidden','true');};
+byId('playerProfileModal').addEventListener('click',event=>{if(event.target.id==='playerProfileModal'){byId('playerProfileModal').classList.add('hidden');byId('playerProfileModal').setAttribute('aria-hidden','true');}});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeNotifications();byId('playerProfileModal').classList.add('hidden');byId('playerProfileModal').setAttribute('aria-hidden','true');}});
+byId('catalogRefreshBtn').onclick=loadCatalog;
+byId('catalogSaveBtn').onclick=saveCatalog;
+byId('catalogAddBtn').onclick=()=>{
+ catalogItems.push({prize_key:'custom_'+Date.now(),label:'Nuevo premio',prize_type:'fichas',fichas_amount:1000,bonus_percent:0,probability_first:0,probability_third:0,image_url:null,is_active:false,sort_order:catalogItems.length+1});
+ renderCatalogEditor();
+};
+byId('reportsRefreshBtn').onclick=loadReports;
+byId('reportCsvBtn').onclick=()=>downloadReport('csv');
+byId('reportExcelBtn').onclick=()=>downloadReport('excel');
+
 byId('refreshBtn').onclick=async()=>{await Promise.all([refresh(),refreshPrizes()]);};
 byId('resetPinBtn').onclick=async()=>{try{const r=(await call('adminResetPin')(adminArgs({username:val('resetName')}))).data;byId('resetResult').textContent='Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).'; }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}};
 byId('logoutBtn').onclick=()=>{adminKey='';byId('adminKey').value='';byId('panel').classList.add('hidden');byId('adminApp').classList.add('hidden');byId('mobileDock').classList.add('hidden');closeMobileMore();byId('loginScreen').classList.remove('hidden');byId('loginCard').classList.remove('hidden');status('loginStatus','Sesión administrativa cerrada.',true);};
