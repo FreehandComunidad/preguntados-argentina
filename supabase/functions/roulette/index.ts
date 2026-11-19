@@ -82,6 +82,14 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
         .order("created_at", { ascending:false })
         .limit(100);
       if (prizeRowsError) throw prizeRowsError;
+      const [spinHistoryResult,catalogResult]=await Promise.all([
+        db.from("roulette_spins").select("id,spin_number,prize_key,result,bonus_percent,created_at")
+          .eq("player_id",c.id).order("created_at",{ascending:false}).limit(40),
+        db.from("roulette_prize_catalog").select("prize_key,label,prize_type,fichas_amount,bonus_percent,image_url,sort_order")
+          .eq("is_active",true).order("sort_order",{ascending:true})
+      ]);
+      if(spinHistoryResult.error)throw spinHistoryResult.error;
+      if(catalogResult.error)throw catalogResult.error;
       const prizeHistory = (prizeRows || []).map((a:any) => ({
         prizeType:a.prize_type,
         prizeLabel:a.prize_label,
@@ -97,6 +105,8 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
         fichasBalance: p.fichas_balance, bonusCount: (p.bonus_prizes || []).length,
         quadBikeNumbers: p.quad_bike_numbers, bonusPrizes: (p.bonus_prizes || []).map((b:any) => ({ percent:Number(b.percent||0), cycleId:b.cycleId||null, spinNumber:Number(b.spinNumber||0), createdAt:b.createdAt||null })),
         prizeHistory,
+        recentSpins:spinHistoryResult.data||[],
+        prizeCatalog:catalogResult.data||[],
         recentResults: spins.map((s: any) => ({ result:s.result,key:s.key,bonus:s.bonus })) });
     }
 
@@ -113,6 +123,17 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
           data.error === "INVALID_CREDENTIALS" ? 403 : 409;
         return json({ error:data.error, retryAt:data.retryAt, retryMinutes:data.retryMinutes,
           attemptsRemaining:data.attemptsRemaining }, statusCode);
+      }
+      if(data?.result?.key){
+        const {data:catalogPrize,error:catalogError}=await db.from("roulette_prize_catalog")
+          .select("prize_type,fichas_amount,bonus_percent,image_url")
+          .eq("prize_key",data.result.key).maybeSingle();
+        if(catalogError)throw catalogError;
+        if(catalogPrize){
+          data.result.prizeType=catalogPrize.prize_type;
+          data.result.fichasAmount=Number(catalogPrize.fichas_amount||0);
+          data.result.imageUrl=catalogPrize.image_url||null;
+        }
       }
       return json(data);
     }
