@@ -726,7 +726,7 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 .roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important;aspect-ratio:1/1!important;filter:none!important;isolation:isolate}
 .roulette-stage:before{display:none!important;content:none!important;filter:none!important}
 .roulette-ring{position:absolute!important;inset:0!important;padding:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important}
-.roulette-wheel{width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;background-color:transparent!important;background-image:url("./assets/roulette-wheel-sharp.svg?v=3")!important;background-position:center!important;background-size:100% 100%!important;background-repeat:no-repeat!important;image-rendering:auto!important}
+.roulette-wheel{width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;background-color:transparent!important;background-image:url("./assets/roulette-wheel-sharp.svg?v=4")!important;background-position:center!important;background-size:100% 100%!important;background-repeat:no-repeat!important;image-rendering:auto!important}
 .roulette-wheel:before{display:none!important;content:none!important}
 .roulette-hub{position:absolute!important;z-index:6!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;width:29%!important;height:29%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;box-sizing:border-box!important;border-radius:50%!important;background:linear-gradient(145deg,#123c25 0%,#07180f 58%,#020906 100%)!important;border:3px solid #f5d27a!important;box-shadow:0 0 0 5px #07140d,inset 0 0 0 1px #ffffff35!important;color:#fff7dd!important;font-family:Arial,Helvetica,sans-serif!important;font-size:clamp(10px,3.2vw,14px)!important;font-weight:900!important;letter-spacing:.8px!important;line-height:1.05!important;text-align:center!important;text-shadow:none!important;filter:none!important}
 .roulette-hub:before{content:"☘"!important;display:block!important;color:#5cff8e!important;font-size:clamp(19px,5vw,27px)!important;line-height:.85!important;text-shadow:none!important}
@@ -735,6 +735,163 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 .roulette-pointer:after{box-shadow:none!important;background:#fff1b4!important}
 @media(max-width:520px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 22px)!important}}
 @media(max-width:360px){.roulette-stage{width:min(430px,92vw)!important;max-width:calc(100vw - 18px)!important}}
+</style>
+
+<style id="freehand-premium-roulette-v3">
+/* Identidad visual unificada: esmeralda, jade y oro. No modifica premios ni posiciones de sectores. */
+.roulette-wrap{gap:14px!important;margin-top:20px!important}
+.roulette-stage{filter:drop-shadow(0 18px 34px rgba(0,0,0,.42))!important;isolation:isolate}
+.roulette-stage:after{
+ content:"";position:absolute;inset:-5px;border-radius:50%;z-index:5;pointer-events:none;
+ border:2px solid rgba(255,222,143,.18);
+ box-shadow:0 0 0 1px rgba(33,221,111,.08),inset 0 0 22px rgba(38,224,117,.035);
+ opacity:.85;transition:opacity .35s,box-shadow .35s;
+}
+.roulette-ring{box-shadow:0 0 0 7px #06130c,0 0 0 9px rgba(240,203,112,.25),0 0 28px rgba(27,196,93,.12)!important}
+.roulette-wheel{filter:drop-shadow(0 7px 15px rgba(0,0,0,.2))!important}
+.roulette-hub{
+ background:radial-gradient(circle at 34% 24%,#286644 0%,#0b2416 53%,#030a06 100%)!important;
+ border-color:#f7d782!important;
+ box-shadow:0 0 0 5px #07140d,0 0 21px rgba(255,216,123,.23),inset 0 1px 0 rgba(255,255,255,.35)!important;
+}
+.roulette-hub:before{color:#8cffab!important;text-shadow:0 0 13px rgba(77,255,141,.23)!important}
+.roulette-hub small{color:#f3dfaa!important}
+.roulette-pointer{
+ border-bottom-color:#fff0b1!important;
+ filter:drop-shadow(0 2px 4px rgba(0,0,0,.65)) drop-shadow(0 0 8px rgba(255,214,111,.35))!important;
+ transform-origin:50% 0!important;
+}
+.roulette-pointer:after{background:#fff5d4!important;box-shadow:0 0 12px rgba(255,225,146,.8)!important}
+.roulette-meta{gap:9px!important}
+.roulette-stat{
+ border:1px solid rgba(227,195,109,.24)!important;
+ background:linear-gradient(145deg,rgba(21,66,39,.64),rgba(5,17,10,.92))!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.045),0 8px 20px rgba(0,0,0,.15)!important;
+ transition:transform .2s,border-color .2s,background .2s!important;
+}
+.roulette-stat:hover{transform:translateY(-2px);border-color:rgba(120,242,156,.4)!important}
+.roulette-stat b{color:#f6d77d!important;text-shadow:0 0 14px rgba(246,215,125,.15)}
+.roulette-stat span{color:#b9c9bd!important;letter-spacing:.09em!important}
+#spinBtn{
+ position:relative!important;overflow:hidden!important;
+ background:linear-gradient(115deg,#0c713a 0%,#18a856 48%,#08733b 100%)!important;
+ color:#f5ffe9!important;border:1px solid #a6f5a9!important;
+ border-radius:16px!important;min-height:60px!important;
+ box-shadow:0 7px 0 #064421,0 13px 27px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.26)!important;
+ letter-spacing:.075em!important;font-weight:1000!important;
+ text-shadow:0 1px 2px rgba(0,0,0,.28)!important;
+ transition:transform .18s,filter .18s,box-shadow .18s!important;
+}
+#spinBtn:before{
+ content:"";position:absolute;top:-45%;left:-35%;width:24%;height:190%;
+ transform:rotate(24deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+ opacity:0;transition:left .6s,opacity .3s;pointer-events:none;
+}
+#spinBtn:hover:not(:disabled){transform:translateY(-2px)!important;filter:brightness(1.07)!important;box-shadow:0 9px 0 #064421,0 18px 32px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.3)!important}
+#spinBtn:hover:not(:disabled):before{left:120%;opacity:1}
+#spinBtn:active:not(:disabled){transform:translateY(3px)!important;box-shadow:0 3px 0 #064421,0 7px 16px rgba(0,0,0,.3)!important}
+#spinBtn:disabled{background:linear-gradient(115deg,#16482c,#1b6940)!important;color:#d2e4d7!important;border-color:rgba(163,232,177,.3)!important;box-shadow:0 4px 0 #082b17!important}
+.roulette-result{
+ border-color:rgba(95,208,130,.25)!important;
+ background:linear-gradient(145deg,rgba(16,100,48,.16),rgba(10,31,19,.72))!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.04),0 10px 26px rgba(0,0,0,.16)!important;
+ transition:border-color .25s,box-shadow .25s,transform .25s!important;
+}
+.roulette-result.win{
+ border-color:rgba(249,214,123,.68)!important;
+ background:radial-gradient(ellipse at 50% 0,rgba(249,214,123,.16),transparent 68%),linear-gradient(145deg,rgba(22,101,51,.23),rgba(7,26,15,.9))!important;
+ box-shadow:0 0 0 1px rgba(249,214,123,.07),0 0 28px rgba(249,214,123,.13),inset 0 1px rgba(255,255,255,.08)!important;
+}
+.roulette-result.win strong{color:#ffe8a4!important;text-shadow:0 0 19px rgba(255,214,119,.2)}
+.roulette-legal{color:#879c8d!important;max-width:440px!important}
+.roulette-connection.ok{color:#93f0ae!important}
+
+/* Giro: aro luminoso, puntero con pequeños clics y centro estable. */
+@keyframes fh-roulette-orbit{to{transform:rotate(360deg)}}
+@keyframes fh-roulette-pointer-tick{
+  0%,100%{transform:translateX(-50%) rotate(0deg)}
+  24%{transform:translateX(-50%) rotate(-5deg)}
+  48%{transform:translateX(-50%) rotate(3deg)}
+  72%{transform:translateX(-50%) rotate(-2deg)}
+}
+@keyframes fh-roulette-hub-breathe{
+  0%,100%{box-shadow:0 0 0 5px #07140d,0 0 18px rgba(255,216,123,.16),inset 0 1px 0 rgba(255,255,255,.3)}
+  50%{box-shadow:0 0 0 5px #07140d,0 0 27px rgba(70,237,132,.3),inset 0 1px 0 rgba(255,255,255,.35)}
+}
+@keyframes fh-roulette-win{
+  0%{transform:scale(.96);filter:brightness(.9)}
+  45%{transform:scale(1.025);filter:brightness(1.13)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+@keyframes fh-result-icon-pop{
+  0%{transform:translateY(9px) scale(.72) rotate(-8deg);opacity:0}
+  60%{transform:translateY(-3px) scale(1.08) rotate(3deg);opacity:1}
+  100%{transform:translateY(0) scale(1) rotate(0);opacity:1}
+}
+@keyframes fh-result-card-in{
+  from{opacity:0;transform:translateY(18px) scale(.95)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.roulette-stage:not(.is-spinning) .roulette-hub{animation:fh-roulette-hub-breathe 4.2s ease-in-out infinite}
+.roulette-stage.is-spinning:after{
+  opacity:1;border-color:rgba(255,225,155,.4);
+  border-top-color:#fff0b0;border-right-color:#7dffad;
+  box-shadow:0 0 12px rgba(255,218,125,.45),0 0 27px rgba(43,223,112,.27),inset 0 0 15px rgba(47,223,112,.1);
+  animation:fh-roulette-orbit 1.35s linear infinite;
+}
+.roulette-stage.is-spinning .roulette-pointer{animation:fh-roulette-pointer-tick .21s ease-in-out infinite}
+.roulette-stage.is-spinning .roulette-hub{animation:fh-roulette-hub-breathe 1.1s ease-in-out infinite}
+.roulette-stage.is-spinning .roulette-wheel{filter:drop-shadow(0 5px 18px rgba(42,224,113,.16))!important}
+.roulette-stage.is-win:after{
+ opacity:1;border-color:rgba(255,227,155,.7);
+ box-shadow:0 0 14px rgba(255,218,125,.6),0 0 34px rgba(255,202,90,.25);
+}
+.roulette-stage.is-win .roulette-hub{animation:fh-roulette-win .55s ease-out 1}
+.roulette-result-overlay.open .roulette-result-card{animation:fh-result-card-in .38s cubic-bezier(.2,.85,.25,1) both}
+.roulette-result-card.win{
+ position:relative;overflow:hidden;
+ border-color:rgba(255,222,132,.68)!important;
+ background:radial-gradient(circle at 50% -10%,rgba(255,224,134,.22),transparent 55%),linear-gradient(145deg,#123821,#06150c)!important;
+ box-shadow:0 24px 90px #000c,0 0 0 5px rgba(255,211,77,.07),0 0 58px rgba(255,211,77,.19)!important;
+}
+.roulette-result-card.win:before{
+ content:"";position:absolute;inset:-35%;pointer-events:none;opacity:.3;
+ background:conic-gradient(from 0deg,transparent 0 18%,rgba(255,228,151,.18) 20%,transparent 24% 46%,rgba(80,255,151,.12) 49%,transparent 53% 75%,rgba(255,228,151,.15) 78%,transparent 82%);
+ animation:fh-roulette-orbit 16s linear infinite;
+}
+.roulette-result-card.win .rr-icon{
+ animation:fh-result-icon-pop .55s cubic-bezier(.2,.8,.25,1) both;
+ border-color:rgba(255,229,161,.55)!important;
+ background:radial-gradient(circle at 50% 24%,rgba(255,232,163,.34),rgba(42,157,83,.15) 68%)!important;
+}
+.roulette-result-card.win strong{color:#ffe9a8!important;text-shadow:0 0 22px rgba(255,217,119,.27)!important}
+.roulette-result-card.no-prize{border-color:rgba(111,184,137,.34)!important;background:linear-gradient(145deg,#102b1b,#06130c)!important}
+.roulette-result-card button{
+ background:linear-gradient(115deg,#0c713a,#20bd63 55%,#08733b)!important;
+ color:#f6ffec!important;border:1px solid #9cf2a8!important;
+ box-shadow:0 6px 0 #064421,0 11px 22px rgba(0,0,0,.28)!important;
+}
+.roulette-result-card button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+@media(max-width:520px){
+ .roulette-wrap{gap:12px!important;margin-top:14px!important}
+ .roulette-stage{width:min(430px,94vw)!important;max-width:calc(100vw - 18px)!important}
+ .roulette-meta{gap:7px!important}
+ .roulette-stat{padding:11px 8px!important;border-radius:12px!important}
+ .roulette-stat b{font-size:19px!important}
+ #spinBtn{min-height:55px!important;font-size:13px!important;letter-spacing:.055em!important}
+ .roulette-result{min-height:64px!important;padding:13px 10px!important;font-size:12px!important}
+ .roulette-result strong{font-size:21px!important}
+ .roulette-result-card{padding:25px 18px!important;border-radius:22px!important}
+ .roulette-result-card .rr-icon{width:92px;height:82px;font-size:58px!important}
+ .roulette-result-card strong{font-size:26px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .roulette-wheel{transition:transform .01ms linear!important}
+ .roulette-stage:not(.is-spinning) .roulette-hub,.roulette-stage.is-spinning:after,
+ .roulette-stage.is-spinning .roulette-pointer,.roulette-stage.is-spinning .roulette-hub,
+ .roulette-stage.is-win .roulette-hub,.roulette-result-overlay.open .roulette-result-card,
+ .roulette-result-card.win:before,.roulette-result-card.win .rr-icon{animation:none!important}
+}
 </style>
 </head>
 <body>
@@ -1336,7 +1493,7 @@ function rouletteShowOverlay(result, spinNumber){
   const special=result.key==='number';
   const tokenPrize=result.key.startsWith('t');
   const win=!!result.bonus || special || tokenPrize;
-  card.className='roulette-result-card '+(win?'':'no-prize');
+  card.className='roulette-result-card '+(win?'win':'no-prize');
   icon.textContent=special?'🎟️':(tokenPrize?'🪙':(result.bonus===5?'🎁':result.bonus===10?'⭐':result.bonus===15?'💎':result.bonus===20?'👑':'🍀'));
   kicker.textContent=special?'¡PREMIO ESPECIAL!':(win?'¡PREMIO!':'Resultado de tu giro');
   prize.textContent=result.label;
@@ -1344,20 +1501,20 @@ function rouletteShowOverlay(result, spinNumber){
   close.textContent=spinNumber===3?'FINALIZAR':(spinNumber===2 && !special?'CONTINUAR':'CONTINUAR');
   overlay.classList.add('open');
   overlay.setAttribute('aria-hidden','false');
-  close.onclick=()=>{overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');};
+  close.onclick=()=>{overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');document.querySelector('.roulette-stage')?.classList.remove('is-win');};
 }
 
 async function rouletteSpin(){
  if(rouletteBusy)return;const c=rouletteCredentials();if(!c.username||!c.pin){alert('Ingresá tu usuario y el PIN que te entregó FREEHAND.');return;}
- rouletteBusy=true;const btn=document.getElementById('spinBtn'),resultBox=document.getElementById('rouletteResult');btn.disabled=true;btn.textContent='🎡 GIRANDO…';resultBox.textContent='La suerte está girando…';
+ rouletteBusy=true;const stage=document.querySelector('.roulette-stage');stage?.classList.remove('is-spinning','is-win');const btn=document.getElementById('spinBtn'),resultBox=document.getElementById('rouletteResult');btn.disabled=true;btn.textContent='🎡 GIRANDO…';resultBox.textContent='La suerte está girando…';
  try{
   const response=await rouletteSpinCall(c);const data=response.data;const result=data.result;const spinNumber=data.spinNumber;
   const sectors={none:[36,72,90,108,144,180,216,234,270,306],number:[0],b20:[18],b5:[54],b10:[252],b15:[198],t1000:[288],t3000:[126],t5000:[162],t50000:[324],t100000:[342]};
   const choices=sectors[result.key]||sectors.none;const sector=choices[Math.floor(Math.random()*choices.length)];const current=((rouletteRotation%360)+360)%360;const target=((360-sector)-current+360)%360;rouletteRotation+=360*(8+Math.floor(Math.random()*3))+target;
-  const wheel=document.getElementById('rouletteWheel');wheel.style.transform=`rotate(${rouletteRotation}deg)`;
-  const finish=async()=>{wheel.removeEventListener('transitionend',finish);const win=!!result.bonus||result.key==='number'||result.key.startsWith('t');const special=result.key==='number';const tokenPrize=result.key.startsWith('t');resultBox.className='roulette-result '+(win?'win':'');resultBox.innerHTML=tokenPrize?`🪙 ¡PREMIO!<strong>${result.label}</strong><span>Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.</span>`:special?`🎟️ ¡PREMIO ESPECIAL!<strong>${result.label}</strong><span>Coordiná el número por mensaje.</span>`:result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>${data.thirdAvailable?'Desbloqueaste un tiro extra especial.':data.spinsLeft>0?'Te queda un tiro.':'Oportunidad finalizada.'}</span>`;btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';rouletteBusy=false;await rouletteRefresh();rouletteShowOverlay(result,spinNumber);};
+  const wheel=document.getElementById('rouletteWheel');stage?.classList.add('is-spinning');wheel.style.transform=`rotate(${rouletteRotation}deg)`;
+  const finish=async()=>{wheel.removeEventListener('transitionend',finish);const win=!!result.bonus||result.key==='number'||result.key.startsWith('t');stage?.classList.remove('is-spinning');stage?.classList.toggle('is-win',win);const special=result.key==='number';const tokenPrize=result.key.startsWith('t');resultBox.className='roulette-result '+(win?'win':'');resultBox.innerHTML=tokenPrize?`🪙 ¡PREMIO!<strong>${result.label}</strong><span>Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.</span>`:special?`🎟️ ¡PREMIO ESPECIAL!<strong>${result.label}</strong><span>Coordiná el número por mensaje.</span>`:result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>${data.thirdAvailable?'Desbloqueaste un tiro extra especial.':data.spinsLeft>0?'Te queda un tiro.':'Oportunidad finalizada.'}</span>`;btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';rouletteBusy=false;await rouletteRefresh();rouletteShowOverlay(result,spinNumber);};
   wheel.addEventListener('transitionend',finish,{once:true});setTimeout(()=>{if(rouletteBusy)finish();},6500);
- }catch(e){console.error('ROULETTE SPIN',e);rouletteBusy=false;btn.textContent='🎡 GIRAR RULETA';resultBox.textContent=e?.message||'No hay tiros habilitados o la oportunidad ya finalizó.';await rouletteRefresh();}
+ }catch(e){console.error('ROULETTE SPIN',e);stage?.classList.remove('is-spinning','is-win');rouletteBusy=false;btn.textContent='🎡 GIRAR RULETA';resultBox.textContent=e?.message||'No hay tiros habilitados o la oportunidad ya finalizó.';await rouletteRefresh();}
 }
 rouletteBuildLabels();
 document.getElementById('rouletteResultOverlay')?.addEventListener('click',e=>{
