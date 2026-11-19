@@ -100,6 +100,6 @@ El contador se empezó a registrar el 19/11/2026. Se conservaron dos aprobacione
 - **Bonos:** quedan como `pending_use`; **MARCAR CANJEADO** los retira de la lista pendiente, los conserva en `used_bonus_prizes` y archiva el premio como `redeemed`.
 - **Número para cuatriciclo:** queda como `pending_assignment`; el administrador registra el número elegido y queda archivado como `assigned`.
 - La pestaña **PENDIENTES** muestra solo premios que requieren acción. **ARCHIVO** conserva entregados, canjeados, asignados y anulados.
-- `public.roulette_prize_events` conserva el movimiento de cada premio y quién lo resolvió.
+- `public.roulette_prize_events` conserva el movimiento de cada premio y quién lo resolvió. Cada fila del panel incluye **VER MOVIMIENTOS** para consultar cuándo se obtuvo, acreditó, canjeó o asignó.
 - Premios históricos importados: las fichas ya acreditadas por el sistema anterior se marcan como entregadas sin volver a sumarlas; los bonos respetan su estado previo.
 - El mensaje de la ruleta aclara que una ganancia de fichas queda pendiente hasta que FREEHAND confirme la entrega.

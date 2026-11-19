@@ -169,6 +169,20 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       });
     }
 
+    if (action === "adminListPrizeEvents") {
+      const awardId = String(body.awardId || "").trim();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(awardId)) {
+        throw new Error("No se pudo identificar el premio seleccionado.");
+      }
+      const { data, error } = await db
+        .from("roulette_prize_events")
+        .select("*")
+        .eq("award_id", awardId)
+        .order("created_at", { ascending:true });
+      if (error) throw error;
+      return json({ events:data||[] });
+    }
+
     const username = ["adminConfirmFichasDelivery","adminAssignRaffleAward"].includes(action) ? "" : nameOf(body.username);
     const id = username ? slugOf(username) : "";
     if (action === "adminCreatePlayer") {
@@ -270,7 +284,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 16,
+      version: 17,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });

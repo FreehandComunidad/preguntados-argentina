@@ -159,6 +159,7 @@ function renderPrizeSummary(){
   ['FICHAS POR ENTREGAR',Number(prizeSummary.pendingFichasTotal||0).toLocaleString('es-AR')],
   ['ENTREGAS PENDIENTES',Number(prizeSummary.pendingFichasCount||0).toLocaleString('es-AR')],
   ['BONOS PENDIENTES',Number(prizeSummary.pendingBonuses||0).toLocaleString('es-AR')],
+  ['NÚMEROS POR ASIGNAR',Number(prizeSummary.pendingAssignments||0).toLocaleString('es-AR')],
   ['PREMIOS ARCHIVADOS',Number(prizeSummary.archivedCount||0).toLocaleString('es-AR')]
  ];
  box.innerHTML='';
@@ -249,6 +250,17 @@ function renderPrizeRows(){
    const badge=document.createElement('span');badge.className='prize-state done';badge.textContent=statusNames[a.status]||'ARCHIVADO';
    actions.append(badge);
   }
+  const historyButton=document.createElement('button');
+  historyButton.type='button';historyButton.className='secondary';historyButton.textContent='VER MOVIMIENTOS';
+  historyButton.onclick=async()=>{
+   try{
+    const result=(await call('adminListPrizeEvents')(adminArgs({awardId:a.id}))).data;
+    const eventNames={awarded:'Premio obtenido',legacy_imported:'Importado al historial',delivered:'Fichas entregadas y acreditadas',redeemed:'Bono canjeado',assigned:'Número asignado',cancelled:'Premio anulado'};
+    const lines=(result.events||[]).map(event=>prizeDate(event.created_at)+' · '+(eventNames[event.event_type]||event.event_type)+' · '+(event.actor||'sistema')+(event.note?'\n'+event.note:''));
+    window.alert('MOVIMIENTOS DE '+(a.username||'JUGADOR')+'\n'+(a.prize_label||a.prize_key)+'\n\n'+(lines.length?lines.join('\n\n'):'No hay movimientos registrados.'));
+   }catch(e){window.alert(e.message||'No se pudo cargar el historial del premio.');}
+  };
+  actions.append(historyButton);
   row.append(main,actions);box.append(row);
  });
 }
