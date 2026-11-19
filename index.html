@@ -893,6 +893,28 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
  .roulette-result-card.win:before,.roulette-result-card.win .rr-icon{animation:none!important}
 }
 </style>
+
+<style id="freehand-player-prize-history">
+.player-prize-history{width:100%;margin:17px auto 2px;padding:16px 14px;border:1px solid rgba(245,200,75,.25);border-radius:17px;background:linear-gradient(150deg,rgba(12,39,24,.96),rgba(3,13,8,.98));box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.045);text-align:left}
+.player-prize-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+.player-prize-title small{display:block;color:#68e995;font-size:9px;font-weight:900;letter-spacing:.16em}
+.player-prize-title strong{display:block;margin-top:4px;color:#fff5d7;font-size:14px;font-weight:900}
+.player-prize-summary{flex:none;padding:6px 8px;border:1px solid rgba(245,200,75,.2);border-radius:8px;background:rgba(245,200,75,.07);color:#f4d779;font-size:9px;font-weight:900}
+.player-prize-list{display:grid;gap:8px}
+.player-prize-item{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.025)}
+.player-prize-icon{display:grid;place-items:center;width:34px;height:34px;border:1px solid rgba(245,200,75,.2);border-radius:10px;background:rgba(245,200,75,.07);color:#f5d16b;font-size:16px;font-weight:900}
+.player-prize-icon.bonus{border-color:rgba(173,129,255,.23);background:rgba(148,104,230,.09);color:#d3b5ff}
+.player-prize-copy{min-width:0}
+.player-prize-copy strong{display:block;color:#f4f7f3;font-size:11px;font-weight:900;overflow-wrap:anywhere}
+.player-prize-copy small{display:block;margin-top:4px;color:#84988b;font-size:9px;line-height:1.4}
+.player-prize-state{max-width:118px;padding:6px 7px;border:1px solid transparent;border-radius:8px;text-align:center;font-size:8px;font-weight:950;line-height:1.3}
+.player-prize-state.pending{border-color:rgba(229,186,81,.22);background:rgba(206,160,53,.1);color:#f1d179}
+.player-prize-state.done{border-color:rgba(45,191,93,.2);background:rgba(45,191,93,.09);color:#91e9ad}
+.player-prize-state.cancelled{border-color:rgba(217,82,88,.2);background:rgba(217,82,88,.09);color:#f3a0a3}
+.player-prize-empty{padding:13px 10px;border:1px dashed rgba(255,255,255,.1);border-radius:11px;color:#93a69a;font-size:10px;text-align:center;line-height:1.5}
+@media(max-width:420px){.player-prize-history{padding:13px 10px}.player-prize-item{grid-template-columns:31px minmax(0,1fr);gap:8px;padding:9px}.player-prize-icon{width:30px;height:30px}.player-prize-state{grid-column:2;justify-self:start;max-width:none}.player-prize-copy strong{font-size:10px}}
+</style>
+
 </head>
 <body>
 <div id="bonusEggOverlay" aria-hidden="true">
@@ -933,6 +955,13 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
   <div id="rouletteResult" class="roulette-result">Ingresá tu usuario para comenzar.</div>
   <p class="roulette-legal">Premios especiales: 50.000 y 100.000 fichas. Cada giro es independiente y queda registrado en el servidor.</p>
   <div id="rouletteConnection" class="roulette-connection">Conectando con FREEHAND…</div>
+  <section id="playerPrizeHistory" class="player-prize-history hidden" aria-live="polite">
+    <div class="player-prize-head">
+      <div class="player-prize-title"><small>MI CUENTA</small><strong>Historial de bonos y fichas</strong></div>
+      <span id="playerPrizeSummary" class="player-prize-summary">—</span>
+    </div>
+    <div id="playerPrizeItems" class="player-prize-list"></div>
+  </section>
 </div>
 </section>
 
@@ -1466,20 +1495,71 @@ function rouletteBuildLabels(){} // Las etiquetas ya están impresas en la ilust
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 function rouletteCredentials(){return {username:rouletteNormalizeName(document.getElementById('username')?.value||''),pin:(document.getElementById('roulettePin')?.value||'').trim()};}
 async function rouletteGetStatus(){const c=rouletteCredentials();if(!c.username||!c.pin)return null;const r=await rouletteStatusCall(c);return r.data;}
+function rouletteRenderPrizeHistory(records){
+ const panel=document.getElementById('playerPrizeHistory');
+ const list=document.getElementById('playerPrizeItems');
+ const summary=document.getElementById('playerPrizeSummary');
+ if(!panel||!list||!summary)return;
+ panel.classList.remove('hidden');
+ const rows=Array.isArray(records)?records:[];
+ const pending=rows.filter(item=>['pending_delivery','pending_use'].includes(item.status)).length;
+ summary.textContent=pending?pending+' pendiente'+(pending===1?'':'s'):rows.length+' movimiento'+(rows.length===1?'':'s');
+ list.innerHTML='';
+ if(!rows.length){
+  const empty=document.createElement('div');
+  empty.className='player-prize-empty';
+  empty.textContent='Todavía no tenés bonos ni premios de fichas registrados.';
+  list.append(empty);
+  return;
+ }
+ const names={
+  pending_delivery:'Pendiente de entrega',
+  delivered:'Fichas entregadas',
+  pending_use:'Pendiente de canje',
+  redeemed:'Bono canjeado',
+  cancelled:'Premio anulado'
+ };
+ rows.slice(0,40).forEach(item=>{
+  const bonus=item.prizeType==='bonus';
+  const amount=bonus
+   ? 'BONUS '+Math.max(0,Math.min(100,Number(item.bonusPercent)||0))+'%'
+   : Number(item.fichasAmount||0).toLocaleString('es-AR')+' FICHAS';
+  const row=document.createElement('article');
+  row.className='player-prize-item';
+  const icon=document.createElement('span');
+  icon.className='player-prize-icon'+(bonus?' bonus':'');
+  icon.textContent=bonus?'%':'◈';
+  const copy=document.createElement('div');
+  copy.className='player-prize-copy';
+  const title=document.createElement('strong');
+  title.textContent=amount;
+  const date=document.createElement('small');
+  const created=item.createdAt?new Date(item.createdAt):null;
+  date.textContent=created&&!Number.isNaN(created.getTime())
+   ? created.toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})+' · '+created.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+   : (item.prizeLabel||'Premio registrado');
+  copy.append(title,date);
+  const state=document.createElement('span');
+  state.className='player-prize-state '+(['pending_delivery','pending_use'].includes(item.status)?'pending':item.status==='cancelled'?'cancelled':'done');
+  state.textContent=names[item.status]||'Registrado';
+  row.append(icon,copy,state);
+  list.append(row);
+ });
+}
 async function rouletteRefresh(){
  const spinsLeft=document.getElementById('spinsLeft'),playerLabel=document.getElementById('playerLabel'),result=document.getElementById('rouletteResult'),btn=document.getElementById('spinBtn'),connection=document.getElementById('rouletteConnection');
  if(!spinsLeft||!playerLabel||!result||!btn)return;
  const c=rouletteCredentials();playerLabel.textContent=c.username?c.username.slice(0,12):'—';
- if(!c.username||!c.pin){spinsLeft.textContent='0';btn.disabled=true;result.textContent='Ingresá tu usuario y el PIN que te entregó FREEHAND.';if(connection){connection.className='roulette-connection';connection.textContent='';}return;}
+ if(!c.username||!c.pin){document.getElementById('playerPrizeHistory')?.classList.add('hidden');spinsLeft.textContent='0';btn.disabled=true;result.textContent='Ingresá tu usuario y el PIN que te entregó FREEHAND.';if(connection){connection.className='roulette-connection';connection.textContent='';}return;}
  try{if(connection){connection.className='roulette-connection';connection.textContent='Verificando tus oportunidades…';}
-  const status=await rouletteGetStatus();rouletteUserData=status;const left=Number(status.spinsLeft||0);spinsLeft.textContent=String(left);btn.disabled=left===0||rouletteBusy;
+  const status=await rouletteGetStatus();rouletteUserData=status;rouletteRenderPrizeHistory(status.prizeHistory);const left=Number(status.spinsLeft||0);spinsLeft.textContent=String(left);btn.disabled=left===0||rouletteBusy;
   result.className='roulette-result';
   if(!status.activeCycle)result.innerHTML=status.queuedCycles>0?'Tu próxima oportunidad está en espera.':'Todavía no tenés tiros habilitados. Comunicate con FREEHAND.';
   else if(status.thirdAvailable)result.innerHTML='¡Desbloqueaste el tiro extra especial!<strong>Una oportunidad más.</strong>';
   else if(left>0)result.textContent=`Tenés ${left} tiro${left===1?'':'s'} disponible${left===1?'':'s'}.`;
   else result.innerHTML='Oportunidad finalizada.<strong>¡Gracias por jugar!</strong>';
   if(connection){connection.className='roulette-connection ok';connection.textContent='● Jugador verificado';}
- }catch(e){console.error('ROULETTE STATUS',e);btn.disabled=true;result.textContent=e?.message||'No se pudo verificar tu cuenta. Intentá nuevamente.';if(connection){connection.className='roulette-connection err';connection.textContent='● No se pudo validar';}}
+ }catch(e){console.error('ROULETTE STATUS',e);document.getElementById('playerPrizeHistory')?.classList.add('hidden');btn.disabled=true;result.textContent=e?.message||'No se pudo verificar tu cuenta. Intentá nuevamente.';if(connection){connection.className='roulette-connection err';connection.textContent='● No se pudo validar';}}
 }
 function rouletteShowOverlay(result, spinNumber){
   const overlay=document.getElementById('rouletteResultOverlay');
