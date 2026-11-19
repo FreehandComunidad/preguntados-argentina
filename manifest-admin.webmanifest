@@ -1,0 +1,25 @@
+{
+  "id": "./roulette-admin.html",
+  "name": "FREEHAND · Gestión de ruleta",
+  "short_name": "FREEHAND Admin",
+  "description": "Administración de jugadores, premios, billetera y reportes de FREEHAND.",
+  "lang": "es-AR",
+  "start_url": "./roulette-admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#030906",
+  "theme_color": "#06140d",
+  "icons": [
+    {
+      "src": "./assets/freehand-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
