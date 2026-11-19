@@ -130,7 +130,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       if(sessionInsertError)throw sessionInsertError;
       const {error:loginUpdateError}=await db.from("roulette_admin_users").update({last_login_at:new Date().toISOString(),login_failed_attempts:0,login_locked_until:null}).eq("id",user.id);
       if(loginUpdateError)throw loginUpdateError;
-      return json({token,username:user.username,role:user.role,expiresAt});
+      return json({token,userId:user.id,username:user.username,role:user.role,expiresAt});
     }
 
     if(action.startsWith("admin")){
