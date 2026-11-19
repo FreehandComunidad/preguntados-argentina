@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06140d"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./assets/freehand-app-icon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>FREEHAND · Gestión de ruleta</title>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06140d"><link rel="manifest" href="./manifest-admin.webmanifest"><link rel="apple-touch-icon" href="./assets/freehand-app-icon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>FREEHAND · Gestión de ruleta</title>
 <style>
 :root{--ink:#06100b;--panel:#0b1d12;--panel2:#0e2618;--line:rgba(209,183,104,.16);--line2:rgba(222,190,97,.32);--gold:#e9c86b;--green:#28dc75;--greenSoft:#a8edbe;--muted:#9eafa4;--text:#f4f8f3;--red:#f07478;--shadow:0 22px 60px rgba(0,0,0,.32)}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:26px}
@@ -976,19 +976,24 @@ byId('mobileMoreOverlay').addEventListener('click',event=>{if(event.target.id===
 byId('mobileLogoutBtn').onclick=()=>{closeMobileMore();byId('logoutBtn').click();};
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMobileMore();});
 byId('sidebarLogoutBtn').onclick=()=>byId('logoutBtn').click();
-<script>
+// PWA: prompt de instalación, instrucciones para iOS y caché de interfaz.
 (function(){
  let deferredInstall=null;
  const installButton=document.getElementById('freehandInstallBtn');
+ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+ if(ios&&installButton){
+  installButton.textContent='＋ CÓMO INSTALAR';
+  installButton.classList.remove('hidden');
+ }
  window.addEventListener('beforeinstallprompt',event=>{
   event.preventDefault();deferredInstall=event;
-  installButton?.classList.remove('hidden');
+  if(installButton){installButton.textContent='⬇ INSTALAR FREEHAND';installButton.classList.remove('hidden');}
  });
  installButton?.addEventListener('click',async()=>{
   if(deferredInstall){
    deferredInstall.prompt();await deferredInstall.userChoice;
    deferredInstall=null;installButton.classList.add('hidden');
-  }else if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
+  }else if(ios){
    alert('Para instalar FREEHAND en iPhone: abrí esta página en Safari, tocá Compartir y elegí “Agregar a pantalla de inicio”.');
   }
  });
@@ -997,5 +1002,4 @@ byId('sidebarLogoutBtn').onclick=()=>byId('logoutBtn').click();
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(error=>console.warn('FREEHAND PWA:',error)));
  }
 })();
-</script>
 </script></body></html>
