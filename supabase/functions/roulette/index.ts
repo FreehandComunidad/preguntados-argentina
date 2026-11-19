@@ -67,7 +67,7 @@ async function requireAdmin(req: Request,db:any){
 }
 const ADMIN_READ_ONLY_ACTIONS=new Set([
   "adminListPlayers","adminListPrizes","adminListPrizeEvents","adminGetPlayerProfile",
-  "adminListCatalog","adminGetReports","adminListNotifications","adminListAdminUsers"
+  "adminListCatalog","adminGetReports","adminListNotifications"
 ]);
 const ADMIN_OWNER_ONLY_ACTIONS=new Set([
   "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminCancelLoad",
@@ -85,6 +85,7 @@ async function playerCredentials(body: any) {
 }
 function errorStatus(message: string) {
   if (message.includes("PLAYER_NOT_FOUND") || message.includes("BONUS_NOT_FOUND")) return 404;
+  if(message.includes("ADMIN_LOGIN_LOCKED"))return 429;
   if (message.includes("INVALID_CREDENTIALS") || message.includes("ADMIN_INVALID_CREDENTIALS") ||
       message.includes("ADMIN_SESSION_INVALID") || message.includes("ADMIN_FORBIDDEN")) return 403;
   if (message.includes("NO_ACTIVE_CYCLE") || message.includes("CYCLE_FINISHED") ||
@@ -105,17 +106,29 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       const password=String(body.password||"");
       if(!/^[a-z0-9._-]{3,30}$/.test(username)||password.length<10||password.length>128)return json({error:"ADMIN_INVALID_CREDENTIALS"},403);
       const {data:user,error:userError}=await db.from("roulette_admin_users")
-        .select("id,username,password_salt,password_hash,role,is_active")
+        .select("id,username,password_salt,password_hash,role,is_active,login_failed_attempts,login_locked_until")
         .eq("username",username).maybeSingle();
       if(userError)throw userError;
       if(!user||!user.is_active)return json({error:"ADMIN_INVALID_CREDENTIALS"},403);
+      if(user.login_locked_until&&new Date(user.login_locked_until).getTime()>Date.now()){
+        return json({error:"ADMIN_LOGIN_LOCKED",retryAt:user.login_locked_until},429);
+      }
       const candidate=await passwordDigest(password,user.password_salt);
-      if(!constantTimeEqual(candidate,user.password_hash))return json({error:"ADMIN_INVALID_CREDENTIALS"},403);
+      if(!constantTimeEqual(candidate,user.password_hash)){
+        const attempts=Number(user.login_failed_attempts||0)+1;
+        const locked=attempts>=5;
+        const {error:failedUpdateError}=await db.from("roulette_admin_users").update({
+          login_failed_attempts:locked?0:attempts,
+          login_locked_until:locked?new Date(Date.now()+15*60*1000).toISOString():null
+        }).eq("id",user.id);
+        if(failedUpdateError)throw failedUpdateError;
+        return locked?json({error:"ADMIN_LOGIN_LOCKED",retryMinutes:15},429):json({error:"ADMIN_INVALID_CREDENTIALS"},403);
+      }
       const token=randomHex(32),tokenHash=await hash(token);
       const expiresAt=new Date(Date.now()+12*60*60*1000).toISOString();
       const {error:sessionInsertError}=await db.from("roulette_admin_sessions").insert({token_hash:tokenHash,admin_user_id:user.id,expires_at:expiresAt});
       if(sessionInsertError)throw sessionInsertError;
-      const {error:loginUpdateError}=await db.from("roulette_admin_users").update({last_login_at:new Date().toISOString()}).eq("id",user.id);
+      const {error:loginUpdateError}=await db.from("roulette_admin_users").update({last_login_at:new Date().toISOString(),login_failed_attempts:0,login_locked_until:null}).eq("id",user.id);
       if(loginUpdateError)throw loginUpdateError;
       return json({token,username:user.username,role:user.role,expiresAt});
     }
