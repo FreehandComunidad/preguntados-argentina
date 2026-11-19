@@ -106,7 +106,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
         return { username:p.username, active:!!cycle, used:spins.length,
           spinsLeft:cycle?(spins.length===0?2:spins.length===1?1:thirdAvailable?1:0):0,
           thirdAvailable, queuedCycles:p.queued_cycles, fichasBalance:p.fichas_balance,
-          bonusCount:(p.bonus_prizes||[]).length, bonusPrizes:(p.bonus_prizes||[]).map((b:any)=>({percent:Number(b.percent||0),cycleId:b.cycleId||null,spinNumber:Number(b.spinNumber||0),createdAt:b.createdAt||null})), quadBikeNumbers:p.quad_bike_numbers };
+          bonusCount:(p.bonus_prizes||[]).length, approvedLoads:Number(p.approved_loads_count||0), bonusPrizes:(p.bonus_prizes||[]).map((b:any)=>({percent:Number(b.percent||0),cycleId:b.cycleId||null,spinNumber:Number(b.spinNumber||0),createdAt:b.createdAt||null})), quadBikeNumbers:p.quad_bike_numbers };
       }) });
     }
 

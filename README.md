@@ -76,3 +76,10 @@ Los premios grandes tienen probabilidades muy bajas en cada giro: 50.000 fichas 
 - Los datos existentes de jugadores y giros permanecen en Supabase.
 - RLS continúa habilitado en las dos tablas de ruleta; el acceso se realiza por la Edge Function con credenciales de servidor.
 - El PIN tiene 8 dígitos y se guarda como hash. Cinco intentos fallidos bloquean el PIN durante 15 minutos.
+
+
+## Cargas aprobadas por usuario
+
+La tabla `public.roulette_players` tiene el contador `approved_loads_count`. La acción administrativa `adminApproveLoad` llama a `roulette_admin_grant_cycles` con `p_source='load-approved'`; esa función incrementa el contador en la misma transacción que habilita el ciclo. Los regalos administrativos (`p_source='admin'`) no incrementan este contador. La Edge Function `roulette` devuelve el valor como `approvedLoads` y el panel lo muestra por jugador.
+
+El contador se empezó a registrar el 19/11/2026. Se conservaron dos aprobaciones anteriores que pudieron identificarse con certeza (Gaby y julioponce: una cada uno). Las aprobaciones históricas ya finalizadas no se podían reconstruir de forma fiable porque el esquema anterior no conservaba el origen de cada ciclo completado ni de las oportunidades en cola.
