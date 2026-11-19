@@ -1,0 +1,23 @@
+{
+  "id": "./",
+  "name": "FREEHAND · Preguntados Argentina",
+  "short_name": "FREEHAND",
+  "description": "La comunidad FREEHAND: ruleta, premios y Preguntados Argentina.",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#030906",
+  "theme_color": "#06140d",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "./assets/freehand-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
