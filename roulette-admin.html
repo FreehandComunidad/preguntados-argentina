@@ -777,18 +777,28 @@ async function loadReports(){
    ['Fichas pendientes',formatNumber(pendingFichas),'Aún no acreditadas'],
    ['Premios pendientes',pending,'Requieren intervención'],
    ['Cargas aprobadas',formatNumber(loads),'Acumulado por jugador'],
-   ['Bonos canjeados',awards.filter(a=>a.status==='redeemed').length,'Bonos archivados'],
+   ['Bonos pendientes',awards.filter(a=>a.status==='pending_use').length,'Pendientes de canje'],
+   ['Premios entregados',awards.filter(a=>['delivered','redeemed','assigned'].includes(a.status)).length,'Entregas y canjes resueltos'],
    ['Movimientos de billetera',ledger.length,'Créditos y ajustes auditados']
   ];
   byId('reportsMetrics').innerHTML=metrics.map(m=>'<div class="report-metric"><small>'+escapeHTML(m[0])+'</small><strong>'+m[1]+'</strong><span>'+escapeHTML(m[2])+'</span></div>').join('');
   const last7=Array.from({length:7},(_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(6-i));return d;});
   const daily=last7.map(d=>{const key=d.toLocaleDateString('en-CA');return {label:d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}),value:spins.filter(x=>new Date(x.created_at).toLocaleDateString('en-CA')===key).length};});
+  const monthly=Array.from({length:6},(_,i)=>{
+   const d=new Date();d.setDate(1);d.setHours(0,0,0,0);d.setMonth(d.getMonth()-(5-i));
+   return d;
+  }).map(d=>{
+   const year=d.getFullYear(),month=d.getMonth();
+   return {label:d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}),value:spins.filter(x=>{
+    const date=new Date(x.created_at);return date.getFullYear()===year&&date.getMonth()===month;
+   }).length};
+  });
   const typeItems=[
    {label:'Fichas',value:awards.filter(a=>a.prize_type==='fichas').length},
    {label:'Bonos',value:awards.filter(a=>a.prize_type==='bonus').length},
    {label:'Sorteos',value:awards.filter(a=>a.prize_type==='raffle').length}
   ];
-  byId('reportsTrends').innerHTML=renderBar('Giros por día · últimos 7 días',daily)+renderBar('Premios por categoría',typeItems);
+  byId('reportsTrends').innerHTML=renderBar('Giros por día · últimos 7 días',daily)+renderBar('Giros por mes · últimos 6 meses',monthly)+renderBar('Premios por categoría',typeItems);
   byId('reportsStatus').textContent='Datos actualizados: '+prizeDate(data.generatedAt);
  }catch(error){status('reportsStatus',error.message||'No se pudieron cargar los reportes.');}
 }
@@ -964,6 +974,7 @@ function navigateAdmin(target,view){
  const wantedView=view||'';
  document.querySelectorAll('.nav-link').forEach(button=>button.classList.toggle('active',button.dataset.navTarget===target&&(button.dataset.navView||'')===wantedView));
  document.querySelectorAll('.mobile-dock-item[data-dock-primary]').forEach(button=>button.classList.toggle('active',button.dataset.navTarget===target));
+ if(target==='reportsManagement')loadReports();
  const coreTargets=['sectionOverview','prizeManagement','playersManagement'];
  byId('mobileMoreToggle')?.classList.toggle('active',!coreTargets.includes(target));
  element.scrollIntoView({behavior:'smooth',block:'start'});
