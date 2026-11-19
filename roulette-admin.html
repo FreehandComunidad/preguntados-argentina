@@ -1,77 +1,149 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06140d"><title>FREEHAND · Gestión de ruleta</title>
 <style>
-*{box-sizing:border-box}:root{--bg:#06140d;--card:#0a2417;--line:rgba(245,200,75,.22);--gold:#f5c84b;--neon:#57ff8a;--muted:#aebdb4;--red:#ef5b62}body{margin:0;min-height:100vh;background:radial-gradient(900px 420px at 50% -12%,rgba(25,102,57,.52),transparent 65%),linear-gradient(180deg,#06130c,#030906);color:#f8fbf8;font-family:Inter,system-ui,Arial}.wrap{max-width:1000px;margin:auto;padding:26px 16px 60px}header{text-align:center;margin-bottom:24px}h1{margin:0;color:var(--gold);font-size:clamp(24px,5vw,36px)}header p{color:var(--muted)}.card{border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#123320e8,#07160eea);padding:20px;margin:14px 0;box-shadow:0 16px 42px #0007}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}label{display:block;color:#d9e5dd;font-size:13px;font-weight:800;margin:12px 0 5px}input,select{width:100%;padding:13px;border:1px solid var(--line);background:#04100a;color:#fff;border-radius:12px;font-size:15px}button{border:0;border-radius:12px;padding:13px 16px;font-weight:900;background:linear-gradient(135deg,#ffe37a,#f5b82f);color:#171006;cursor:pointer;margin-top:12px}button.secondary{background:#143a25;color:#eaf7ed;border:1px solid var(--line)}button.danger{background:#5b1720;color:white}button:disabled{opacity:.5;cursor:not-allowed}.muted{color:var(--muted);font-size:13px}.status{padding:10px 12px;border-radius:12px;background:#ffffff0a;margin-top:12px;white-space:pre-wrap}.ok{color:var(--neon)}.err{color:#ff9b9b}.pin{font-size:26px;font-weight:1000;letter-spacing:5px;color:var(--gold);text-align:center;padding:16px;border:1px dashed var(--gold);border-radius:12px;margin-top:12px}
-.access-data{display:grid;gap:9px;margin-top:12px}
-.access-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#04100a}
-.access-row span{display:block;color:var(--muted);font-size:10px;font-weight:850;letter-spacing:1.2px;margin-bottom:5px}
-.access-row strong,.access-row a{color:#fff0a4;font-size:15px;font-weight:900;overflow-wrap:anywhere;text-decoration:none}
-.access-row .pin-value{font-size:25px;letter-spacing:5px;color:var(--gold)}
-.access-row button{margin:0;white-space:nowrap;padding:9px 10px;font-size:11px}
-#copyAllBtn{width:100%}
-.hidden{display:none}.players{display:grid;gap:8px}.player{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border-bottom:1px solid #ffffff12;padding:12px 0}.player strong{display:block}.player small{color:var(--muted)}
-.player-bonuses{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.bonus-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid rgba(245,200,75,.38);border-radius:999px;background:rgba(245,200,75,.09);color:#ffe18a;font-size:11px;font-weight:850;letter-spacing:.02em}
-.bonus-chip time{color:#b8c8bd;font-size:10px;font-weight:550;letter-spacing:0}
-.no-bonuses{display:block;margin-top:7px;color:#809188;font-size:11px}
-.approved-load-count{display:inline-flex;align-items:center;gap:7px;margin-top:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(54,225,122,.38);background:rgba(31,173,86,.11);color:#b3f6c9;font-size:11px;font-weight:850}
-.approved-load-count b{color:#fff0a4;font-size:15px}
-.used-bonus-count{display:block;margin-top:7px;color:#8fa99a;font-size:11px}
-.bonus-item{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.bonus-use-button{margin:0!important;padding:6px 9px!important;font-size:10px!important;letter-spacing:.2px}
-.player-actions .cancel-load-button{background:#5b1720!important;color:#ffe9e9!important;border:1px solid rgba(255,120,120,.35)!important}
-@media(max-width:520px){.bonus-item{align-items:flex-start}.bonus-use-button{margin:0!important}}.player button{margin:3px 0 3px 6px;padding:9px 11px;font-size:12px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#163a25;border:1px solid var(--line);font-size:11px;color:var(--gold)}@media(max-width:520px){.player{grid-template-columns:1fr}.player-actions{display:flex;flex-wrap:wrap}.card{padding:16px}}
-
-.prize-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.prize-header h2{margin:0 0 5px}.prize-header p{margin:0}
-.prize-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:16px 0}
-.prize-stat{padding:13px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#0d2b1a,#06140c)}
-.prize-stat span{display:block;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
-.prize-stat strong{display:block;color:var(--gold);font-size:23px;font-weight:1000;margin-top:5px}
-.prize-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:15px 0}
-.prize-tabs{display:flex;gap:7px;flex-wrap:wrap}
-.prize-tab{margin:0;padding:9px 13px;background:#102b1b;border:1px solid var(--line);color:#dfeee4;font-size:11px}
-.prize-tab.active{background:linear-gradient(135deg,#dfffa0,#33df73);color:#06150b;border-color:#57ff8a}
-#prizeSearch{max-width:290px}.prize-list{display:grid;gap:10px}
-.prize-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:13px;border:1px solid #ffffff16;border-radius:14px;background:#04130b}
-.prize-row-main{min-width:0}
-.prize-row-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:900;color:#f5faf6}
-.prize-row-label{color:var(--gold);font-weight:1000}
-.prize-row-meta{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.5}
-.prize-state{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:#122d1c;color:#c9e8d2;font-size:10px;font-weight:850}
-.prize-state.pending{border-color:#d5a93d;background:#342606;color:#ffe18a}
-.prize-state.done{border-color:#43be72;background:#082a17;color:#a8f5bd}
-.prize-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.prize-actions button{margin:0;padding:10px 12px;font-size:11px}
-.prize-actions .confirm-delivery{background:linear-gradient(135deg,#fff0a5,#e5b431);color:#1d1605}
-.prize-actions .assign-number{background:#17452b;color:#e8fff0;border:1px solid #57ff8a}
-.prize-actions input{width:130px;padding:9px 10px}
-.prize-amount{font-size:18px;font-weight:1000;color:#f6d66f}
-.prize-empty{padding:24px 15px;text-align:center;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
-@media(max-width:620px){.prize-row{grid-template-columns:1fr}.prize-actions{justify-content:flex-start}.prize-actions input{width:125px}#prizeSearch{max-width:none}.prize-header>button{width:100%}}
-</style></head><body><div class="wrap"><header><h1>FREEHAND · GESTIÓN DE RULETA</h1><p>Panel privado de altas, oportunidades y control de jugadores</p></header>
-<section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Supabase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR AL PANEL</button><div class="status" id="loginStatus"></div></section>
-<main id="panel" class="hidden"><div class="grid"><section class="card"><h2>Crear jugador</h2><p class="muted">Creá el usuario y entregale sus datos por WhatsApp. Los usuarios nuevos reciben un PIN de 4 dígitos.</p><label for="newName">Nombre o usuario</label><input id="newName" maxlength="20" placeholder="Ej. jugador123"><button id="createBtn">CREAR JUGADOR Y GENERAR PIN</button><div id="createdResult" class="hidden"><div class="access-data"><div class="access-row"><div><span>USUARIO</span><strong id="newUsername"></strong></div><button class="secondary" id="copyUserBtn" type="button">COPIAR USUARIO</button></div><div class="access-row"><div><span>PIN DE 4 DÍGITOS</span><strong class="pin-value" id="newPin"></strong></div><button class="secondary" id="copyPinBtn" type="button">COPIAR PIN</button></div><div class="access-row"><div><span>LINK DE LA RULETA</span><a id="newLink" href="https://freehandcomunidad.github.io/preguntados-argentina/" target="_blank" rel="noopener noreferrer">Abrir ruleta FREEHAND ↗</a></div><button class="secondary" id="copyLinkBtn" type="button">COPIAR LINK</button></div></div><p class="muted" id="pinHelp"></p><button id="copyAllBtn" type="button">COPIAR TODO PARA WHATSAPP</button></div><div class="status" id="createStatus"></div></section>
-<section class="card"><h2>Habilitar oportunidad</h2><p class="muted">Cada carga aprobada o regalo agrega un ciclo: dos tiros y un tercero solo si los primeros dos son SIN PREMIO. Los ciclos extra quedan en cola.</p><label for="grantName">Usuario</label><input id="grantName" maxlength="20" placeholder="Nombre exacto del jugador"><label for="grantCount">Cantidad de oportunidades</label><select id="grantCount"><option value="1">1 oportunidad</option><option value="2">2 oportunidades</option><option value="3">3 oportunidades</option><option value="5">5 oportunidades</option><option value="10">10 oportunidades</option></select><div class="grid"><button id="approveBtn">APROBAR CARGA</button><button id="giftBtn" class="secondary">REGALAR OPORTUNIDAD</button></div><div class="status" id="grantStatus"></div></section></div>
-<section class="card" id="prizeManagement">
- <div class="prize-header">
-  <div><h2>Premios y entregas</h2><p class="muted">Los premios de fichas se acreditan únicamente cuando confirmás la entrega. Lo resuelto pasa al archivo.</p></div>
-  <button class="secondary" id="prizeRefreshBtn" type="button">ACTUALIZAR PREMIOS</button>
+:root{--ink:#06100b;--panel:#0b1d12;--panel2:#0e2618;--line:rgba(209,183,104,.16);--line2:rgba(222,190,97,.32);--gold:#e9c86b;--green:#28dc75;--greenSoft:#a8edbe;--muted:#9eafa4;--text:#f4f8f3;--red:#f07478;--shadow:0 22px 60px rgba(0,0,0,.32)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:26px}
+body{margin:0;min-height:100vh;background:radial-gradient(950px 520px at 80% -18%,rgba(18,106,53,.23),transparent 66%),linear-gradient(155deg,#07150c,#030805 72%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:3px}.hidden{display:none!important}.muted{color:var(--muted)}
+.login-screen{min-height:100vh;display:grid;place-items:center;padding:28px;background:radial-gradient(ellipse at 17% 25%,rgba(22,136,69,.2),transparent 42%),radial-gradient(ellipse at 90% 90%,rgba(198,150,49,.12),transparent 40%),#030906}
+.login-layout{width:min(980px,100%);display:grid;grid-template-columns:1.05fr .95fr;border:1px solid var(--line2);border-radius:28px;overflow:hidden;background:linear-gradient(140deg,rgba(12,37,22,.94),rgba(5,15,9,.97));box-shadow:0 35px 100px rgba(0,0,0,.56)}
+.login-brand-panel{min-height:530px;position:relative;padding:42px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;background:linear-gradient(145deg,rgba(10,55,29,.7),rgba(4,14,8,.86)),url('./assets/roulette-casino-hero.webp') center/cover}
+.login-brand-panel:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,10,6,.08),rgba(3,10,6,.78));pointer-events:none}
+.brand-lockup,.login-tagline{position:relative;z-index:1}.brand-lockup{display:flex;align-items:center;gap:13px}.brand-clover{width:48px;height:48px;filter:drop-shadow(0 0 13px rgba(40,220,117,.42))}
+.brand-wordmark strong{display:block;font-size:25px;line-height:1;letter-spacing:.13em;color:#f8dfa0;font-weight:950}.brand-wordmark span{display:block;margin-top:6px;font-size:10px;letter-spacing:.42em;color:#e4f1e7;font-weight:800}
+.login-tagline h1{font-size:clamp(32px,5vw,48px);line-height:1.03;max-width:380px;margin:0;color:#fff;font-weight:900;letter-spacing:-.04em}.login-tagline p{max-width:340px;color:#b9c8be;line-height:1.7;margin:17px 0 0}
+.login-card-wrap{display:flex;align-items:center;justify-content:center;padding:42px}#loginCard{width:100%;max-width:380px;border:0;background:transparent;box-shadow:none;padding:0;margin:0}
+#loginCard h2{font-size:25px;letter-spacing:-.03em;margin:0 0 8px}#loginCard>p{font-size:13px;line-height:1.65;color:var(--muted)}
+#loginCard label{display:block;margin:26px 0 8px;color:#d9e6dc;font-size:11px;font-weight:850;letter-spacing:.11em;text-transform:uppercase}
+#adminKey{width:100%;height:50px;border:1px solid var(--line2);border-radius:13px;background:#041109;color:#fff;padding:0 15px}
+#connectBtn{width:100%;height:50px;margin-top:14px;border-radius:13px;border:1px solid rgba(255,225,145,.56);background:linear-gradient(120deg,#ffe79c,#d4a63e);color:#201707;font-weight:950;letter-spacing:.07em;box-shadow:0 8px 26px rgba(196,145,42,.2);transition:transform .2s,filter .2s}
+#connectBtn:hover{transform:translateY(-2px);filter:brightness(1.07)}#loginStatus{min-height:18px;background:transparent;padding:8px 0;color:var(--red);font-size:12px}
+.admin-app{min-height:100vh;display:grid;grid-template-columns:258px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;min-height:660px;display:flex;flex-direction:column;padding:27px 16px 19px;background:linear-gradient(180deg,rgba(8,28,16,.98),rgba(4,13,8,.99));border-right:1px solid var(--line);z-index:10}
+.side-brand{display:flex;align-items:center;gap:11px;padding:0 13px 27px;border-bottom:1px solid var(--line)}.side-brand .brand-clover{width:39px;height:39px}.side-brand .brand-wordmark strong{font-size:19px}.side-brand .brand-wordmark span{font-size:8px;letter-spacing:.36em}
+.sidebar-label{padding:25px 13px 10px;color:#718779;font-weight:900;font-size:9px;letter-spacing:.19em}.sidebar-nav{display:grid;gap:5px}
+.nav-link{display:flex;align-items:center;gap:13px;width:100%;min-height:47px;padding:0 13px;border:1px solid transparent;border-radius:12px;background:transparent;color:#aebdb3;text-align:left;font-weight:700;font-size:12px;transition:background .2s,border .2s,color .2s,transform .2s}
+.nav-link svg{width:18px;height:18px;flex:none;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav-link:hover{background:rgba(255,255,255,.045);color:#fff;transform:translateX(2px)}.nav-link.active{color:#effff2;background:linear-gradient(100deg,rgba(38,205,105,.18),rgba(25,100,50,.07));border-color:rgba(63,223,119,.31);box-shadow:inset 3px 0 0 var(--green),0 8px 22px rgba(0,0,0,.15)}.nav-link.active svg{color:var(--green)}
+.sidebar-bottom{margin-top:auto;padding:17px 10px 0;border-top:1px solid var(--line)}.sidebar-bottom small{display:block;color:#74877a;font-size:9px;font-weight:850;letter-spacing:.12em}
+.connection-pill{display:flex;align-items:center;gap:8px;margin-top:12px;color:#bde8c8;font-size:11px;font-weight:750}.connection-pill i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(40,220,117,.75)}
+.sidebar-logout{display:flex;align-items:center;gap:10px;width:100%;margin-top:17px;padding:10px 12px;border-radius:10px;border:1px solid transparent;background:transparent;color:#a2b2a8;font-weight:750;font-size:11px;text-align:left}.sidebar-logout:hover{border-color:var(--line);background:#ffffff08;color:#fff}.sidebar-logout svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7}
+.main-column{min-width:0}.topbar{height:74px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(20px,3vw,45px);border-bottom:1px solid var(--line);background:rgba(5,15,9,.72);backdrop-filter:blur(18px)}
+.breadcrumb{color:#7f9385;font-size:11px;font-weight:700;letter-spacing:.04em}.breadcrumb b{color:#dce7df;font-weight:800}.topbar-actions{display:flex;align-items:center;gap:13px}
+.secure-label{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(40,220,117,.2);border-radius:999px;color:#b8e7c5;background:rgba(40,220,117,.07);font-size:10px;font-weight:850}.secure-label svg{width:13px;height:13px;stroke:var(--green);fill:none;stroke-width:1.8}
+.admin-identity{display:flex;align-items:center;gap:9px;color:#e9f0eb;font-size:11px;font-weight:800}.admin-avatar{display:grid;place-items:center;width:34px;height:34px;border:1px solid rgba(235,202,111,.38);border-radius:11px;background:linear-gradient(145deg,#6c5320,#20321d);color:#fff0bd;font-size:11px;font-weight:950}
+.dashboard{width:min(1580px,100%);margin:0 auto;padding:30px clamp(18px,3vw,46px) 60px}
+.welcome-panel{position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:172px;padding:27px 31px;border:1px solid var(--line2);border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at 80% 0%,rgba(44,147,75,.25),transparent 53%),linear-gradient(112deg,#0d2a18,#07150c 74%);box-shadow:var(--shadow)}
+.welcome-panel:after{content:"";position:absolute;top:-25px;right:-6px;width:390px;height:230px;background:linear-gradient(90deg,#0c2918 0%,rgba(10,35,20,.2) 50%,rgba(10,35,20,0) 100%),url('./assets/roulette-casino-hero.webp') center right/cover no-repeat;opacity:.48;mask-image:linear-gradient(90deg,transparent,#000 38%);pointer-events:none}
+.welcome-copy,.welcome-side{position:relative;z-index:1}.section-eyebrow{color:var(--green);font-size:9px;font-weight:950;letter-spacing:.2em;text-transform:uppercase}
+.welcome-copy h1{margin:9px 0 7px;font-size:clamp(28px,3vw,39px);letter-spacing:-.045em;line-height:1.08}.welcome-copy p{margin:0;color:#a7b8ac;font-size:13px;line-height:1.6}
+.welcome-side{display:flex;flex-direction:column;align-items:flex-end;gap:13px}.today-label{color:#9fb2a5;font-size:10px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+.quick-link{display:inline-flex;align-items:center;gap:9px;padding:11px 15px;border:1px solid rgba(40,220,117,.4);border-radius:11px;background:rgba(38,195,98,.12);color:#d9ffe3;font-size:11px;font-weight:900;transition:transform .2s,background .2s}
+.quick-link:hover{transform:translateY(-2px);background:rgba(38,195,98,.2)}.quick-link svg{width:15px;height:15px;stroke:var(--green);fill:none;stroke-width:2}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:17px 0 30px}
+.metric-card{position:relative;display:flex;align-items:center;gap:14px;min-height:112px;padding:19px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(15,41,25,.96),rgba(7,20,12,.98));box-shadow:0 12px 32px rgba(0,0,0,.18);overflow:hidden;transition:transform .2s,border-color .2s}
+.metric-card:after{content:"";position:absolute;inset:auto -20px -54px auto;width:140px;height:100px;background:radial-gradient(ellipse,rgba(45,196,99,.1),transparent 68%);pointer-events:none}
+.metric-card:hover{transform:translateY(-3px);border-color:rgba(226,193,103,.36)}.metric-icon{display:grid;place-items:center;flex:none;width:47px;height:47px;border:1px solid rgba(222,190,97,.23);border-radius:14px;background:rgba(211,171,70,.08);color:var(--gold)}
+.metric-icon.green{border-color:rgba(40,220,117,.22);background:rgba(40,220,117,.08);color:#71e99a}.metric-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.metric-copy{min-width:0}.metric-copy span{display:block;color:#a3b5a9;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.metric-copy strong{display:block;margin-top:7px;color:#fff0bd;font-size:26px;line-height:1;font-weight:950;letter-spacing:-.03em}.metric-copy small{display:block;margin-top:6px;color:#82988a;font-size:10px;font-weight:650}
+.content-card{margin:22px 0;padding:24px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(12,31,19,.96),rgba(6,17,10,.98));box-shadow:0 17px 40px rgba(0,0,0,.2);scroll-margin-top:22px}
+.section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:19px}.section-heading h2{margin:7px 0 5px;color:#f4f7f3;font-size:22px;letter-spacing:-.035em}.section-description{margin:0;color:#94a79a;font-size:12px;line-height:1.6}
+.utility-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:0;padding:10px 13px;border:1px solid var(--line2);border-radius:10px;background:#102a1a;color:#dcebe0;font-size:10px;font-weight:900}.utility-button:hover{background:#173b25;color:#fff}.button-icon{font-size:19px;line-height:10px;color:var(--green)}
+.prize-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:13px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:3px 0 16px}
+.prize-tabs{display:flex;gap:6px;flex-wrap:wrap}.prize-tab{margin:0;padding:9px 14px;border:1px solid transparent;border-radius:9px;background:transparent;color:#aabbb0;font-size:10px;font-weight:850;letter-spacing:.025em;transition:all .18s}
+.prize-tab:hover{background:#ffffff08;color:#fff}.prize-tab.active{border-color:rgba(40,220,117,.34);background:rgba(40,220,117,.1);color:#bdffcf;box-shadow:inset 0 0 0 1px rgba(40,220,117,.05)}
+.search-box{display:flex;align-items:center;gap:9px;width:min(300px,100%);height:39px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#041109;color:#80a28a}.search-box>span{font-size:22px;line-height:1}
+.search-box input{width:100%;height:100%;padding:0;border:0;background:transparent;color:#fff;outline:none;font-size:11px}.search-box input::placeholder{color:#6e8174}
+.table-scroll{width:100%;overflow-x:auto;border:1px solid rgba(210,188,123,.13);border-radius:13px}.prize-table{width:100%;border-collapse:collapse;min-width:850px}
+.prize-table thead{background:linear-gradient(90deg,rgba(184,143,49,.13),rgba(25,71,37,.15))}
+.prize-table th{height:48px;padding:0 15px;color:#c8b77e;text-align:left;font-size:9px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--line2)}
+.prize-table td{padding:13px 15px;border-bottom:1px solid rgba(255,255,255,.055);vertical-align:middle}.prize-table tbody tr{background:rgba(4,15,8,.22);transition:background .16s}.prize-table tbody tr:hover{background:rgba(34,113,58,.11)}.prize-table tbody tr:last-child td{border-bottom:0}
+.table-date strong{display:block;color:#e5ece6;font-size:11px;font-weight:850}.table-date small{display:block;margin-top:4px;color:#738779;font-size:9px}
+.player-cell{display:flex;align-items:center;gap:9px}.player-avatar{display:grid;place-items:center;flex:none;width:31px;height:31px;border:1px solid rgba(40,220,117,.2);border-radius:10px;background:rgba(40,220,117,.08);color:#a8f5bd;font-size:9px;font-weight:950;text-transform:uppercase}
+.player-name{color:#eaf1eb;font-size:11px;font-weight:850;overflow-wrap:anywhere}.prize-label-cell{display:flex;align-items:center;gap:10px;min-width:180px}
+.prize-type-icon{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;background:rgba(215,176,81,.1);border:1px solid rgba(215,176,81,.2);color:var(--gold);font-size:16px}
+.prize-type-icon.bonus{color:#c9a7ff;background:rgba(164,120,255,.09);border-color:rgba(164,120,255,.18)}.prize-type-icon.raffle{color:#79d7e8;background:rgba(81,181,205,.09);border-color:rgba(81,181,205,.18)}
+.prize-label-text{color:#fff0c1;font-size:11px;font-weight:900}.prize-status{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid transparent;border-radius:8px;white-space:nowrap;font-size:8px;font-weight:950;letter-spacing:.07em}
+.prize-status:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.prize-status.pending{color:#f1ce70;background:rgba(206,160,53,.1);border-color:rgba(221,179,79,.2)}.prize-status.done{color:#8ce6a8;background:rgba(45,191,93,.09);border-color:rgba(45,191,93,.18)}.prize-status.cancelled{color:#f19498;background:rgba(217,82,88,.09);border-color:rgba(217,82,88,.18)}
+.action-cell{display:flex;align-items:center;justify-content:flex-start;gap:7px;flex-wrap:wrap;min-width:205px}
+.action-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:0;padding:9px 11px;border:1px solid transparent;border-radius:9px;font-size:9px;font-weight:950;letter-spacing:.035em;white-space:nowrap;transition:transform .16s,filter .16s}
+.action-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}.action-btn:disabled{opacity:.5;transform:none;cursor:wait}
+.action-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}.action-primary{background:linear-gradient(120deg,#ffe7a0,#d6a53b);border-color:#ffe9a1;color:#261d09}
+.action-secondary{background:rgba(35,173,83,.11);border-color:rgba(55,203,99,.26);color:#c7f6d4}.action-quiet{padding:8px 9px;background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.08);color:#aebdb3}
+.number-entry{width:98px;min-width:0;height:32px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:#031009;color:#fff;font-size:10px}
+.prize-empty{padding:44px 18px;text-align:center;color:#8ea194}.prize-empty strong{display:block;margin-bottom:7px;color:#dce9df;font-size:13px}.prize-empty span{font-size:11px}
+.prize-amount{font-size:10px;font-weight:950;color:#f6d66f}.table-count{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-top:13px;color:#73877a;font-size:10px}.table-count strong{color:#bdd4c3}
+#prizeStatus{min-height:18px;margin-top:12px;padding:0;background:transparent;font-size:11px}#prizeStatus.ok{color:var(--greenSoft)}#prizeStatus.err{color:#ff9ea1}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.content-card h2{margin:0 0 7px;font-size:19px;letter-spacing:-.025em}.content-card p.muted{color:#92a69a;font-size:12px;line-height:1.65;margin:0 0 15px}
+.content-card label{display:block;margin:12px 0 6px;color:#bdcbbf;font-size:10px;font-weight:850;letter-spacing:.09em;text-transform:uppercase}
+.content-card input,.content-card select{width:100%;height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#041109;color:#f5f8f5;font-size:12px}
+.content-card button:not(.nav-link){transition:transform .16s,filter .16s}.content-card button:hover{filter:brightness(1.07)}.content-card .grid button{width:100%}
+#players{display:grid;gap:7px;margin-top:16px}.player{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:15px;padding:15px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(2,12,6,.33)}
+.player>div:first-child{min-width:0}.player strong{display:block;color:#e8f0e9;font-size:13px;font-weight:900}.player small{display:block;margin-top:5px;color:#91a498;font-size:10px;line-height:1.6}
+.player-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}.player button{margin:0!important;padding:9px 11px!important;border-radius:9px!important;font-size:9px!important}
+.player .approved-load-count{display:inline-flex;align-items:center;gap:7px;margin-top:9px;padding:5px 9px;border-radius:8px;border:1px solid rgba(54,225,122,.24);background:rgba(31,173,86,.08);color:#b3f6c9;font-size:9px}.player .approved-load-count b{color:#fff0a4}
+.player-bonuses{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.bonus-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(245,200,75,.23);border-radius:8px;background:rgba(245,200,75,.06);color:#ffe18a;font-size:9px;font-weight:850}.bonus-chip time{color:#9eafa4;font-size:9px}
+.bonus-item{display:flex;align-items:center;gap:6px}.bonus-use-button{margin:0!important;padding:6px 8px!important;font-size:8px!important}.no-bonuses,.used-bonus-count{display:block;margin-top:7px;color:#708578;font-size:9px}
+.player-actions .cancel-load-button{background:rgba(183,47,55,.2)!important;color:#ffd5d6!important;border:1px solid rgba(255,120,120,.28)!important}
+.access-data{display:grid;gap:9px;margin-top:12px}.access-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#04100a}
+.access-row span{display:block;color:#91a597;font-size:9px;font-weight:850;letter-spacing:1px;margin-bottom:5px}.access-row strong,.access-row a{color:#fff0a4;font-size:12px;font-weight:900;overflow-wrap:anywhere;text-decoration:none}
+.access-row .pin-value{font-size:22px;letter-spacing:5px}.access-row button{margin:0;white-space:nowrap;padding:8px 10px;font-size:9px}#copyAllBtn{width:100%}
+.status{padding:9px 0;border-radius:0;background:transparent;margin-top:10px;white-space:pre-wrap;font-size:11px}.status.ok{color:var(--greenSoft)}.status.err{color:#ff9b9b}
+.content-card .secondary{background:#143a25;color:#eaf7ed;border:1px solid var(--line)}.content-card button.danger{background:#581a21;color:#fff;border:1px solid rgba(255,120,120,.22)}
+.app-footer{display:flex;justify-content:space-between;gap:15px;padding:19px 4px;color:#63776a;font-size:9px;letter-spacing:.08em;border-top:1px solid var(--line);margin-top:25px}.app-footer span:first-child{color:#9db3a2;font-weight:900}
+.modal-overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:rgba(1,7,3,.78);backdrop-filter:blur(10px)}
+.modal-card{width:min(580px,100%);max-height:min(760px,90vh);overflow:auto;border:1px solid var(--line2);border-radius:18px;background:linear-gradient(150deg,#10291a,#06120a);box-shadow:0 28px 90px rgba(0,0,0,.55)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:21px 22px;border-bottom:1px solid var(--line)}.modal-head h3{margin:5px 0 0;font-size:18px;letter-spacing:-.03em}
+.modal-close{display:grid;place-items:center;width:34px;height:34px;margin:0;border:1px solid var(--line);border-radius:9px;background:#ffffff08;color:#dce9df;font-size:18px}.modal-body{padding:18px 22px}
+.event-list{display:grid;gap:10px}.event-item{display:grid;grid-template-columns:10px minmax(0,1fr);gap:11px}.event-dot{width:8px;height:8px;margin-top:5px;border-radius:50%;background:var(--green);box-shadow:0 0 9px rgba(40,220,117,.45)}
+.event-copy{padding-bottom:11px;border-bottom:1px solid rgba(255,255,255,.06)}.event-copy strong{display:block;color:#e9f1eb;font-size:11px}.event-copy small{display:block;margin-top:4px;color:#86998c;font-size:9px}.event-copy p{margin:7px 0 0;color:#bac8bd;font-size:10px;line-height:1.6}
+@media(max-width:1120px){.admin-app{grid-template-columns:225px minmax(0,1fr)}.sidebar{padding-left:12px;padding-right:12px}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard{padding-left:22px;padding-right:22px}}
+@media(max-width:760px){
+ .login-layout{grid-template-columns:1fr;max-width:480px}.login-brand-panel{min-height:225px;padding:25px;background-position:center 42%}.login-brand-panel:after{background:linear-gradient(0deg,rgba(3,10,6,.75),rgba(3,10,6,.08))}.login-tagline h1{font-size:30px}.login-tagline p{display:none}.login-card-wrap{padding:28px}
+ .admin-app{display:flex;flex-direction:column}.sidebar{position:sticky;top:0;height:auto;min-height:0;padding:10px 12px 9px;border-right:0;border-bottom:1px solid var(--line);background:rgba(5,18,10,.97);backdrop-filter:blur(18px)}
+ .side-brand{padding:0 5px 9px;border:0}.side-brand .brand-clover{width:29px;height:29px}.side-brand .brand-wordmark strong{font-size:15px}.side-brand .brand-wordmark span{font-size:7px;margin-top:3px}
+ .sidebar-label,.sidebar-bottom{display:none}.sidebar-nav{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:0 0 3px}.sidebar-nav::-webkit-scrollbar{display:none}
+ .nav-link{width:auto;min-height:37px;flex:none;padding:0 10px;font-size:9px;white-space:nowrap;gap:6px}.nav-link svg{width:14px;height:14px}
+ .topbar{height:52px;padding:0 15px}.breadcrumb{font-size:9px}.secure-label{display:none}.admin-identity{font-size:9px}.admin-avatar{width:29px;height:29px}
+ .dashboard{padding:16px 13px 38px}.welcome-panel{min-height:150px;padding:21px 19px;border-radius:15px}.welcome-panel:after{width:240px;opacity:.32}.welcome-copy h1{font-size:29px}.welcome-copy p{max-width:330px;font-size:11px}.welcome-side{display:none}
+ .stats-grid{gap:8px;margin:11px 0 20px}.metric-card{min-height:92px;padding:12px;gap:10px;border-radius:13px}.metric-icon{width:35px;height:35px;border-radius:10px}.metric-icon svg{width:18px;height:18px}.metric-copy span{font-size:8px;letter-spacing:.07em}.metric-copy strong{font-size:20px}.metric-copy small{font-size:8px}
+ .content-card{padding:17px 14px;margin:15px 0;border-radius:15px}.section-heading h2{font-size:19px}.section-description{font-size:10px}.section-heading .utility-button{width:100%}
+ .prize-toolbar{align-items:stretch}.prize-tabs{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.prize-tab{padding:9px 5px;font-size:8px}.search-box{width:100%}
+ .player{grid-template-columns:1fr;padding:12px}.player-actions{justify-content:flex-start}.app-footer{flex-direction:column}
+}
+@media(max-width:420px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.metric-card{align-items:flex-start;flex-direction:column;gap:7px;min-height:110px}.metric-copy strong{font-size:19px}.welcome-copy h1{font-size:26px}.topbar-actions{gap:7px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style></head><body><div id="loginScreen" class="login-screen"><div class="login-layout"><section class="login-brand-panel"><div class="brand-lockup"><svg class="brand-clover" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="cloverFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9eff73"/><stop offset=".55" stop-color="#31e278"/><stop offset="1" stop-color="#087d3d"/></linearGradient></defs><g fill="url(#cloverFill)" stroke="#b8ff9a" stroke-width="1.1"><path d="M31.7 29.5C14.5 30.5 8.6 22.4 11.6 13.8 14.8 4.7 27.1 5.2 32 20.7 36.9 5.2 49.2 4.7 52.4 13.8c3 8.6-2.9 16.7-20.1 15.7Z"/><path d="M34.5 31.7C33.5 14.5 41.6 8.6 50.2 11.6c9.1 3.2 8.6 15.5-6.9 20.4 15.5 4.9 16 17.2 6.9 20.4-8.6 3-16.7-2.9-15.7-20.1Z"/><path d="M32.3 34.5C49.5 33.5 55.4 41.6 52.4 50.2c-3.2 9.1-15.5 8.6-20.4-6.9-4.9 15.5-17.2 16-20.4 6.9-3-8.6 2.9-16.7 20.1-15.7Z"/><path d="M29.5 32.3C30.5 49.5 22.4 55.4 13.8 52.4 4.7 49.2 5.2 36.9 20.7 32c-15.5-4.9-16-17.2-6.9-20.4 8.6-3 16.7 2.9 15.7 20.1Z"/></g><path d="M32 31v21c0 4-2 7-6 9" fill="none" stroke="#6be68a" stroke-width="3.2" stroke-linecap="round"/></svg><div class="brand-wordmark"><strong>FREEHAND</strong><span>COMUNIDAD</span></div></div><div class="login-tagline"><div class="section-eyebrow">CENTRO DE CONTROL</div><h1>Tu comunidad.<br>Tu administración.</h1><p>Un espacio seguro para gestionar jugadores, oportunidades y cada premio de FREEHAND.</p></div></section><div class="login-card-wrap"><section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Supabase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR AL PANEL</button><div class="status" id="loginStatus"></div></section></div></div></div><div id="adminApp" class="admin-app hidden"><aside class="sidebar"><div class="side-brand"><svg class="brand-clover" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="cloverFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9eff73"/><stop offset=".55" stop-color="#31e278"/><stop offset="1" stop-color="#087d3d"/></linearGradient></defs><g fill="url(#cloverFill)" stroke="#b8ff9a" stroke-width="1.1"><path d="M31.7 29.5C14.5 30.5 8.6 22.4 11.6 13.8 14.8 4.7 27.1 5.2 32 20.7 36.9 5.2 49.2 4.7 52.4 13.8c3 8.6-2.9 16.7-20.1 15.7Z"/><path d="M34.5 31.7C33.5 14.5 41.6 8.6 50.2 11.6c9.1 3.2 8.6 15.5-6.9 20.4 15.5 4.9 16 17.2 6.9 20.4-8.6 3-16.7-2.9-15.7-20.1Z"/><path d="M32.3 34.5C49.5 33.5 55.4 41.6 52.4 50.2c-3.2 9.1-15.5 8.6-20.4-6.9-4.9 15.5-17.2 16-20.4 6.9-3-8.6 2.9-16.7 20.1-15.7Z"/><path d="M29.5 32.3C30.5 49.5 22.4 55.4 13.8 52.4 4.7 49.2 5.2 36.9 20.7 32c-15.5-4.9-16-17.2-6.9-20.4 8.6-3 16.7 2.9 15.7 20.1Z"/></g><path d="M32 31v21c0 4-2 7-6 9" fill="none" stroke="#6be68a" stroke-width="3.2" stroke-linecap="round"/></svg><div class="brand-wordmark"><strong>FREEHAND</strong><span>COMUNIDAD</span></div></div><div class="sidebar-label">MENÚ PRINCIPAL</div><nav class="sidebar-nav" aria-label="Navegación principal">
+<button class="nav-link active" type="button" data-nav-target="sectionOverview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></svg><span>Panel general</span></button>
+<button class="nav-link" type="button" data-nav-target="prizeManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18v11H3zM2 6h20v4H2zM12 6v15M12 6H7.5a2.5 2.5 0 1 1 2.3-3.5L12 6Zm0 0h4.5a2.5 2.5 0 1 0-2.3-3.5L12 6Z"/></svg><span>Premios y entregas</span></button>
+<button class="nav-link" type="button" data-nav-target="prizeManagement" data-nav-view="archive"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v4H4zM5 8v12h14V8M9 12h6"/></svg><span>Historial / Archivo</span></button>
+<button class="nav-link" type="button" data-nav-target="playersManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6m3-3h-6"/></svg><span>Jugadores</span></button>
+<button class="nav-link" type="button" data-nav-target="opportunitiesManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Cargas y oportunidades</span></button>
+<button class="nav-link" type="button" data-nav-target="createPlayerManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v8M15 12h8"/></svg><span>Crear nuevo usuario</span></button>
+<button class="nav-link" type="button" data-nav-target="securityManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Seguridad y acceso</span></button>
+</nav><div class="sidebar-bottom"><small>PANEL DE ADMINISTRACIÓN</small><div class="connection-pill"><i></i> Conexión segura activa</div><button class="sidebar-logout" id="sidebarLogoutBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M21 4v16"/></svg><span>Cerrar sesión</span></button></div></aside><div class="main-column"><header class="topbar"><div class="breadcrumb">FREEHAND <span> / </span> <b>Centro de administración</b></div><div class="topbar-actions"><div class="secure-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Acceso protegido</span></div><div class="admin-identity"><span class="admin-avatar">FH</span><span>Administrador</span></div></div></header><main id="panel" class="dashboard">
+<section id="sectionOverview" class="welcome-panel"><div class="welcome-copy"><div class="section-eyebrow">RESUMEN GENERAL</div><h1>Panel de control</h1><p>Todo lo que sucede en FREEHAND, en un solo lugar.</p></div><div class="welcome-side"><span class="today-label">FREEHAND · COMUNIDAD</span><button class="quick-link" type="button" data-nav-target="prizeManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18v11H3zM2 6h20v4H2zM12 6v15M12 6H7.5a2.5 2.5 0 1 1 2.3-3.5L12 6Zm0 0h4.5a2.5 2.5 0 1 0-2.3-3.5L12 6Z"/></svg> Ver premios pendientes</button></div></section>
+<div id="prizeSummary" class="stats-grid" aria-live="polite"></div>
+<section class="content-card prize-panel" id="prizeManagement">
+ <div class="section-heading">
+  <div><div class="section-eyebrow">CONTROL DE PREMIOS</div><h2>Premios y entregas</h2><p class="section-description">Controlá las fichas, los bonos y los premios especiales de la comunidad.</p></div>
+  <button class="utility-button" id="prizeRefreshBtn" type="button"><span class="button-icon">↻</span> Actualizar</button>
  </div>
- <div class="prize-summary" id="prizeSummary"></div>
+ 
  <div class="prize-toolbar">
   <div class="prize-tabs">
-   <button id="prizesPendingTab" class="prize-tab active" type="button">PENDIENTES</button>
-   <button id="prizesArchiveTab" class="prize-tab" type="button">ARCHIVO</button>
+   <button id="prizesPendingTab" class="prize-tab active" type="button">Pendientes</button>
+   <button id="prizesArchiveTab" class="prize-tab" type="button">Entregados / Canjeados</button><button id="prizesCancelledTab" class="prize-tab" type="button">Anulados</button>
   </div>
-  <input id="prizeSearch" type="search" placeholder="Buscar jugador o premio…" aria-label="Buscar jugador o premio">
+  <label class="search-box"><span aria-hidden="true">⌕</span><input id="prizeSearch" type="search" placeholder="Buscar jugador o premio…" aria-label="Buscar jugador o premio"></label>
  </div>
  <div id="prizeRows" class="prize-list muted">Cargando premios…</div>
  <div class="status" id="prizeStatus"></div>
-</section>
-<section class="card"><div class="grid" style="align-items:center"><div><h2>Jugadores y tiros</h2><p class="muted">Estado actualizado desde el servidor. El contador de cargas aprobadas registra desde el 19/11/2026; las aprobaciones anteriores finalizadas no tenían historial individual.</p></div><div style="text-align:right"><button class="secondary" id="refreshBtn">ACTUALIZAR LISTA</button></div></div><div id="players" class="players muted">Todavía no se cargaron jugadores.</div></section>
-<section class="card"><h2>Herramientas</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Usuario</label><input id="resetName" maxlength="20" placeholder="Nombre exacto del jugador"><button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section></main></div>
-<script type="module">
+</section><section class="content-card" id="createPlayerManagement"><h2>Crear jugador</h2><p class="muted">Creá el usuario y entregale sus datos por WhatsApp. Los usuarios nuevos reciben un PIN de 4 dígitos.</p><label for="newName">Nombre o usuario</label><input id="newName" maxlength="20" placeholder="Ej. jugador123"><button id="createBtn">CREAR JUGADOR Y GENERAR PIN</button><div id="createdResult" class="hidden"><div class="access-data"><div class="access-row"><div><span>USUARIO</span><strong id="newUsername"></strong></div><button class="secondary" id="copyUserBtn" type="button">COPIAR USUARIO</button></div><div class="access-row"><div><span>PIN DE 4 DÍGITOS</span><strong class="pin-value" id="newPin"></strong></div><button class="secondary" id="copyPinBtn" type="button">COPIAR PIN</button></div><div class="access-row"><div><span>LINK DE LA RULETA</span><a id="newLink" href="https://freehandcomunidad.github.io/preguntados-argentina/" target="_blank" rel="noopener noreferrer">Abrir ruleta FREEHAND ↗</a></div><button class="secondary" id="copyLinkBtn" type="button">COPIAR LINK</button></div></div><p class="muted" id="pinHelp"></p><button id="copyAllBtn" type="button">COPIAR TODO PARA WHATSAPP</button></div><div class="status" id="createStatus"></div></section><section class="content-card" id="opportunitiesManagement"><h2>Habilitar oportunidad</h2><p class="muted">Cada carga aprobada o regalo agrega un ciclo: dos tiros y un tercero solo si los primeros dos son SIN PREMIO. Los ciclos extra quedan en cola.</p><label for="grantName">Usuario</label><input id="grantName" maxlength="20" placeholder="Nombre exacto del jugador"><label for="grantCount">Cantidad de oportunidades</label><select id="grantCount"><option value="1">1 oportunidad</option><option value="2">2 oportunidades</option><option value="3">3 oportunidades</option><option value="5">5 oportunidades</option><option value="10">10 oportunidades</option></select><div class="grid"><button id="approveBtn">APROBAR CARGA</button><button id="giftBtn" class="secondary">REGALAR OPORTUNIDAD</button></div><div class="status" id="grantStatus"></div></section><section class="content-card" id="playersManagement"><div class="grid" style="align-items:center"><div><h2>Jugadores y tiros</h2><p class="muted">Estado actualizado desde el servidor. El contador de cargas aprobadas registra desde el 19/11/2026; las aprobaciones anteriores finalizadas no tenían historial individual.</p></div><div style="text-align:right"><button class="secondary" id="refreshBtn">ACTUALIZAR LISTA</button></div></div><div id="players" class="players muted">Todavía no se cargaron jugadores.</div></section><section class="content-card" id="securityManagement"><h2>Seguridad y acceso</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Usuario</label><input id="resetName" maxlength="20" placeholder="Nombre exacto del jugador"><button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section>
+<footer class="app-footer"><span>FREEHAND COMUNIDAD</span><span>Panel de administración · Gestión segura de premios</span></footer>
+</main></div></div>
+<div id="prizeHistoryModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="prizeHistoryTitle" aria-hidden="true"><div class="modal-card"><div class="modal-head"><div><div class="section-eyebrow">REGISTRO DE AUDITORÍA</div><h3 id="prizeHistoryTitle">Movimientos del premio</h3></div><button class="modal-close" id="closePrizeHistory" type="button" aria-label="Cerrar">×</button></div><div class="modal-body"><div id="prizeHistoryEvents" class="event-list"></div></div></div></div><script type="module">
 const SUPABASE_URL='https://yiznobpjxksymqqazryr.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_gIJ_EWPdSfm-GLEQmPcL1Q_AeQKNa2O';
 let adminKey='';
@@ -104,7 +176,7 @@ const byId=id=>document.getElementById(id);const val=id=>byId(id).value.trim();
 function status(id,msg,ok=false){const el=byId(id);el.textContent=msg;el.className='status '+(ok?'ok':'err');}
 function adminArgs(extra={}){return {adminKey,...extra};}
 // Keep admin key only in memory; establish auth first and then probe server key.
-byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{await call('adminListPlayers')(adminArgs());byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await Promise.all([refresh(),refreshPrizes()]);}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
+byId('connectBtn').onclick=async()=>{adminKey=val('adminKey');if(!adminKey){status('loginStatus','Ingresá la clave.');return;}byId('connectBtn').disabled=true;try{await call('adminListPlayers')(adminArgs());byId('loginScreen').classList.add('hidden');byId('adminApp').classList.remove('hidden');byId('loginCard').classList.add('hidden');byId('panel').classList.remove('hidden');await Promise.all([refresh(),refreshPrizes()]);}catch(e){status('loginStatus',e.message||'Clave incorrecta.');}finally{byId('connectBtn').disabled=false;}};
 const PLAYER_ROULETTE_URL='https://freehandcomunidad.github.io/preguntados-argentina/';
 async function copyAccessText(value,label){
  try{
@@ -156,114 +228,105 @@ function prizeDate(value){
 function renderPrizeSummary(){
  const box=byId('prizeSummary');
  const items=[
-  ['FICHAS POR ENTREGAR',Number(prizeSummary.pendingFichasTotal||0).toLocaleString('es-AR')],
-  ['ENTREGAS PENDIENTES',Number(prizeSummary.pendingFichasCount||0).toLocaleString('es-AR')],
-  ['BONOS PENDIENTES',Number(prizeSummary.pendingBonuses||0).toLocaleString('es-AR')],
-  ['NÚMEROS POR ASIGNAR',Number(prizeSummary.pendingAssignments||0).toLocaleString('es-AR')],
-  ['PREMIOS ARCHIVADOS',Number(prizeSummary.archivedCount||0).toLocaleString('es-AR')]
+  {label:'Premios pendientes',value:Number(prizeSummary.pendingCount||0),sub:'Requieren una acción',icon:"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 4h8v5a4 4 0 0 1-8 0V4ZM8 6H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4M12 13v6m-4 2h8m-7-2h6\"/></svg>",tone:'green'},
+  {label:'Fichas por entregar',value:Number(prizeSummary.pendingFichasTotal||0).toLocaleString('es-AR'),sub:Number(prizeSummary.pendingFichasCount||0)+' entregas',icon:"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><ellipse cx=\"9\" cy=\"6\" rx=\"6\" ry=\"3\"/><path d=\"M3 6v5c0 1.7 2.7 3 6 3 1.2 0 2.3-.2 3.3-.5M3 11v5c0 1.7 2.7 3 6 3 1 0 2-.1 2.8-.4M15 9c3.3 0 6 1.3 6 3s-2.7 3-6 3-6-1.3-6-3 2.7-3 6-3Zm-6 6v3c0 1.7 2.7 3 6 3s6-1.3 6-3v-6\"/></svg>",tone:'gold'},
+  {label:'Bonos pendientes',value:Number(prizeSummary.pendingBonuses||0),sub:Number(prizeSummary.pendingAssignments||0)+' números por asignar',icon:"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 7h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4V7Z\"/><path d=\"M13 7v2m0 3v2m0 3v2\"/></svg>",tone:'violet'},
+  {label:'Premios archivados',value:Number(prizeSummary.archivedCount||0),sub:'Entregados y canjeados',icon:"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 4h16v4H4zM5 8v12h14V8M9 12h6\"/></svg>",tone:'gold'}
  ];
  box.innerHTML='';
- items.forEach(([label,value])=>{
-  const card=document.createElement('div');card.className='prize-stat';
-  const name=document.createElement('span');name.textContent=label;
-  const amount=document.createElement('strong');amount.textContent=value;
-  card.append(name,amount);box.append(card);
+ items.forEach(item=>{
+  const card=document.createElement('div');card.className='metric-card';
+  const icon=document.createElement('div');icon.className='metric-icon '+(item.tone==='green'?'green':'');icon.innerHTML=item.icon;
+  const copy=document.createElement('div');copy.className='metric-copy';
+  const label=document.createElement('span');label.textContent=item.label;
+  const value=document.createElement('strong');value.textContent=String(item.value);
+  const sub=document.createElement('small');sub.textContent=item.sub;
+  copy.append(label,value,sub);card.append(icon,copy);box.append(card);
  });
 }
 function renderPrizeRows(){
  const box=byId('prizeRows');
  const query=(byId('prizeSearch').value||'').trim().toLocaleLowerCase('es');
  const pendingStatuses=['pending_delivery','pending_use','pending_assignment'];
+ const resolvedStatuses=['delivered','redeemed','assigned'];
  const rows=prizeAwards.filter(a=>{
-  const pending=pendingStatuses.includes(a.status);
-  if(prizeView==='pending'&&!pending)return false;
-  if(prizeView==='archive'&&pending)return false;
+  if(prizeView==='pending'&&!pendingStatuses.includes(a.status))return false;
+  if(prizeView==='archive'&&!resolvedStatuses.includes(a.status))return false;
+  if(prizeView==='cancelled'&&a.status!=='cancelled')return false;
   const text=[a.username,a.prize_label,a.prize_key,a.assigned_number,a.resolution_note].join(' ').toLocaleLowerCase('es');
   return !query||text.includes(query);
  });
  box.innerHTML='';
+ const tableWrap=document.createElement('div');tableWrap.className='table-scroll';
+ const table=document.createElement('table');table.className='prize-table';
+ table.innerHTML='<thead><tr><th>Fecha</th><th>Jugador</th><th>Premio</th><th>Estado</th><th>Acción</th></tr></thead><tbody></tbody>';
+ const tbody=table.querySelector('tbody');
+ const statusNames={pending_delivery:'Pendiente de entrega',pending_use:'Pendiente de canje',pending_assignment:'Pendiente de asignar',delivered:'Entregado y acreditado',redeemed:'Bono canjeado',assigned:'Número asignado',cancelled:'Anulado'};
  if(!rows.length){
+  const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;
   const empty=document.createElement('div');empty.className='prize-empty';
-  empty.textContent=prizeView==='pending'?'No hay premios pendientes. ¡Todo está al día!':'Todavía no hay premios en el archivo.';
-  box.append(empty);return;
+  const title=document.createElement('strong');title.textContent=prizeView==='pending'?'No hay premios pendientes':prizeView==='cancelled'?'No hay premios anulados':'Todavía no hay premios archivados';
+  const message=document.createElement('span');message.textContent=query?'Probá con otro nombre o premio.':'Cuando haya movimientos, aparecerán en esta tabla.';
+  empty.append(title,message);td.append(empty);tr.append(td);tbody.append(tr);
+ }else{
+  rows.forEach(a=>{
+   const tr=document.createElement('tr');
+   const dateCell=document.createElement('td');dateCell.className='table-date';
+   const created=new Date(a.created_at);
+   const dateText=document.createElement('strong');dateText.textContent=Number.isNaN(created.getTime())?'—':created.toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+   const timeText=document.createElement('small');timeText.textContent=Number.isNaN(created.getTime())?'':created.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+   dateCell.append(dateText,timeText);
+   const playerCell=document.createElement('td'),playerWrap=document.createElement('div');playerWrap.className='player-cell';
+   const avatar=document.createElement('span');avatar.className='player-avatar';avatar.textContent=String(a.username||'FH').split(/[^a-z0-9]+/i).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'FH';
+   const name=document.createElement('span');name.className='player-name';name.textContent=a.username||'Jugador';playerWrap.append(avatar,name);playerCell.append(playerWrap);
+   const prizeCell=document.createElement('td'),prizeWrap=document.createElement('div');prizeWrap.className='prize-label-cell';
+   const typeIcon=document.createElement('span');typeIcon.className='prize-type-icon '+(a.prize_type==='bonus'?'bonus':a.prize_type==='raffle'?'raffle':'');typeIcon.textContent=a.prize_type==='fichas'?'◈':a.prize_type==='bonus'?'%':'✦';
+   const prizeLabel=document.createElement('span');prizeLabel.className='prize-label-text';prizeLabel.textContent=a.prize_label||a.prize_key;prizeWrap.append(typeIcon,prizeLabel);prizeCell.append(prizeWrap);
+   const statusCell=document.createElement('td'),state=document.createElement('span');state.className='prize-status '+(pendingStatuses.includes(a.status)?'pending':a.status==='cancelled'?'cancelled':'done');state.textContent=statusNames[a.status]||a.status;statusCell.append(state);
+   const actionsCell=document.createElement('td'),actions=document.createElement('div');actions.className='action-cell';
+   if(a.status==='pending_delivery'){
+    const amount=document.createElement('span');amount.className='prize-amount';amount.textContent=Number(a.fichas_amount||0).toLocaleString('es-AR')+' fichas';
+    const button=document.createElement('button');button.type='button';button.className='action-btn action-primary';button.innerHTML="<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg>"+'<span>Confirmar entrega</span>';
+    button.onclick=async()=>{if(!window.confirm('¿Confirmás la entrega de '+Number(a.fichas_amount||0).toLocaleString('es-AR')+' fichas a '+a.username+'? Se acreditarán ahora al saldo y esta acción no se podrá repetir.'))return;button.disabled=true;try{const result=(await call('adminConfirmFichasDelivery')(adminArgs({awardId:a.id,note:'Entrega manual confirmada desde el panel.'}))).data;statusMessage('prizeStatus',Number(result.creditedFichas).toLocaleString('es-AR')+' fichas acreditadas a '+result.username+'. Nuevo saldo: '+Number(result.fichasBalance).toLocaleString('es-AR')+'.',true);await Promise.all([refresh(),refreshPrizes()]);}catch(e){button.disabled=false;statusMessage('prizeStatus',e.message||'No se pudo confirmar la entrega.');}};
+    actions.append(amount,button);
+   }else if(a.status==='pending_use'){
+    const button=document.createElement('button');button.type='button';button.className='action-btn action-secondary';button.textContent='Marcar canjeado';
+    button.onclick=async()=>{if(!window.confirm('¿Confirmás que '+a.username+' ya utilizó el BONUS '+Number(a.bonus_percent||0)+'%? Pasará al archivo.'))return;button.disabled=true;try{await call('adminMarkBonusUsed')(adminArgs({username:a.username,cycleId:a.cycle_id,spinNumber:a.spin_number}));statusMessage('prizeStatus','Bono de '+a.username+' archivado como canjeado.',true);await Promise.all([refresh(),refreshPrizes()]);}catch(e){button.disabled=false;statusMessage('prizeStatus',e.message||'No se pudo marcar el bono.');}};
+    actions.append(button);
+   }else if(a.status==='pending_assignment'){
+    const input=document.createElement('input');input.className='number-entry';input.type='text';input.maxLength=30;input.placeholder='Número';
+    const button=document.createElement('button');button.type='button';button.className='action-btn action-secondary';button.textContent='Asignar';
+    button.onclick=async()=>{if(!input.value.trim()){input.focus();statusMessage('prizeStatus','Ingresá el número que le asignaste al jugador.');return;}if(!window.confirm('¿Asignar el número '+input.value.trim()+' a '+a.username+'?'))return;button.disabled=true;try{const result=(await call('adminAssignRaffleAward')(adminArgs({awardId:a.id,number:input.value.trim(),note:'Número asignado desde el panel.'}))).data;statusMessage('prizeStatus','Número '+result.assignedNumber+' asignado a '+result.username+'.',true);await refreshPrizes();}catch(e){button.disabled=false;statusMessage('prizeStatus',e.message||'No se pudo asignar el número.');}};
+    actions.append(input,button);
+   }else{
+    const archived=document.createElement('span');archived.className='prize-status '+(a.status==='cancelled'?'cancelled':'done');archived.textContent=statusNames[a.status]||'Archivado';actions.append(archived);
+   }
+   const historyButton=document.createElement('button');historyButton.type='button';historyButton.className='action-btn action-quiet';historyButton.title='Ver movimientos';historyButton.setAttribute('aria-label','Ver movimientos del premio');historyButton.innerHTML="<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>";historyButton.onclick=()=>openPrizeHistory(a);actions.append(historyButton);
+   actionsCell.append(actions);tr.append(dateCell,playerCell,prizeCell,statusCell,actionsCell);tbody.append(tr);
+  });
  }
- rows.forEach(a=>{
-  const row=document.createElement('div');row.className='prize-row';
-  const main=document.createElement('div');main.className='prize-row-main';
-  const title=document.createElement('div');title.className='prize-row-title';
-  const player=document.createElement('span');player.textContent=a.username||'Jugador';
-  const label=document.createElement('span');label.className='prize-row-label';label.textContent=a.prize_label||a.prize_key;
-  title.append(player,document.createTextNode(' · '),label);
-  const state=document.createElement('span');state.className='prize-state '+(pendingStatuses.includes(a.status)?'pending':'done');
-  const statusNames={
-   pending_delivery:'PENDIENTE DE ENTREGA',pending_use:'PENDIENTE DE CANJE',pending_assignment:'PENDIENTE DE ASIGNAR',
-   delivered:'ENTREGADO Y ACREDITADO',redeemed:'BONO CANJEADO',assigned:'NÚMERO ASIGNADO',cancelled:'ANULADO'
-  };
-  state.textContent=statusNames[a.status]||a.status;
-  const meta=document.createElement('div');meta.className='prize-row-meta';
-  meta.textContent='Obtenido: '+prizeDate(a.created_at)+' · Tiro '+a.spin_number;
-  if(a.resolved_at)meta.textContent+=' · Resuelto: '+prizeDate(a.resolved_at);
-  if(a.assigned_number)meta.textContent+=' · Número: '+a.assigned_number;
-  if(a.resolution_note)meta.textContent+=' · '+a.resolution_note;
-  main.append(title,state,meta);
-  const actions=document.createElement('div');actions.className='prize-actions';
-  if(a.status==='pending_delivery'){
-   const amount=document.createElement('span');amount.className='prize-amount';amount.textContent=Number(a.fichas_amount||0).toLocaleString('es-AR')+' fichas';
-   const button=document.createElement('button');button.type='button';button.className='confirm-delivery';button.textContent='CONFIRMAR ENTREGA';
-   button.onclick=async()=>{
-    if(!window.confirm('¿Confirmás la entrega de '+Number(a.fichas_amount||0).toLocaleString('es-AR')+' fichas a '+a.username+'? Se acreditarán ahora al saldo y esta acción no se podrá repetir.'))return;
-    button.disabled=true;
-    try{
-     const result=(await call('adminConfirmFichasDelivery')(adminArgs({awardId:a.id,note:'Entrega manual confirmada desde el panel.'}))).data;
-     status('prizeStatus',Number(result.creditedFichas).toLocaleString('es-AR')+' fichas acreditadas a '+result.username+'. Nuevo saldo: '+Number(result.fichasBalance).toLocaleString('es-AR')+'.',true);
-     await Promise.all([refresh(),refreshPrizes()]);
-    }catch(e){button.disabled=false;status('prizeStatus',e.message||'No se pudo confirmar la entrega.');}
-   };
-   actions.append(amount,button);
-  }else if(a.status==='pending_use'){
-   const button=document.createElement('button');button.type='button';button.className='assign-number';button.textContent='MARCAR CANJEADO';
-   button.onclick=async()=>{
-    if(!window.confirm('¿Confirmás que '+a.username+' ya utilizó el BONUS '+Number(a.bonus_percent||0)+'%? Pasará al archivo.'))return;
-    button.disabled=true;
-    try{
-     await call('adminMarkBonusUsed')(adminArgs({username:a.username,cycleId:a.cycle_id,spinNumber:a.spin_number}));
-     status('prizeStatus','Bono de '+a.username+' archivado como canjeado.',true);
-     await Promise.all([refresh(),refreshPrizes()]);
-    }catch(e){button.disabled=false;status('prizeStatus',e.message||'No se pudo marcar el bono.');}
-   };
-   actions.append(button);
-  }else if(a.status==='pending_assignment'){
-   const input=document.createElement('input');input.type='text';input.maxLength=30;input.placeholder='Número asignado';
-   const button=document.createElement('button');button.type='button';button.className='assign-number';button.textContent='ASIGNAR NÚMERO';
-   button.onclick=async()=>{
-    if(!input.value.trim()){input.focus();status('prizeStatus','Ingresá el número que le asignaste al jugador.');return;}
-    if(!window.confirm('¿Asignar el número '+input.value.trim()+' a '+a.username+'?'))return;
-    button.disabled=true;
-    try{
-     const result=(await call('adminAssignRaffleAward')(adminArgs({awardId:a.id,number:input.value.trim(),note:'Número asignado desde el panel.'}))).data;
-     status('prizeStatus','Número '+result.assignedNumber+' asignado a '+result.username+'.',true);
-     await refreshPrizes();
-    }catch(e){button.disabled=false;status('prizeStatus',e.message||'No se pudo asignar el número.');}
-   };
-   actions.append(input,button);
-  }else{
-   const badge=document.createElement('span');badge.className='prize-state done';badge.textContent=statusNames[a.status]||'ARCHIVADO';
-   actions.append(badge);
-  }
-  const historyButton=document.createElement('button');
-  historyButton.type='button';historyButton.className='secondary';historyButton.textContent='VER MOVIMIENTOS';
-  historyButton.onclick=async()=>{
-   try{
-    const result=(await call('adminListPrizeEvents')(adminArgs({awardId:a.id}))).data;
-    const eventNames={awarded:'Premio obtenido',legacy_imported:'Importado al historial',delivered:'Fichas entregadas y acreditadas',redeemed:'Bono canjeado',assigned:'Número asignado',cancelled:'Premio anulado'};
-    const lines=(result.events||[]).map(event=>prizeDate(event.created_at)+' · '+(eventNames[event.event_type]||event.event_type)+' · '+(event.actor||'sistema')+(event.note?'\n'+event.note:''));
-    window.alert('MOVIMIENTOS DE '+(a.username||'JUGADOR')+'\n'+(a.prize_label||a.prize_key)+'\n\n'+(lines.length?lines.join('\n\n'):'No hay movimientos registrados.'));
-   }catch(e){window.alert(e.message||'No se pudo cargar el historial del premio.');}
-  };
-  actions.append(historyButton);
-  row.append(main,actions);box.append(row);
- });
+ tableWrap.append(table);box.append(tableWrap);
+ const count=document.createElement('div');count.className='table-count';
+ const countText=document.createElement('span');countText.textContent=rows.length+' premio'+(rows.length===1?'':'s')+' en esta vista';
+ const hint=document.createElement('strong');hint.textContent=prizeView==='pending'?'Pendientes de resolución':prizeView==='cancelled'?'Registro de anulaciones':'Historial de premios resueltos';count.append(countText,hint);box.append(count);
 }
+function statusMessage(id,message,ok=false){const el=byId(id);el.textContent=message;el.className='status '+(ok?'ok':'err');}
+function setPrizeView(view){prizeView=view;[['pending','prizesPendingTab'],['archive','prizesArchiveTab'],['cancelled','prizesCancelledTab']].forEach(([v,id])=>byId(id)?.classList.toggle('active',v===view));renderPrizeRows();}
+function openPrizeHistory(award){
+ byId('prizeHistoryTitle').textContent=(award.username||'Jugador')+' · '+(award.prize_label||award.prize_key);
+ const box=byId('prizeHistoryEvents');box.innerHTML='<div class="muted">Cargando movimientos…</div>';
+ const modal=byId('prizeHistoryModal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');
+ call('adminListPrizeEvents')(adminArgs({awardId:award.id})).then(({data})=>{
+  const events=Array.isArray(data.events)?data.events:[];box.innerHTML='';
+  if(!events.length){box.textContent='Todavía no hay movimientos registrados.';return;}
+  const names={awarded:'Premio obtenido',legacy_imported:'Importado al historial',delivered:'Fichas entregadas y acreditadas',redeemed:'Bono canjeado',assigned:'Número asignado',cancelled:'Premio anulado'};
+  events.forEach(event=>{const item=document.createElement('div');item.className='event-item';const dot=document.createElement('span');dot.className='event-dot';const copy=document.createElement('div');copy.className='event-copy';const title=document.createElement('strong');title.textContent=names[event.event_type]||event.event_type;const date=document.createElement('small');date.textContent=prizeDate(event.created_at)+' · '+(event.actor||'sistema');copy.append(title,date);if(event.note){const note=document.createElement('p');note.textContent=event.note;copy.append(note);}item.append(dot,copy);box.append(item);});
+ }).catch(error=>{box.textContent=error.message||'No se pudo cargar el historial.';});
+}
+function closePrizeHistory(){const modal=byId('prizeHistoryModal');modal.classList.add('hidden');modal.setAttribute('aria-hidden','true');}
+byId('closePrizeHistory').onclick=closePrizeHistory;
+byId('prizeHistoryModal').addEventListener('click',event=>{if(event.target.id==='prizeHistoryModal')closePrizeHistory();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closePrizeHistory();});
 async function refreshPrizes(){
  try{
   const result=(await call('adminListPrizes')(adminArgs())).data;
@@ -276,12 +339,9 @@ async function refreshPrizes(){
   status('prizeStatus',e.message||'No se pudieron cargar los premios.');
  }
 }
-byId('prizesPendingTab').onclick=()=>{
- prizeView='pending';byId('prizesPendingTab').classList.add('active');byId('prizesArchiveTab').classList.remove('active');renderPrizeRows();
-};
-byId('prizesArchiveTab').onclick=()=>{
- prizeView='archive';byId('prizesArchiveTab').classList.add('active');byId('prizesPendingTab').classList.remove('active');renderPrizeRows();
-};
+byId('prizesPendingTab').onclick=()=>setPrizeView('pending');
+byId('prizesArchiveTab').onclick=()=>setPrizeView('archive');
+byId('prizesCancelledTab').onclick=()=>setPrizeView('cancelled');
 byId('prizeRefreshBtn').onclick=refreshPrizes;
 byId('prizeSearch').addEventListener('input',renderPrizeRows);
 async function refresh(){
@@ -369,5 +429,15 @@ async function refresh(){
 }
 byId('refreshBtn').onclick=async()=>{await Promise.all([refresh(),refreshPrizes()]);};
 byId('resetPinBtn').onclick=async()=>{try{const r=(await call('adminResetPin')(adminArgs({username:val('resetName')}))).data;byId('resetResult').textContent='Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).'; }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}};
-byId('logoutBtn').onclick=()=>{adminKey='';byId('adminKey').value='';byId('panel').classList.add('hidden');byId('loginCard').classList.remove('hidden');status('loginStatus','Sesión administrativa cerrada.',true);};
+byId('logoutBtn').onclick=()=>{adminKey='';byId('adminKey').value='';byId('panel').classList.add('hidden');byId('adminApp').classList.add('hidden');byId('loginScreen').classList.remove('hidden');byId('loginCard').classList.remove('hidden');status('loginStatus','Sesión administrativa cerrada.',true);};
+
+function navigateAdmin(target,view){
+ if(view)setPrizeView(view);
+ const element=byId(target);if(!element)return;
+ const wantedView=view||'';
+ document.querySelectorAll('.nav-link').forEach(button=>button.classList.toggle('active',button.dataset.navTarget===target&&(button.dataset.navView||'')===wantedView));
+ element.scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.querySelectorAll('[data-nav-target]').forEach(button=>button.addEventListener('click',()=>navigateAdmin(button.dataset.navTarget,button.dataset.navView||null)));
+byId('sidebarLogoutBtn').onclick=()=>byId('logoutBtn').click();
 </script></body></html>
