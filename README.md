@@ -62,7 +62,7 @@ Los premios grandes tienen probabilidades muy bajas en cada giro: 50.000 fichas 
 
 ## Archivos de backend en este repositorio
 
-- `supabase/functions/roulette/index.ts`: copia del código de la Edge Function activa en Supabase (versión 20).
+- `supabase/functions/roulette/index.ts`: copia del código de la Edge Function activa en Supabase (versión 24).
 - `supabase/migrations/20261117145923_add_50000_and_100000_fichas_prizes.sql`: migración aplicada sobre la base existente para agregar ambos premios a la selección y a la acreditación.
 - Las migraciones previas de creación del esquema, PIN, RLS y sorteo atómico ya constan en el historial del proyecto Supabase.
 
@@ -116,10 +116,12 @@ El contador se empezó a registrar el 19/11/2026. Se conservaron dos aprobacione
 - **Reportes:** métricas agregadas, evolución diaria y mensual, exportación CSV y archivo compatible con Excel.
 - **Notificaciones:** premios que requieren entrega, canje o asignación, con señalización de pendientes antiguos.
 - **PWA:** `manifest.webmanifest` para jugadores, `manifest-admin.webmanifest` para administración, `sw.js` para caché de interfaz y `assets/freehand-app-icon.svg` como icono. La caché permite abrir la interfaz sin conexión; los giros, PIN y operaciones administrativas siempre necesitan conexión con el servidor.
+- **Roles administrativos:** autenticación individual para propietario, operador y auditor. Las contraseñas se derivan con PBKDF2; las sesiones expiran a las 12 horas, se revocan al cambiar una cuenta y se bloquean temporalmente tras cinco intentos fallidos. La clave maestra `ROULETTE_ADMIN_KEY` sigue disponible como acceso propietario de respaldo. Los permisos se validan en la Edge Function.
 
 ## Mejoras externas pendientes de conexión
 
 - Migración de alojamiento a Cloudflare Pages: requiere conectar la cuenta Cloudflare con GitHub y autorizar este repositorio. GitHub Pages sigue siendo el alojamiento actual.
 - Cloudflare Web Analytics, Turnstile y PostHog: necesitan crear proyectos/widgets y guardar sus claves en la cuenta correspondiente; Turnstile requiere validación del token también en servidor.
-- Roles administrativos: todavía existe una sola clave maestra `ROULETTE_ADMIN_KEY`. La creación de cuentas individuales y roles no está habilitada todavía.
+- Turnstile: el widget y la validación en servidor requieren crear la cuenta/widget y guardar el `sitekey` y el secreto en Supabase Edge Function Secrets.
+- Web Analytics y PostHog: requieren activar un proyecto y sus identificadores/tokens. No se registran PIN, contraseñas ni claves con herramientas analíticas.
 - Copias de seguridad programadas y prueba de restauración: requieren definir un destino seguro y credenciales de almacenamiento.
