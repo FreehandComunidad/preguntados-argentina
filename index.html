@@ -915,7 +915,20 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
 @media(max-width:420px){.player-prize-history{padding:13px 10px}.player-prize-item{grid-template-columns:31px minmax(0,1fr);gap:8px;padding:9px}.player-prize-icon{width:30px;height:30px}.player-prize-state{grid-column:2;justify-self:start;max-width:none}.player-prize-copy strong{font-size:10px}}
 </style>
 
-</head>
+<style id="freehand-player-account">
+.player-account-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:13px}
+.player-account-stat{padding:10px 7px;border:1px solid rgba(245,200,75,.15);border-radius:10px;background:rgba(255,255,255,.025);text-align:center}
+.player-account-stat small{display:block;color:#84978a;font-size:8px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+.player-account-stat strong{display:block;margin-top:5px;color:#f2d477;font-size:15px;font-weight:950}
+.player-spin-history{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}
+.player-spin-title{margin-bottom:9px;color:#f5e7be;font-size:10px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}
+.player-spin-list{display:grid;gap:6px}
+.player-spin-row{display:grid;grid-template-columns:31px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 9px;border:1px solid rgba(255,255,255,.06);border-radius:9px;background:rgba(255,255,255,.02)}
+.player-spin-number{display:grid;place-items:center;width:27px;height:27px;border-radius:8px;background:rgba(245,200,75,.08);color:#f3d77e;font-size:9px;font-weight:950}
+.player-spin-copy strong{display:block;color:#e9f0e9;font-size:10px}.player-spin-copy small{display:block;margin-top:3px;color:#83978a;font-size:8px}
+.player-spin-result{color:#9fe9b4;font-size:8px;font-weight:950;text-align:right}
+@media(max-width:420px){.player-account-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.player-account-stat{padding:9px 5px}}
+</style>\n</head>
 <body>
 <div id="bonusEggOverlay" aria-hidden="true">
   <button id="bonusEggClose" type="button" aria-label="Cerrar">×</button>
@@ -956,11 +969,13 @@ body.playing #game{animation:fh-game-in .38s cubic-bezier(.18,.82,.25,1) both!im
   <p class="roulette-legal">Premios especiales: 50.000 y 100.000 fichas. Cada giro es independiente y queda registrado en el servidor.</p>
   <div id="rouletteConnection" class="roulette-connection">Conectando con FREEHAND…</div>
   <section id="playerPrizeHistory" class="player-prize-history hidden" aria-live="polite">
+    <div id="playerAccountStats" class="player-account-stats"></div>
     <div class="player-prize-head">
       <div class="player-prize-title"><small>MI CUENTA</small><strong>Historial de bonos y fichas</strong></div>
       <span id="playerPrizeSummary" class="player-prize-summary">—</span>
     </div>
     <div id="playerPrizeItems" class="player-prize-list"></div>
+    <div class="player-spin-history"><div class="player-spin-title">Últimos giros</div><div id="playerRecentSpins" class="player-spin-list"></div></div>
   </section>
 </div>
 </section>
@@ -1491,60 +1506,84 @@ const ROULETTE_ODDS_FIRST=[59.94,20,10,2,1,5,1.5,.4,.1,.05,.01];
 const ROULETTE_ODDS_THIRD=[49.94,12,8,3,2,17,6,1.5,.5,.05,.01];
 let rouletteRotation=0,rouletteBusy=false,rouletteUserData=null;
 function rouletteCanHaveThird(spins){return spins.length===2 && spins.every(s=>s.result==='SIN PREMIO');}
-function rouletteBuildLabels(){} // Las etiquetas ya están impresas en la ilustración nueva.
+function rouletteBuildLabels(catalog){
+ const wheel=document.getElementById('rouletteWheel');if(!wheel)return;
+ const items=(Array.isArray(catalog)&&catalog.length?catalog:ROULETTE_RESULTS.map(item=>({prize_key:item.key,label:item.label,prize_type:item.bonus?'bonus':item.key==='none'?'none':item.key==='number'?'raffle':'fichas',bonus_percent:item.bonus})));
+ wheel.innerHTML='';
+ const segment=360/items.length;
+ const colors=items.map((item,index)=>((index%2===0)?'#102e1d':'#173a24')+' '+(index*segment).toFixed(3)+'deg '+((index+1)*segment).toFixed(3)+'deg');
+ wheel.style.background='conic-gradient(from '+(-segment/2)+'deg,'+colors.join(',')+')';
+ const separator=document.createElement('div');separator.style.cssText='position:absolute;inset:0;border-radius:50%;pointer-events:none;background:repeating-conic-gradient(from '+(-segment/2)+'deg,transparent 0 '+(segment-.8)+'deg,#f5c84b2e '+(segment-.8)+'deg '+segment+'deg);z-index:2';
+ wheel.append(separator);
+ items.forEach((item,index)=>{
+  const label=document.createElement('div');label.className='roulette-label'+(item.prize_type==='bonus'?' b'+Number(item.bonus_percent):item.prize_type==='none'?' none-alt':' prize');
+  label.style.transform='rotate('+(index*segment)+'deg)';
+  const span=document.createElement('span');
+  let text=String(item.label||item.prize_key).replace(' FICHAS','').replace('BONUS ','');
+  if(text.length>18)text=text.slice(0,16)+'…';
+  span.textContent=text;label.append(span);wheel.append(label);
+ });
+ wheel.dataset.prizeKeys=items.map(x=>x.prize_key).join('|');
+}
+function rouletteSectorForPrize(key){
+ const keys=(document.getElementById('rouletteWheel')?.dataset.prizeKeys||'').split('|');
+ const index=keys.indexOf(key),total=keys.length||ROULETTE_RESULTS.length;
+ return index<0?0:(index+.5)*360/total;
+}
 function rouletteNormalizeName(name){return name.trim().replace(/\s+/g,' ');}
 function rouletteCredentials(){return {username:rouletteNormalizeName(document.getElementById('username')?.value||''),pin:(document.getElementById('roulettePin')?.value||'').trim()};}
 async function rouletteGetStatus(){const c=rouletteCredentials();if(!c.username||!c.pin)return null;const r=await rouletteStatusCall(c);return r.data;}
 function rouletteRenderPrizeHistory(records){
- const panel=document.getElementById('playerPrizeHistory');
- const list=document.getElementById('playerPrizeItems');
- const summary=document.getElementById('playerPrizeSummary');
+ const panel=document.getElementById('playerPrizeHistory'),list=document.getElementById('playerPrizeItems'),summary=document.getElementById('playerPrizeSummary');
  if(!panel||!list||!summary)return;
  panel.classList.remove('hidden');
  const rows=Array.isArray(records)?records:[];
- const pending=rows.filter(item=>['pending_delivery','pending_use'].includes(item.status)).length;
+ const pending=rows.filter(item=>['pending_delivery','pending_use','pending_assignment'].includes(item.status)).length;
  summary.textContent=pending?pending+' pendiente'+(pending===1?'':'s'):rows.length+' movimiento'+(rows.length===1?'':'s');
+ const account=rouletteUserData||{},bonuses=Array.isArray(account.bonusPrizes)?account.bonusPrizes:[];
+ const stats=document.getElementById('playerAccountStats');
+ if(stats)stats.innerHTML=[
+  ['Saldo de fichas',Number(account.fichasBalance||0).toLocaleString('es-AR')],
+  ['Bonos pendientes',bonuses.length],
+  ['Oportunidades en espera',Number(account.queuedCycles||0)],
+  ['Tiros disponibles',Number(account.spinsLeft||0)]
+ ].map(([label,value])=>'<div class="player-account-stat"><small>'+label+'</small><strong>'+value+'</strong></div>').join('');
  list.innerHTML='';
  if(!rows.length){
-  const empty=document.createElement('div');
-  empty.className='player-prize-empty';
-  empty.textContent='Todavía no tenés bonos ni premios de fichas registrados.';
-  list.append(empty);
-  return;
+  const empty=document.createElement('div');empty.className='player-prize-empty';empty.textContent='Todavía no tenés bonos ni premios de fichas registrados.';list.append(empty);
+ }else{
+  const names={pending_delivery:'Pendiente de entrega',delivered:'Fichas entregadas',pending_use:'Pendiente de canje',redeemed:'Bono canjeado',pending_assignment:'Pendiente de asignar',assigned:'Número asignado',cancelled:'Premio anulado'};
+  rows.slice(0,40).forEach(item=>{
+   const bonus=item.prizeType==='bonus';
+   const amount=bonus?'BONUS '+Math.max(0,Math.min(100,Number(item.bonusPercent)||0))+'%':Number(item.fichasAmount||0).toLocaleString('es-AR')+' FICHAS';
+   const row=document.createElement('article');row.className='player-prize-item';
+   const icon=document.createElement('span');icon.className='player-prize-icon'+(bonus?' bonus':'');icon.textContent=bonus?'%':'◈';
+   const copy=document.createElement('div');copy.className='player-prize-copy';
+   const title=document.createElement('strong');title.textContent=amount;
+   const date=document.createElement('small');const created=item.createdAt?new Date(item.createdAt):null;
+   date.textContent=created&&!Number.isNaN(created.getTime())?created.toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})+' · '+created.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):(item.prizeLabel||'Premio registrado');
+   copy.append(title,date);
+   const state=document.createElement('span');state.className='player-prize-state '+(['pending_delivery','pending_use','pending_assignment'].includes(item.status)?'pending':item.status==='cancelled'?'cancelled':'done');state.textContent=names[item.status]||'Registrado';
+   row.append(icon,copy,state);list.append(row);
+  });
  }
- const names={
-  pending_delivery:'Pendiente de entrega',
-  delivered:'Fichas entregadas',
-  pending_use:'Pendiente de canje',
-  redeemed:'Bono canjeado',
-  cancelled:'Premio anulado'
- };
- rows.slice(0,40).forEach(item=>{
-  const bonus=item.prizeType==='bonus';
-  const amount=bonus
-   ? 'BONUS '+Math.max(0,Math.min(100,Number(item.bonusPercent)||0))+'%'
-   : Number(item.fichasAmount||0).toLocaleString('es-AR')+' FICHAS';
-  const row=document.createElement('article');
-  row.className='player-prize-item';
-  const icon=document.createElement('span');
-  icon.className='player-prize-icon'+(bonus?' bonus':'');
-  icon.textContent=bonus?'%':'◈';
-  const copy=document.createElement('div');
-  copy.className='player-prize-copy';
-  const title=document.createElement('strong');
-  title.textContent=amount;
-  const date=document.createElement('small');
-  const created=item.createdAt?new Date(item.createdAt):null;
-  date.textContent=created&&!Number.isNaN(created.getTime())
-   ? created.toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})+' · '+created.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-   : (item.prizeLabel||'Premio registrado');
-  copy.append(title,date);
-  const state=document.createElement('span');
-  state.className='player-prize-state '+(['pending_delivery','pending_use'].includes(item.status)?'pending':item.status==='cancelled'?'cancelled':'done');
-  state.textContent=names[item.status]||'Registrado';
-  row.append(icon,copy,state);
-  list.append(row);
- });
+ const spinBox=document.getElementById('playerRecentSpins');
+ const spins=Array.isArray(account.recentSpins)?account.recentSpins:[];
+ if(spinBox){
+  spinBox.innerHTML='';
+  if(!spins.length){spinBox.innerHTML='<div class="player-prize-empty">Todavía no realizaste giros.</div>';}
+  else spins.slice(0,12).forEach(spin=>{
+   const row=document.createElement('div');row.className='player-spin-row';
+   const number=document.createElement('span');number.className='player-spin-number';number.textContent='#'+spin.spin_number;
+   const copy=document.createElement('div');copy.className='player-spin-copy';
+   const name=document.createElement('strong');name.textContent=spin.result||spin.prize_key;
+   const date=document.createElement('small');const created=new Date(spin.created_at);
+   date.textContent=Number.isNaN(created.getTime())?'':created.toLocaleDateString('es-AR')+' · '+created.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+   copy.append(name,date);
+   const badge=document.createElement('span');badge.className='player-spin-result';badge.textContent=Number(spin.bonus_percent||0)?'BONUS '+Number(spin.bonus_percent)+'%':'REGISTRADO';
+   row.append(number,copy,badge);spinBox.append(row);
+  });
+ }
 }
 async function rouletteRefresh(){
  const spinsLeft=document.getElementById('spinsLeft'),playerLabel=document.getElementById('playerLabel'),result=document.getElementById('rouletteResult'),btn=document.getElementById('spinBtn'),connection=document.getElementById('rouletteConnection');
@@ -1552,7 +1591,7 @@ async function rouletteRefresh(){
  const c=rouletteCredentials();playerLabel.textContent=c.username?c.username.slice(0,12):'—';
  if(!c.username||!c.pin){document.getElementById('playerPrizeHistory')?.classList.add('hidden');spinsLeft.textContent='0';btn.disabled=true;result.textContent='Ingresá tu usuario y el PIN que te entregó FREEHAND.';if(connection){connection.className='roulette-connection';connection.textContent='';}return;}
  try{if(connection){connection.className='roulette-connection';connection.textContent='Verificando tus oportunidades…';}
-  const status=await rouletteGetStatus();rouletteUserData=status;rouletteRenderPrizeHistory(status.prizeHistory);const left=Number(status.spinsLeft||0);spinsLeft.textContent=String(left);btn.disabled=left===0||rouletteBusy;
+  const status=await rouletteGetStatus();rouletteUserData=status;rouletteBuildLabels(status.prizeCatalog);rouletteRenderPrizeHistory(status.prizeHistory);const left=Number(status.spinsLeft||0);spinsLeft.textContent=String(left);btn.disabled=left===0||rouletteBusy;
   result.className='roulette-result';
   if(!status.activeCycle)result.innerHTML=status.queuedCycles>0?'Tu próxima oportunidad está en espera.':'Todavía no tenés tiros habilitados. Comunicate con FREEHAND.';
   else if(status.thirdAvailable)result.innerHTML='¡Desbloqueaste el tiro extra especial!<strong>Una oportunidad más.</strong>';
@@ -1589,14 +1628,13 @@ async function rouletteSpin(){
  rouletteBusy=true;const stage=document.querySelector('.roulette-stage');stage?.classList.remove('is-spinning','is-win');const btn=document.getElementById('spinBtn'),resultBox=document.getElementById('rouletteResult');btn.disabled=true;btn.textContent='🎡 GIRANDO…';resultBox.textContent='La suerte está girando…';
  try{
   const response=await rouletteSpinCall(c);const data=response.data;const result=data.result;const spinNumber=data.spinNumber;
-  const sectors={none:[36,72,90,108,144,180,216,234,270,306],number:[0],b20:[18],b5:[54],b10:[252],b15:[198],t1000:[288],t3000:[126],t5000:[162],t50000:[324],t100000:[342]};
-  const choices=sectors[result.key]||sectors.none;const sector=choices[Math.floor(Math.random()*choices.length)];const current=((rouletteRotation%360)+360)%360;const target=((360-sector)-current+360)%360;rouletteRotation+=360*(8+Math.floor(Math.random()*3))+target;
+  const sector=rouletteSectorForPrize(result.key);const current=((rouletteRotation%360)+360)%360;const target=((360-sector)-current+360)%360;rouletteRotation+=360*(8+Math.floor(Math.random()*3))+target;
   const wheel=document.getElementById('rouletteWheel');stage?.classList.add('is-spinning');wheel.style.transform=`rotate(${rouletteRotation}deg)`;
-  const finish=async()=>{wheel.removeEventListener('transitionend',finish);const win=!!result.bonus||result.key==='number'||result.key.startsWith('t');stage?.classList.remove('is-spinning');stage?.classList.toggle('is-win',win);const special=result.key==='number';const tokenPrize=result.key.startsWith('t');resultBox.className='roulette-result '+(win?'win':'');resultBox.innerHTML=tokenPrize?`🪙 ¡PREMIO!<strong>${result.label}</strong><span>Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.</span>`:special?`🎟️ ¡PREMIO ESPECIAL!<strong>${result.label}</strong><span>Coordiná el número por mensaje.</span>`:result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>${data.thirdAvailable?'Desbloqueaste un tiro extra especial.':data.spinsLeft>0?'Te queda un tiro.':'Oportunidad finalizada.'}</span>`;btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';rouletteBusy=false;await rouletteRefresh();rouletteShowOverlay(result,spinNumber);};
+  const finish=async()=>{wheel.removeEventListener('transitionend',finish);const win=!!result.bonus||result.prizeType==='bonus'||result.prizeType==='raffle'||result.prizeType==='fichas'||result.key==='number'||result.key.startsWith('t');stage?.classList.remove('is-spinning');stage?.classList.toggle('is-win',win);const special=result.prizeType==='raffle'||result.key==='number';const tokenPrize=result.prizeType==='fichas'||result.key.startsWith('t');resultBox.className='roulette-result '+(win?'win':'');resultBox.innerHTML=tokenPrize?`🪙 ¡PREMIO!<strong>${result.label}</strong><span>Tus fichas quedaron pendientes de acreditación. FREEHAND las suma a tu saldo cuando confirma la entrega.</span>`:special?`🎟️ ¡PREMIO ESPECIAL!<strong>${result.label}</strong><span>Coordiná el número por mensaje.</span>`:result.bonus?`🎉 ¡PREMIO!<strong>${result.label}</strong><span>Guardado para una próxima carga.</span>`:`🍀 Esta vez no salió premio.<strong>SIN PREMIO</strong><span>${data.thirdAvailable?'Desbloqueaste un tiro extra especial.':data.spinsLeft>0?'Te queda un tiro.':'Oportunidad finalizada.'}</span>`;btn.textContent=data.spinsLeft>0?'🎡 GIRAR RULETA':'🎡 TIROS FINALIZADOS';rouletteBusy=false;await rouletteRefresh();rouletteShowOverlay(result,spinNumber);};
   wheel.addEventListener('transitionend',finish,{once:true});setTimeout(()=>{if(rouletteBusy)finish();},6500);
  }catch(e){console.error('ROULETTE SPIN',e);stage?.classList.remove('is-spinning','is-win');rouletteBusy=false;btn.textContent='🎡 GIRAR RULETA';resultBox.textContent=e?.message||'No hay tiros habilitados o la oportunidad ya finalizó.';await rouletteRefresh();}
 }
-rouletteBuildLabels();
+rouletteBuildLabels(rouletteUserData?.prizeCatalog);
 document.getElementById('rouletteResultOverlay')?.addEventListener('click',e=>{
   if(e.target.id==='rouletteResultOverlay') e.currentTarget.classList.remove('open');
 });
