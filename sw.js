@@ -8,6 +8,7 @@ self.addEventListener("install", event => {
       base + "index.html",
       base + "roulette-admin.html",
       base + "manifest.webmanifest",
+      base + "manifest-admin.webmanifest",
       base + "assets/freehand-app-icon.svg"
     ]);
     await self.skipWaiting();
