@@ -489,7 +489,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       }
       const note = typeof body.note === "string" ? body.note.trim().slice(0,300) : null;
       const { data, error } = await db.rpc("roulette_admin_confirm_fichas_delivery", {
-        p_award_id: awardId, p_actor: "administrador", p_note: note
+        p_award_id: awardId, p_actor: adminContext.username, p_note: note
       });
       if (error) throw error;
       return json(data);
@@ -504,7 +504,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       if (!number || number.length > 30) throw new Error("Ingresá el número que asignaste.");
       const note = typeof body.note === "string" ? body.note.trim().slice(0,300) : null;
       const { data, error } = await db.rpc("roulette_admin_assign_raffle_award", {
-        p_award_id: awardId, p_number: number, p_actor: "administrador", p_note: note
+        p_award_id: awardId, p_number: number, p_actor: adminContext.username, p_note: note
       });
       if (error) throw error;
       return json(data);
@@ -515,7 +515,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       const note=typeof body.note==="string"?body.note.trim().slice(0,300):"";
       if(!Number.isSafeInteger(delta)||delta===0)throw new Error("Ingresá una cantidad de fichas distinta de cero.");
       const {data,error}=await db.rpc("roulette_admin_adjust_fichas",{
-        p_id:id,p_delta:delta,p_actor:"administrador",p_note:note
+        p_id:id,p_delta:delta,p_actor:adminContext.username,p_note:note
       });
       if(error)throw error;
       return json(data);
@@ -532,7 +532,7 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
         throw new Error("El número de tiro del bono no es válido.");
       }
       const { data, error } = await db.rpc("roulette_admin_mark_bonus_used", {
-        p_id: id, p_cycle_id: cycleId, p_spin_number: spinNumber
+        p_id: id, p_cycle_id: cycleId, p_spin_number: spinNumber, p_actor: adminContext.username
       });
       if (error) throw error;
       return json(data);
@@ -586,7 +586,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 17,
+      version: 24,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });
