@@ -309,6 +309,13 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
 @media(max-width:900px){.admin-create-user{grid-template-columns:1fr 1fr}.admin-user-row{grid-template-columns:1fr 1fr}.admin-user-row button{width:100%}}
 @media(max-width:600px){.admin-role-guide{grid-template-columns:1fr}.admin-create-user{grid-template-columns:1fr}.admin-user-row{grid-template-columns:1fr 1fr}.admin-user-name{grid-column:1/-1}}
 </style>
+<style id="freehand-reset-pin-search">
+.reset-player-search{position:relative;max-width:520px}
+#resetName{width:100%;height:44px;padding:0 13px;border:1px solid rgba(210,188,123,.2);border-radius:10px;background:#06150c;color:#f3f6ed;font-size:13px}
+#resetName:focus{outline:2px solid rgba(95,223,137,.45);outline-offset:2px}
+#resetPlayerCount{display:block;margin:7px 0 12px;color:#84998c;font-size:10px}
+#resetResult{margin-top:12px}
+</style>
 </head><body><div id="loginScreen" class="login-screen"><div class="login-layout"><section class="login-brand-panel"><div class="brand-lockup"><svg class="brand-clover" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="cloverFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9eff73"/><stop offset=".55" stop-color="#31e278"/><stop offset="1" stop-color="#087d3d"/></linearGradient></defs><g fill="url(#cloverFill)" stroke="#b8ff9a" stroke-width="1.1"><path d="M31.7 29.5C14.5 30.5 8.6 22.4 11.6 13.8 14.8 4.7 27.1 5.2 32 20.7 36.9 5.2 49.2 4.7 52.4 13.8c3 8.6-2.9 16.7-20.1 15.7Z"/><path d="M34.5 31.7C33.5 14.5 41.6 8.6 50.2 11.6c9.1 3.2 8.6 15.5-6.9 20.4 15.5 4.9 16 17.2 6.9 20.4-8.6 3-16.7-2.9-15.7-20.1Z"/><path d="M32.3 34.5C49.5 33.5 55.4 41.6 52.4 50.2c-3.2 9.1-15.5 8.6-20.4-6.9-4.9 15.5-17.2 16-20.4 6.9-3-8.6 2.9-16.7 20.1-15.7Z"/><path d="M29.5 32.3C30.5 49.5 22.4 55.4 13.8 52.4 4.7 49.2 5.2 36.9 20.7 32c-15.5-4.9-16-17.2-6.9-20.4 8.6-3 16.7 2.9 15.7 20.1Z"/></g><path d="M32 31v21c0 4-2 7-6 9" fill="none" stroke="#6be68a" stroke-width="3.2" stroke-linecap="round"/></svg><div class="brand-wordmark"><strong>FREEHAND</strong><span>COMUNIDAD</span></div></div><div class="login-tagline"><div class="section-eyebrow">CENTRO DE CONTROL</div><h1>Tu comunidad.<br>Tu administración.</h1><p>Un espacio seguro para gestionar jugadores, oportunidades y cada premio de FREEHAND.</p></div></section><div class="login-card-wrap"><section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Supabase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR CON CLAVE MAESTRA</button>
 <div class="admin-login-divider"><span>O INGRESÁ CON TU CUENTA DE EQUIPO</span></div>
 <details class="admin-account-login" open>
@@ -379,7 +386,10 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
  <div id="adminCreateUserStatus" class="status"></div>
  <div id="adminUsersList" class="admin-users-list"><div class="muted">Cargando cuentas administrativas…</div></div>
 </section>
-<section class="content-card" id="securityManagement"><h2>Seguridad y acceso</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Usuario</label><input id="resetName" maxlength="20" placeholder="Nombre exacto del jugador"><button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section>
+<section class="content-card" id="securityManagement"><h2>Seguridad y acceso</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Buscar jugador</label>
+<div class="reset-player-search"><input id="resetName" type="search" list="resetPlayerOptions" maxlength="20" autocomplete="off" placeholder="Escribí el nombre para buscar…" aria-label="Buscar jugador para restablecer su PIN"><datalist id="resetPlayerOptions"></datalist></div>
+<small id="resetPlayerCount" class="muted">Los jugadores creados aparecerán al ingresar al panel.</small>
+<button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section>
 <footer class="app-footer"><span>FREEHAND COMUNIDAD</span><span>Panel de administración · Gestión segura de premios</span></footer>
 </main></div></div>
 
@@ -924,6 +934,23 @@ byId('prizeSearch').addEventListener('input',renderPrizeRows);
 function normalizePlayerSearch(value){
  return String(value||'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('es');
 }
+function updateResetPlayerSuggestions(players){
+ const datalist=byId('resetPlayerOptions');
+ const counter=byId('resetPlayerCount');
+ if(!datalist)return;
+ datalist.replaceChildren();
+ const sorted=[...(Array.isArray(players)?players:[])].sort((a,b)=>
+  String(a.username||'').localeCompare(String(b.username||''),'es',{sensitivity:'base'})
+ );
+ sorted.forEach(player=>{
+  if(!player.username)return;
+  const option=document.createElement('option');
+  option.value=String(player.username);
+  option.label=Number(player.fichasBalance||0).toLocaleString('es-AR')+' fichas · '+Number(player.approvedLoads||0)+' cargas';
+  datalist.append(option);
+ });
+ if(counter)counter.textContent=sorted.length+' jugadores disponibles. Escribí para filtrar y elegí uno de la lista.';
+}
 function filterPlayerRows(){
  const query=normalizePlayerSearch(byId('playerSearch')?.value);
  const box=byId('players');
@@ -942,6 +969,7 @@ function filterPlayerRows(){
 async function refresh(){
  try{
   const r=(await call('adminListPlayers')(adminArgs())).data;
+  updateResetPlayerSuggestions(r.players);
   const box=byId('players');
   if(!r.players.length){box.textContent='No hay jugadores registrados.';filterPlayerRows();return;}
   box.innerHTML='';
@@ -1089,7 +1117,19 @@ byId('reportCsvBtn').onclick=()=>downloadReport('csv');
 byId('reportExcelBtn').onclick=()=>downloadReport('excel');
 
 byId('refreshBtn').onclick=async()=>{await Promise.all([refresh(),refreshPrizes()]);};
-byId('resetPinBtn').onclick=async()=>{try{const r=(await call('adminResetPin')(adminArgs({username:val('resetName')}))).data;byId('resetResult').textContent='Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).'; }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}};
+byId('resetName').addEventListener('input',()=>{byId('resetResult').textContent='';});
+byId('resetPinBtn').onclick=async()=>{
+ const username=val('resetName');
+ if(!username){status('resetResult','Buscá y seleccioná un jugador antes de restablecer el PIN.');return;}
+ const selected=[...byId('resetPlayerOptions').options].some(option=>option.value.toLocaleLowerCase('es')===username.toLocaleLowerCase('es'));
+ if(!selected){status('resetResult','Elegí un jugador de la lista de jugadores registrados.');return;}
+ byId('resetPinBtn').disabled=true;
+ try{
+  const r=(await call('adminResetPin')(adminArgs({username}))).data;
+  byId('resetResult').textContent='Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).';
+ }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}
+ finally{byId('resetPinBtn').disabled=currentAdmin.role!=='owner';}
+};
 byId('logoutBtn').onclick=async()=>{
  try{if(adminKey)await call('adminLogout')(adminArgs());}catch(error){console.warn('ADMIN LOGOUT',error);}
  adminKey='';currentAdmin={role:'',username:'',userId:null,isMaster:false};
