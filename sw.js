@@ -1,4 +1,4 @@
-const CACHE_NAME = "freehand-preguntados-shell-v1";
+const CACHE_NAME = "freehand-preguntados-shell-v2";
 self.addEventListener("install", event => {
   event.waitUntil((async () => {
     const base = self.registration.scope;
