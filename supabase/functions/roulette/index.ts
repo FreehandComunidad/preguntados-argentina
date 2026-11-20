@@ -548,8 +548,11 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
 
     if (action === "adminResetPin") {
       const pin = randomPin(), pinHash = await hash(id + ":" + pin);
-      const { data, error } = await db.from("roulette_players").update({ pin_hash:pinHash,pin_failed_attempts:0,pin_locked_until:null,updated_at:new Date().toISOString() }).eq("id",id).select("username").maybeSingle();
-      if (error) throw error; if (!data) throw new Error("PLAYER_NOT_FOUND");
+      const { data, error } = await db.rpc("roulette_admin_reset_player_pin", {
+        p_id:id, p_pin_hash:pinHash
+      });
+      if (error) throw error;
+      if (!data?.username) throw new Error("PLAYER_NOT_FOUND");
       return json({ username:data.username, pin });
     }
 
@@ -603,7 +606,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 26,
+      version: 27,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });
