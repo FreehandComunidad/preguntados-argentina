@@ -70,7 +70,7 @@ const ADMIN_READ_ONLY_ACTIONS=new Set([
   "adminListCatalog","adminGetReports","adminListNotifications"
 ]);
 const ADMIN_OWNER_ONLY_ACTIONS=new Set([
-  "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminCancelLoad",
+  "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminDeletePlayer","adminCancelLoad",
   "adminCreateAdminUser","adminUpdateAdminUser","adminListAdminUsers"
 ]);
 function authorizeAdminAction(action:string,identity:any){
@@ -85,6 +85,7 @@ async function playerCredentials(body: any) {
 }
 function errorStatus(message: string) {
   if (message.includes("PLAYER_NOT_FOUND") || message.includes("BONUS_NOT_FOUND")) return 404;
+  if (message.includes("PLAYER_HAS_FICHAS_BALANCE") || message.includes("PLAYER_HAS_PENDING_PRIZES")) return 409;
   if(message.includes("ADMIN_LOGIN_LOCKED"))return 429;
   if (message.includes("INVALID_CREDENTIALS") || message.includes("ADMIN_INVALID_CREDENTIALS") ||
       message.includes("ADMIN_SESSION_INVALID") || message.includes("ADMIN_FORBIDDEN")) return 403;
@@ -551,6 +552,18 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
       if (error) throw error; if (!data) throw new Error("PLAYER_NOT_FOUND");
       return json({ username:data.username, pin });
     }
+
+    if (action === "adminDeletePlayer") {
+      const { data, error } = await db.rpc("roulette_admin_delete_player", { p_id:id });
+      if (error) throw error;
+      if (data?.error === "PLAYER_HAS_FICHAS_BALANCE") {
+        throw new Error("PLAYER_HAS_FICHAS_BALANCE:" + Number(data.fichasBalance || 0));
+      }
+      if (data?.error === "PLAYER_HAS_PENDING_PRIZES") {
+        throw new Error("PLAYER_HAS_PENDING_PRIZES:" + Number(data.pendingAwards || 0) + ":" + Number(data.pendingBonuses || 0));
+      }
+      return json(data);
+    }
     return json({ error:"Acción desconocida." }, 400);
   } catch (e) {
     const message = String((e as Error)?.message || "Error interno.");
@@ -572,9 +585,13 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
                     ? "Indicá el motivo del ajuste de fichas."
                     : message.includes("INVALID_FICHAS_ADJUSTMENT")
                       ? "El importe del ajuste no es válido."
-                      : message.includes("PRIZE_CATALOG_PROBABILITIES_MUST_TOTAL_100_PERCENT")
-                        ? "El catálogo tiene probabilidades inválidas. Deben sumar 100%."
-                        : message;
+                      : message.includes("PLAYER_HAS_FICHAS_BALANCE")
+                        ? "No se puede eliminar el jugador porque todavía tiene " + Number(message.split(":")[1] || 0).toLocaleString("es-AR") + " fichas. Primero resolvé su saldo."
+                        : message.includes("PLAYER_HAS_PENDING_PRIZES")
+                          ? "No se puede eliminar el jugador porque tiene premios o bonos pendientes. Primero resolvé los pendientes."
+                          : message.includes("PRIZE_CATALOG_PROBABILITIES_MUST_TOTAL_100_PERCENT")
+                            ? "El catálogo tiene probabilidades inválidas. Deben sumar 100%."
+                            : message;
     return json({ error:friendly }, errorStatus(message));
   }
 });
@@ -586,7 +603,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 25,
+      version: 26,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });
