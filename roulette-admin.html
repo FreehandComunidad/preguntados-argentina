@@ -311,10 +311,21 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
 </style>
 <style id="freehand-reset-pin-search">
 .reset-player-search{position:relative;max-width:520px}
-#resetName{width:100%;height:44px;padding:0 13px;border:1px solid rgba(210,188,123,.2);border-radius:10px;background:#06150c;color:#f3f6ed;font-size:13px}
+#resetName{width:100%;height:48px;padding:0 13px;border:1px solid rgba(210,188,123,.2);border-radius:10px;background:#06150c;color:#f3f6ed;font-size:14px}
 #resetName:focus{outline:2px solid rgba(95,223,137,.45);outline-offset:2px}
-#resetPlayerCount{display:block;margin:7px 0 12px;color:#84998c;font-size:10px}
+#resetPlayerCount{display:block;margin:7px 0 8px;color:#84998c;font-size:10px}
+.reset-selected-player{display:block;min-height:18px;margin:0 0 12px;color:#a8c5b1;font-size:11px}
+.reset-player-options{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:120;max-height:250px;overflow-y:auto;border:1px solid rgba(245,200,75,.3);border-radius:12px;background:#07170e;box-shadow:0 16px 38px rgba(0,0,0,.5);padding:5px}
+.reset-player-options.hidden{display:none!important}
+.reset-player-option{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;width:100%!important;min-height:48px!important;margin:0!important;padding:10px 12px!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.06)!important;border-radius:7px!important;background:transparent!important;color:#f4f8f3!important;text-align:left!important;box-shadow:none!important;font-size:13px!important;letter-spacing:0!important}
+.reset-player-option:last-child{border-bottom:0!important}
+.reset-player-option:active,.reset-player-option:hover{background:rgba(57,255,120,.1)!important;transform:none!important;box-shadow:none!important}
+.reset-player-option strong{font-size:13px!important;color:#f5d77e!important}
+.reset-player-option small{font-size:10px!important;color:#9aafa1!important}
+.reset-player-empty{padding:12px;color:#9aafa1;font-size:12px}
+#resetPinBtn:disabled{opacity:.42!important;filter:grayscale(.5)!important;cursor:not-allowed!important}
 #resetResult{margin-top:12px}
+.player-actions .delete-player-button{border-color:rgba(255,110,110,.55)!important;background:linear-gradient(135deg,#63212a,#3d1119)!important;color:#ffe2e2!important}
 </style>
 </head><body><div id="loginScreen" class="login-screen"><div class="login-layout"><section class="login-brand-panel"><div class="brand-lockup"><svg class="brand-clover" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="cloverFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9eff73"/><stop offset=".55" stop-color="#31e278"/><stop offset="1" stop-color="#087d3d"/></linearGradient></defs><g fill="url(#cloverFill)" stroke="#b8ff9a" stroke-width="1.1"><path d="M31.7 29.5C14.5 30.5 8.6 22.4 11.6 13.8 14.8 4.7 27.1 5.2 32 20.7 36.9 5.2 49.2 4.7 52.4 13.8c3 8.6-2.9 16.7-20.1 15.7Z"/><path d="M34.5 31.7C33.5 14.5 41.6 8.6 50.2 11.6c9.1 3.2 8.6 15.5-6.9 20.4 15.5 4.9 16 17.2 6.9 20.4-8.6 3-16.7-2.9-15.7-20.1Z"/><path d="M32.3 34.5C49.5 33.5 55.4 41.6 52.4 50.2c-3.2 9.1-15.5 8.6-20.4-6.9-4.9 15.5-17.2 16-20.4 6.9-3-8.6 2.9-16.7 20.1-15.7Z"/><path d="M29.5 32.3C30.5 49.5 22.4 55.4 13.8 52.4 4.7 49.2 5.2 36.9 20.7 32c-15.5-4.9-16-17.2-6.9-20.4 8.6-3 16.7 2.9 15.7 20.1Z"/></g><path d="M32 31v21c0 4-2 7-6 9" fill="none" stroke="#6be68a" stroke-width="3.2" stroke-linecap="round"/></svg><div class="brand-wordmark"><strong>FREEHAND</strong><span>COMUNIDAD</span></div></div><div class="login-tagline"><div class="section-eyebrow">CENTRO DE CONTROL</div><h1>Tu comunidad.<br>Tu administración.</h1><p>Un espacio seguro para gestionar jugadores, oportunidades y cada premio de FREEHAND.</p></div></section><div class="login-card-wrap"><section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Supabase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR CON CLAVE MAESTRA</button>
 <div class="admin-login-divider"><span>O INGRESÁ CON TU CUENTA DE EQUIPO</span></div>
@@ -387,9 +398,13 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
  <div id="adminUsersList" class="admin-users-list"><div class="muted">Cargando cuentas administrativas…</div></div>
 </section>
 <section class="content-card" id="securityManagement"><h2>Seguridad y acceso</h2><p class="muted">Restablecer PIN si el jugador lo pierde. El nuevo PIN invalida el anterior y se muestra una sola vez.</p><label for="resetName">Buscar jugador</label>
-<div class="reset-player-search"><input id="resetName" type="search" list="resetPlayerOptions" maxlength="20" autocomplete="off" placeholder="Escribí el nombre para buscar…" aria-label="Buscar jugador para restablecer su PIN"><datalist id="resetPlayerOptions"></datalist></div>
+<div class="reset-player-search">
+<input id="resetName" type="search" maxlength="20" autocomplete="off" placeholder="Escribí el nombre para buscar…" aria-label="Buscar jugador para restablecer su PIN" role="combobox" aria-autocomplete="list" aria-controls="resetPlayerOptions" aria-expanded="false">
+<div id="resetPlayerOptions" class="reset-player-options hidden" role="listbox" aria-label="Resultados de jugadores"></div>
+</div>
 <small id="resetPlayerCount" class="muted">Los jugadores creados aparecerán al ingresar al panel.</small>
-<button class="danger" id="resetPinBtn">RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section>
+<small id="resetSelectedPlayer" class="reset-selected-player">Buscá un jugador y tocá un resultado para seleccionarlo.</small>
+<button class="danger" id="resetPinBtn" disabled>RESTABLECER PIN</button><div id="resetResult" class="status"></div><button class="secondary" id="logoutBtn">CERRAR PANEL</button></section>
 <footer class="app-footer"><span>FREEHAND COMUNIDAD</span><span>Panel de administración · Gestión segura de premios</span></footer>
 </main></div></div>
 
@@ -461,6 +476,7 @@ function applyAdminRole(){
  document.querySelectorAll('.catalog-row input,.catalog-row select').forEach(input=>input.disabled=!isOwner);
  if(!isOwner){byId('catalogSaveBtn').disabled=true;byId('catalogAddBtn').disabled=true;}
  ['resetPinBtn','adminUsersRefreshBtn'].forEach(id=>{const element=byId(id);if(element)element.disabled=!isOwner;});
+ syncResetPinControls();
  document.querySelectorAll('.player-actions button').forEach(button=>{
   if(isAuditor&&button.textContent.trim()!=='FICHA COMPLETA')button.disabled=true;
   if(!isOwner&&button.classList.contains('cancel-load-button'))button.disabled=true;
@@ -931,25 +947,68 @@ function downloadReport(kind){
 
 
 byId('prizeSearch').addEventListener('input',renderPrizeRows);
+let resetPlayers=[];
+let resetSelectedUsername='';
 function normalizePlayerSearch(value){
  return String(value||'').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('es');
 }
+function syncResetPinControls(){
+ const button=byId('resetPinBtn');
+ const selected=byId('resetSelectedPlayer');
+ const isOwner=currentAdmin.role==='owner';
+ if(button)button.disabled=!isOwner||!resetSelectedUsername;
+ if(selected&&!isOwner)selected.textContent='Solo el Propietario puede restablecer PIN o eliminar jugadores.';
+ else if(selected&&!resetSelectedUsername)selected.textContent='Buscá un jugador y tocá un resultado para seleccionarlo.';
+}
+function chooseResetPlayer(username){
+ const player=resetPlayers.find(item=>String(item.username)===String(username));
+ if(!player)return;
+ resetSelectedUsername=String(player.username);
+ byId('resetName').value=resetSelectedUsername;
+ byId('resetPlayerOptions').replaceChildren();
+ byId('resetPlayerOptions').classList.add('hidden');
+ byId('resetName').setAttribute('aria-expanded','false');
+ byId('resetSelectedPlayer').textContent='Jugador seleccionado: '+resetSelectedUsername;
+ byId('resetResult').textContent='';
+ syncResetPinControls();
+}
+function renderResetPlayerOptions(query){
+ const list=byId('resetPlayerOptions');
+ if(!list)return;
+ list.replaceChildren();
+ const normalized=normalizePlayerSearch(query);
+ if(!normalized){list.classList.add('hidden');byId('resetName').setAttribute('aria-expanded','false');syncResetPinControls();return;}
+ const matches=resetPlayers.filter(player=>normalizePlayerSearch(player.username).includes(normalized)).slice(0,10);
+ if(!matches.length){
+  const empty=document.createElement('div');empty.className='reset-player-empty';empty.textContent='No se encontraron jugadores con ese nombre.';
+  list.append(empty);
+ }else{
+  matches.forEach(player=>{
+   const option=document.createElement('button');option.type='button';option.className='reset-player-option';option.setAttribute('role','option');
+   const name=document.createElement('strong');name.textContent=player.username;
+   const meta=document.createElement('small');meta.textContent=Number(player.fichasBalance||0).toLocaleString('es-AR')+' fichas · '+Number(player.approvedLoads||0)+' cargas aprobadas';
+   option.append(name,meta);
+   option.addEventListener('click',()=>chooseResetPlayer(player.username));
+   list.append(option);
+  });
+ }
+ list.classList.remove('hidden');
+ byId('resetName').setAttribute('aria-expanded','true');
+ syncResetPinControls();
+}
 function updateResetPlayerSuggestions(players){
- const datalist=byId('resetPlayerOptions');
- const counter=byId('resetPlayerCount');
- if(!datalist)return;
- datalist.replaceChildren();
- const sorted=[...(Array.isArray(players)?players:[])].sort((a,b)=>
+ resetPlayers=[...(Array.isArray(players)?players:[])].filter(player=>player&&player.username).sort((a,b)=>
   String(a.username||'').localeCompare(String(b.username||''),'es',{sensitivity:'base'})
  );
- sorted.forEach(player=>{
-  if(!player.username)return;
-  const option=document.createElement('option');
-  option.value=String(player.username);
-  option.label=Number(player.fichasBalance||0).toLocaleString('es-AR')+' fichas · '+Number(player.approvedLoads||0)+' cargas';
-  datalist.append(option);
- });
- if(counter)counter.textContent=sorted.length+' jugadores disponibles. Escribí para filtrar y elegí uno de la lista.';
+ resetSelectedUsername='';
+ const input=byId('resetName');
+ if(input)input.value='';
+ const counter=byId('resetPlayerCount');
+ if(counter)counter.textContent=resetPlayers.length+' jugadores disponibles. Escribí y tocá el nombre correcto.';
+ const list=byId('resetPlayerOptions');
+ if(list){list.replaceChildren();list.classList.add('hidden');}
+ input?.setAttribute('aria-expanded','false');
+ syncResetPinControls();
 }
 function filterPlayerRows(){
  const query=normalizePlayerSearch(byId('playerSearch')?.value);
@@ -1034,6 +1093,27 @@ async function refresh(){
    c.onclick=()=>{byId('grantName').value=p.username;byId('grantCount').value='1';grant('adminApproveLoad');};
    actions.append(b,c);
    const profileButton=document.createElement('button');profileButton.type='button';profileButton.className='secondary';profileButton.textContent='FICHA COMPLETA';profileButton.onclick=()=>openPlayerProfile(p.username);actions.append(profileButton);
+   const deletePlayerButton=document.createElement('button');deletePlayerButton.type='button';deletePlayerButton.className='danger delete-player-button';deletePlayerButton.textContent='ELIMINAR JUGADOR';deletePlayerButton.dataset.ownerOnly='true';
+   deletePlayerButton.onclick=async()=>{
+    if(currentAdmin.role!=='owner')return;
+    if(!window.confirm('¿Eliminar definitivamente a '+p.username+' de FREEHAND? Se borrarán también sus giros, premios, oportunidades e historial de fichas. Esta acción no se puede deshacer.'))return;
+    const typed=window.prompt('Para confirmar, escribí exactamente el nombre del jugador:\n'+p.username);
+    if(String(typed||'').trim().toLocaleLowerCase('es')!==String(p.username).toLocaleLowerCase('es')){
+     window.alert('No se eliminó el jugador. El nombre no coincide.');
+     return;
+    }
+    deletePlayerButton.disabled=true;
+    try{
+     const deleted=(await call('adminDeletePlayer')(adminArgs({username:p.username}))).data;
+     if(activeProfileUsername===p.username){byId('playerProfileModal').classList.add('hidden');byId('playerProfileModal').setAttribute('aria-hidden','true');}
+     window.alert('Jugador eliminado: '+deleted.username+'\\n'+Number(deleted.deletedSpins||0)+' giros · '+Number(deleted.deletedAwards||0)+' premios · '+Number(deleted.deletedOpportunities||0)+' oportunidades · '+Number(deleted.deletedLedgerRows||0)+' movimientos de fichas eliminados.');
+     await Promise.all([refresh(),refreshPrizes(),refreshNotifications()]);
+    }catch(error){
+     window.alert(error.message||'No se pudo eliminar el jugador.');
+     deletePlayerButton.disabled=false;
+    }
+   };
+   actions.append(deletePlayerButton);
    if(Number(p.cancellableLoads)>0){
     const cancel=document.createElement('button');cancel.type='button';cancel.className='danger cancel-load-button';
     cancel.textContent='ANULAR ÚLTIMA CARGA';
@@ -1117,18 +1197,32 @@ byId('reportCsvBtn').onclick=()=>downloadReport('csv');
 byId('reportExcelBtn').onclick=()=>downloadReport('excel');
 
 byId('refreshBtn').onclick=async()=>{await Promise.all([refresh(),refreshPrizes()]);};
-byId('resetName').addEventListener('input',()=>{byId('resetResult').textContent='';});
+byId('resetName').addEventListener('input',()=>{
+ resetSelectedUsername='';
+ byId('resetResult').textContent='';
+ byId('resetSelectedPlayer').textContent='Elegí uno de los resultados para confirmar el jugador.';
+ renderResetPlayerOptions(byId('resetName').value);
+});
+byId('resetName').addEventListener('keydown',event=>{
+ if(event.key!=='Enter')return;
+ event.preventDefault();
+ const query=normalizePlayerSearch(byId('resetName').value);
+ const exact=resetPlayers.find(player=>normalizePlayerSearch(player.username)===query);
+ const matches=resetPlayers.filter(player=>normalizePlayerSearch(player.username).includes(query));
+ if(exact)chooseResetPlayer(exact.username);
+ else if(matches.length===1)chooseResetPlayer(matches[0].username);
+});
 byId('resetPinBtn').onclick=async()=>{
- const username=val('resetName');
- if(!username){status('resetResult','Buscá y seleccioná un jugador antes de restablecer el PIN.');return;}
- const selected=[...byId('resetPlayerOptions').options].some(option=>option.value.toLocaleLowerCase('es')===username.toLocaleLowerCase('es'));
- if(!selected){status('resetResult','Elegí un jugador de la lista de jugadores registrados.');return;}
+ const username=resetSelectedUsername;
+ if(!username){status('resetResult','Primero buscá y tocá el nombre del jugador en los resultados.');syncResetPinControls();return;}
+ if(!resetPlayers.some(player=>player.username===username)){status('resetResult','La lista de jugadores cambió. Actualizá el panel y volvé a seleccionar el jugador.');syncResetPinControls();return;}
+ if(currentAdmin.role!=='owner'){status('resetResult','Solo el Propietario puede restablecer PIN.');syncResetPinControls();return;}
  byId('resetPinBtn').disabled=true;
  try{
   const r=(await call('adminResetPin')(adminArgs({username}))).data;
-  byId('resetResult').textContent='Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' (copialo y entregáselo al jugador).';
+  status('resetResult','Nuevo PIN de 4 dígitos para '+r.username+': '+r.pin+' · Copialo y entregáselo al jugador.',true);
  }catch(e){status('resetResult',e.message||'No se pudo cambiar el PIN.');}
- finally{byId('resetPinBtn').disabled=currentAdmin.role!=='owner';}
+ finally{syncResetPinControls();}
 };
 byId('logoutBtn').onclick=async()=>{
  try{if(adminKey)await call('adminLogout')(adminArgs());}catch(error){console.warn('ADMIN LOGOUT',error);}
