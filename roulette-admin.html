@@ -327,6 +327,25 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
 #resetResult{margin-top:12px}
 .player-actions .delete-player-button{border-color:rgba(255,110,110,.55)!important;background:linear-gradient(135deg,#63212a,#3d1119)!important;color:#ffe2e2!important}
 </style>
+<style id="freehand-admin-community-comments">
+.comment-nav-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;margin-left:auto;padding:0 5px;border-radius:20px;background:#b83e48;color:white;font:900 9px 'DM Sans',sans-serif}
+.community-admin-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;margin:5px 0 13px;border:1px solid rgba(245,200,75,.17);border-radius:13px;background:linear-gradient(130deg,rgba(18,55,33,.8),rgba(4,17,9,.8))}
+.community-admin-summary strong{color:#f6d87f;font-size:13px}
+.community-admin-summary small{color:#94ab9a;font-size:10px;text-align:right}
+.community-admin-filters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.community-admin-filters button{width:auto;min-height:36px;margin:0;padding:8px 12px;border:1px solid rgba(190,211,194,.14);border-radius:10px;background:#07170e;color:#9eb4a4;font-size:10px;box-shadow:none}
+.community-admin-filters button.active{border-color:rgba(255,211,77,.45);background:rgba(184,137,39,.16);color:#ffe19a}
+.community-admin-list{display:flex;flex-direction:column;gap:10px}
+.community-admin-item{padding:15px;border:1px solid rgba(164,195,173,.17);border-radius:14px;background:linear-gradient(145deg,rgba(11,39,22,.85),rgba(3,14,8,.92))}
+.community-admin-item p{margin:0;color:#edf5ee;font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.community-admin-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:11px;color:#91a899;font-size:10px}
+.community-admin-status{color:#f1d88c;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.community-admin-actions{display:flex;gap:8px;margin-top:12px}
+.community-admin-actions button{width:auto;min-height:36px;margin:0;padding:8px 13px;font-size:10px}
+.community-admin-actions .reject-comment{border-color:rgba(236,118,118,.3);background:#3d171b;color:#ffd9d9}
+.community-admin-empty{padding:25px 14px;border:1px dashed rgba(160,190,169,.2);border-radius:13px;color:#94ab9a;text-align:center;font-size:12px}
+@media(max-width:600px){.community-admin-summary{align-items:flex-start;flex-direction:column}.community-admin-summary small{text-align:left}.community-admin-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.community-admin-filters button{width:100%}.community-admin-actions button{flex:1}}
+</style>
 </head><body><div id="loginScreen" class="login-screen"><div class="login-layout"><section class="login-brand-panel"><div class="brand-lockup"><svg class="brand-clover" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="cloverFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9eff73"/><stop offset=".55" stop-color="#31e278"/><stop offset="1" stop-color="#087d3d"/></linearGradient></defs><g fill="url(#cloverFill)" stroke="#b8ff9a" stroke-width="1.1"><path d="M31.7 29.5C14.5 30.5 8.6 22.4 11.6 13.8 14.8 4.7 27.1 5.2 32 20.7 36.9 5.2 49.2 4.7 52.4 13.8c3 8.6-2.9 16.7-20.1 15.7Z"/><path d="M34.5 31.7C33.5 14.5 41.6 8.6 50.2 11.6c9.1 3.2 8.6 15.5-6.9 20.4 15.5 4.9 16 17.2 6.9 20.4-8.6 3-16.7-2.9-15.7-20.1Z"/><path d="M32.3 34.5C49.5 33.5 55.4 41.6 52.4 50.2c-3.2 9.1-15.5 8.6-20.4-6.9-4.9 15.5-17.2 16-20.4 6.9-3-8.6 2.9-16.7 20.1-15.7Z"/><path d="M29.5 32.3C30.5 49.5 22.4 55.4 13.8 52.4 4.7 49.2 5.2 36.9 20.7 32c-15.5-4.9-16-17.2-6.9-20.4 8.6-3 16.7 2.9 15.7 20.1Z"/></g><path d="M32 31v21c0 4-2 7-6 9" fill="none" stroke="#6be68a" stroke-width="3.2" stroke-linecap="round"/></svg><div class="brand-wordmark"><strong>FREEHAND</strong><span>COMUNIDAD</span></div></div><div class="login-tagline"><div class="section-eyebrow">CENTRO DE CONTROL</div><h1>Tu comunidad.<br>Tu administración.</h1><p>Un espacio seguro para gestionar jugadores, oportunidades y cada premio de FREEHAND.</p></div></section><div class="login-card-wrap"><section class="card" id="loginCard"><h2>Acceso de administración</h2><p class="muted">Ingresá la clave administrativa configurada en Supabase. No se guarda en este dispositivo.</p><label for="adminKey">Clave privada</label><input id="adminKey" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="connectBtn">INGRESAR CON CLAVE MAESTRA</button>
 <div class="admin-login-divider"><span>O INGRESÁ CON TU CUENTA DE EQUIPO</span></div>
 <details class="admin-account-login" open>
@@ -953,26 +972,7 @@ function downloadReport(kind){
   blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});name='freehand-reporte-'+new Date().toISOString().slice(0,10)+'.csv';
  }else{
   const table='<table border="1">'+rows.map((row,i)=>'<tr>'+row.map(value=>i===0?'<th>'+esc(value)+'</th>':'<td>'+esc(value)+'</td>').join('')+'</tr>').join('')+'</table>';
-  const workbook='<html><head><meta charset="utf-8"><style id="freehand-admin-community-comments">
-.comment-nav-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;margin-left:auto;padding:0 5px;border-radius:20px;background:#b83e48;color:white;font:900 9px 'DM Sans',sans-serif}
-.community-admin-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;margin:5px 0 13px;border:1px solid rgba(245,200,75,.17);border-radius:13px;background:linear-gradient(130deg,rgba(18,55,33,.8),rgba(4,17,9,.8))}
-.community-admin-summary strong{color:#f6d87f;font-size:13px}
-.community-admin-summary small{color:#94ab9a;font-size:10px;text-align:right}
-.community-admin-filters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
-.community-admin-filters button{width:auto;min-height:36px;margin:0;padding:8px 12px;border:1px solid rgba(190,211,194,.14);border-radius:10px;background:#07170e;color:#9eb4a4;font-size:10px;box-shadow:none}
-.community-admin-filters button.active{border-color:rgba(255,211,77,.45);background:rgba(184,137,39,.16);color:#ffe19a}
-.community-admin-list{display:flex;flex-direction:column;gap:10px}
-.community-admin-item{padding:15px;border:1px solid rgba(164,195,173,.17);border-radius:14px;background:linear-gradient(145deg,rgba(11,39,22,.85),rgba(3,14,8,.92))}
-.community-admin-item p{margin:0;color:#edf5ee;font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
-.community-admin-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:11px;color:#91a899;font-size:10px}
-.community-admin-status{color:#f1d88c;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
-.community-admin-actions{display:flex;gap:8px;margin-top:12px}
-.community-admin-actions button{width:auto;min-height:36px;margin:0;padding:8px 13px;font-size:10px}
-.community-admin-actions .reject-comment{border-color:rgba(236,118,118,.3);background:#3d171b;color:#ffd9d9}
-.community-admin-empty{padding:25px 14px;border:1px dashed rgba(160,190,169,.2);border-radius:13px;color:#94ab9a;text-align:center;font-size:12px}
-@media(max-width:600px){.community-admin-summary{align-items:flex-start;flex-direction:column}.community-admin-summary small{text-align:left}.community-admin-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.community-admin-filters button{width:100%}.community-admin-actions button{flex:1}}
-</style>
-</head><body>'+table+'</body></html>';
+  const workbook='<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>';
   blob=new Blob([workbook],{type:'application/vnd.ms-excel;charset=utf-8;'});name='freehand-reporte-'+new Date().toISOString().slice(0,10)+'.xls';
  }
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
