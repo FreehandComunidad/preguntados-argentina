@@ -67,10 +67,10 @@ async function requireAdmin(req: Request,db:any){
 }
 const ADMIN_READ_ONLY_ACTIONS=new Set([
   "adminListPlayers","adminListPrizes","adminListPrizeEvents","adminGetPlayerProfile",
-  "adminListCatalog","adminGetReports","adminListNotifications"
+  "adminListCatalog","adminGetReports","adminListNotifications","adminListCommunityComments"
 ]);
 const ADMIN_OWNER_ONLY_ACTIONS=new Set([
-  "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminDeletePlayer","adminCancelLoad",
+  "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminDeletePlayer","adminCancelLoad","adminModerateCommunityComment",
   "adminCreateAdminUser","adminUpdateAdminUser","adminListAdminUsers"
 ]);
 function authorizeAdminAction(action:string,identity:any){
@@ -86,7 +86,7 @@ async function playerCredentials(body: any) {
 function errorStatus(message: string) {
   if (message.includes("PLAYER_NOT_FOUND") || message.includes("BONUS_NOT_FOUND")) return 404;
   if (message.includes("PLAYER_HAS_FICHAS_BALANCE") || message.includes("PLAYER_HAS_PENDING_PRIZES")) return 409;
-  if(message.includes("ADMIN_LOGIN_LOCKED"))return 429;
+  if(message.includes("ADMIN_LOGIN_LOCKED")||message.includes("COMMUNITY_RATE_LIMITED"))return 429;
   if (message.includes("INVALID_CREDENTIALS") || message.includes("ADMIN_INVALID_CREDENTIALS") ||
       message.includes("ADMIN_SESSION_INVALID") || message.includes("ADMIN_FORBIDDEN")) return 403;
   if (message.includes("NO_ACTIVE_CYCLE") || message.includes("CYCLE_FINISHED") ||
@@ -137,6 +137,67 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
     if(action.startsWith("admin")){
       adminContext=await requireAdmin(req,db);
       authorizeAdminAction(action,adminContext);
+    }
+
+    if (action === "communityListComments") {
+      const {data,error}=await db.from("roulette_community_comments")
+        .select("id,message,created_at")
+        .eq("status","approved")
+        .order("created_at",{ascending:false})
+        .limit(60);
+      if(error)throw error;
+      return json({comments:data||[]});
+    }
+
+    if (action === "communitySubmitComment") {
+      const message=typeof body.message==="string"?body.message.replace(/\s+/g," ").trim():"";
+      const visitorToken=String(body.visitorToken||"");
+      if(message.length<8||message.length>500)throw new Error("COMMUNITY_INVALID_INPUT");
+      if(!/^[a-f0-9]{32,64}$/.test(visitorToken))throw new Error("COMMUNITY_INVALID_INPUT");
+      if(/https?:\/\/|www\./i.test(message))throw new Error("COMMUNITY_LINKS_NOT_ALLOWED");
+      const visitorHash=await hash("freehand-community:"+visitorToken);
+      const since=new Date(Date.now()-60*60*1000).toISOString();
+      const {count,error:countError}=await db.from("roulette_community_comments")
+        .select("id",{count:"exact",head:true})
+        .eq("visitor_hash",visitorHash)
+        .gte("created_at",since);
+      if(countError)throw countError;
+      if(Number(count||0)>=3)return json({error:"COMMUNITY_RATE_LIMITED"},429);
+      const {error:insertError}=await db.from("roulette_community_comments").insert({
+        message,visitor_hash:visitorHash,status:"pending"
+      });
+      if(insertError)throw insertError;
+      return json({ok:true,status:"pending"});
+    }
+
+    if (action === "adminListCommunityComments") {
+      const requested=String(body.status||"pending");
+      const allowed=["pending","approved","rejected","all"];
+      const filter=allowed.includes(requested)?requested:"pending";
+      let query=db.from("roulette_community_comments")
+        .select("id,message,status,created_at,moderated_at,moderated_by")
+        .order("created_at",{ascending:false}).limit(250);
+      if(filter!=="all")query=query.eq("status",filter);
+      const {data,error}=await query;
+      if(error)throw error;
+      const {count:pendingCount,error:pendingError}=await db.from("roulette_community_comments")
+        .select("id",{count:"exact",head:true}).eq("status","pending");
+      if(pendingError)throw pendingError;
+      return json({comments:data||[],pendingCount:Number(pendingCount||0),filter});
+    }
+
+    if (action === "adminModerateCommunityComment") {
+      const commentId=String(body.commentId||"");
+      const decision=String(body.decision||"");
+      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(commentId) ||
+         !["approved","rejected"].includes(decision))throw new Error("COMMUNITY_INVALID_MODERATION");
+      const {data,error}=await db.from("roulette_community_comments")
+        .update({status:decision,moderated_at:new Date().toISOString(),moderated_by:adminContext.username})
+        .eq("id",commentId).eq("status","pending")
+        .select("id,status").maybeSingle();
+      if(error)throw error;
+      if(!data)throw new Error("COMMUNITY_COMMENT_ALREADY_MODERATED");
+      return json({ok:true,comment:data});
     }
 
     if (action === "status") {
@@ -570,7 +631,17 @@ const handler = withSupabase({ auth: "publishable" }, async (req, ctx) => {
     return json({ error:"Acción desconocida." }, 400);
   } catch (e) {
     const message = String((e as Error)?.message || "Error interno.");
-    const friendly = message.includes("NO_CANCELLABLE_LOAD")
+    const friendly = message.includes("COMMUNITY_RATE_LIMITED")
+      ? "Ya enviaste el máximo de 3 comentarios por hora desde este dispositivo. Volvé a intentarlo más tarde."
+      : message.includes("COMMUNITY_INVALID_INPUT")
+        ? "El comentario debe tener entre 8 y 500 caracteres."
+        : message.includes("COMMUNITY_LINKS_NOT_ALLOWED")
+          ? "Por seguridad, los comentarios no admiten enlaces."
+          : message.includes("COMMUNITY_INVALID_MODERATION")
+            ? "La acción de moderación no es válida."
+            : message.includes("COMMUNITY_COMMENT_ALREADY_MODERATED")
+              ? "Ese comentario ya fue revisado. Actualizá la lista."
+              : message.includes("NO_CANCELLABLE_LOAD")
       ? "No hay una carga aprobada pendiente que pueda anularse. Si ya tuvo algún giro, no se puede retirar."
       : message.includes("BONUS_NOT_FOUND") || message.includes("BONUS_AWARD_NOT_PENDING")
         ? "Ese bono ya no figura entre los bonos pendientes."
@@ -606,7 +677,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 27,
+      version: 28,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });
