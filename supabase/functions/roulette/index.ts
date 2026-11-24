@@ -67,10 +67,11 @@ async function requireAdmin(req: Request,db:any){
 }
 const ADMIN_READ_ONLY_ACTIONS=new Set([
   "adminListPlayers","adminListPrizes","adminListPrizeEvents","adminGetPlayerProfile",
-  "adminListCatalog","adminGetReports","adminListNotifications","adminListCommunityComments"
+  "adminListCatalog","adminGetReports","adminListNotifications"
 ]);
 const ADMIN_OWNER_ONLY_ACTIONS=new Set([
-  "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminDeletePlayer","adminCancelLoad","adminModerateCommunityComment",
+  "adminSaveCatalog","adminAdjustFichas","adminResetPin","adminDeletePlayer","adminCancelLoad",
+  "adminListCommunityComments","adminModerateCommunityComment",
   "adminCreateAdminUser","adminUpdateAdminUser","adminListAdminUsers"
 ]);
 function authorizeAdminAction(action:string,identity:any){
@@ -677,7 +678,7 @@ Deno.serve(async (req) => {
     return json({
       status: "ok",
       function: "roulette",
-      version: 28,
+      version: 29,
       adminSecretConfigured: Boolean(adminSecret && adminSecret.length >= 32),
       timestamp: new Date().toISOString()
     });
