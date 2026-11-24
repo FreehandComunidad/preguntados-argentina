@@ -510,7 +510,7 @@ async function enterAdminPanel(){
  byId('adminIdentityName').textContent=currentAdmin.username+' · '+(roles[currentAdmin.role]||currentAdmin.role);
  applyAdminRole();
  const tasks=[refresh(),refreshPrizes(),loadCatalog(),refreshNotifications()];
- if(currentAdmin.role==='owner')tasks.push(loadAdminUsers());
+ if(currentAdmin.role==='owner'){tasks.push(loadAdminUsers());tasks.push(loadAdminCommunityComments());}
  await Promise.all(tasks);
 }
 byId('connectBtn').onclick=async()=>{
@@ -1198,6 +1198,73 @@ byId('playerSearch').addEventListener('input',filterPlayerRows);async function l
   });
  }catch(error){byId('adminUsersList').textContent=error.message||'No se pudieron cargar las cuentas.';}
 }
+
+let adminCommunityCommentFilter='pending';
+const communityCommentStatusLabels={pending:'Pendiente de revisión',approved:'Publicado',rejected:'Rechazado'};
+function setCommunityCommentFilter(filter){
+ adminCommunityCommentFilter=filter;
+ document.querySelectorAll('[data-community-comment-filter]').forEach(button=>button.classList.toggle('active',button.dataset.communityCommentFilter===filter));
+ loadAdminCommunityComments();
+}
+async function moderateCommunityComment(commentId,decision,button){
+ const actionLabel=decision==='approved'?'publicar':'rechazar';
+ if(!window.confirm('¿Querés '+actionLabel+' este comentario?'))return;
+ button.disabled=true;
+ try{
+  await call('adminModerateCommunityComment')(adminArgs({commentId,decision}));
+  status('adminCommunityCommentsStatus',decision==='approved'?'Comentario publicado correctamente.':'Comentario rechazado; no se mostrará en la ruleta.',true);
+  await loadAdminCommunityComments();
+ }catch(error){
+  status('adminCommunityCommentsStatus',error.message||'No se pudo moderar el comentario.');
+  button.disabled=false;
+ }
+}
+async function loadAdminCommunityComments(){
+ const box=byId('adminCommunityCommentsList');
+ box.innerHTML='<div class="muted">Cargando comentarios…</div>';
+ try{
+  const {data}=await call('adminListCommunityComments')(adminArgs({status:adminCommunityCommentFilter}));
+  const pending=Number(data.pendingCount||0);
+  byId('adminCommunityPendingCount').textContent=pending+' pendiente'+(pending===1?'':'s');
+  const navCount=byId('adminCommentsNavCount');
+  if(navCount){navCount.textContent=String(pending);navCount.classList.toggle('hidden',pending===0);}
+  box.replaceChildren();
+  const comments=Array.isArray(data.comments)?data.comments:[];
+  if(!comments.length){
+   const empty=document.createElement('div');empty.className='community-admin-empty';
+   empty.textContent=adminCommunityCommentFilter==='pending'?'¡Todo al día! No hay comentarios pendientes de revisión.':'No hay comentarios en esta categoría todavía.';
+   box.append(empty);return;
+  }
+  comments.forEach(comment=>{
+   const card=document.createElement('article');card.className='community-admin-item';
+   const message=document.createElement('p');message.textContent=String(comment.message||'');
+   const meta=document.createElement('div');meta.className='community-admin-meta';
+   const date=document.createElement('time');const created=new Date(comment.created_at);
+   date.textContent=Number.isNaN(created.getTime())?'Fecha no disponible':created.toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short'});
+   const state=document.createElement('span');state.className='community-admin-status';state.textContent=communityCommentStatusLabels[comment.status]||comment.status;
+   meta.append(date,state);card.append(message,meta);
+   if(comment.status==='pending'){
+    const actions=document.createElement('div');actions.className='community-admin-actions';
+    const approve=document.createElement('button');approve.type='button';approve.textContent='✓ PUBLICAR';
+    approve.onclick=()=>moderateCommunityComment(comment.id,'approved',approve);
+    const reject=document.createElement('button');reject.type='button';reject.className='reject-comment';reject.textContent='RECHAZAR';
+    reject.onclick=()=>moderateCommunityComment(comment.id,'rejected',reject);
+    actions.append(approve,reject);card.append(actions);
+   }else if(comment.moderated_by){
+    const moderator=document.createElement('div');moderator.className='community-admin-meta';
+    moderator.textContent='Revisado por '+comment.moderated_by;card.append(moderator);
+   }
+   box.append(card);
+  });
+ }catch(error){
+  box.textContent=error.message||'No se pudieron cargar los comentarios.';
+ }
+}
+document.querySelectorAll('[data-community-comment-filter]').forEach(button=>{
+ button.addEventListener('click',()=>setCommunityCommentFilter(button.dataset.communityCommentFilter));
+});
+byId('adminCommunityCommentsRefreshBtn').onclick=loadAdminCommunityComments;
+
 byId('adminCreateUserForm').addEventListener('submit',async event=>{
  event.preventDefault();
  const username=val('newAdminUsername').toLowerCase(),password=byId('newAdminPassword').value,role=val('newAdminRole');
@@ -1288,6 +1355,7 @@ function navigateAdmin(target,view){
  document.querySelectorAll('.nav-link').forEach(button=>button.classList.toggle('active',button.dataset.navTarget===target&&(button.dataset.navView||'')===wantedView));
  document.querySelectorAll('.mobile-dock-item[data-dock-primary]').forEach(button=>button.classList.toggle('active',button.dataset.navTarget===target));
  if(target==='reportsManagement')loadReports();
+ if(target==='communityCommentsManagement')loadAdminCommunityComments();
  const coreTargets=['sectionOverview','prizeManagement','playersManagement'];
  byId('mobileMoreToggle')?.classList.toggle('active',!coreTargets.includes(target));
  element.scrollIntoView({behavior:'smooth',block:'start'});
