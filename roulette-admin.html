@@ -342,6 +342,7 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
 <button class="nav-link" type="button" data-nav-target="prizeManagement" data-nav-view="archive"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v4H4zM5 8v12h14V8M9 12h6"/></svg><span>Historial / Archivo</span></button>
 <button class="nav-link" type="button" data-nav-target="catalogManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h5M8 16h3"/></svg><span>Catálogo de premios</span></button>
 <button class="nav-link" type="button" data-nav-target="reportsManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h17M8 16v-4m5 4V7m5 9v-6"/></svg><span>Reportes y métricas</span></button>
+<button class="nav-link hidden" type="button" data-nav-target="communityCommentsManagement" data-owner-only="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5Z"/><path d="M8 9h8M8 13h5"/></svg><span>Comentarios anónimos</span><small id="adminCommentsNavCount" class="comment-nav-count hidden">0</small></button>
 <button class="nav-link hidden" type="button" data-nav-target="adminUsersManagement" data-owner-only="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v8M15 12h8"/></svg><span>Usuarios y roles</span></button>
 <button class="nav-link" type="button" data-nav-target="playersManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6m3-3h-6"/></svg><span>Jugadores</span></button>
 <button class="nav-link" type="button" data-nav-target="opportunitiesManagement"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Cargas y oportunidades</span></button>
@@ -381,6 +382,18 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
  <div class="section-heading"><div><div class="section-eyebrow">INTELIGENCIA FREEHAND</div><h2>Estadísticas y reportes</h2><p class="section-description">Actividad de jugadores, giros, premios, fichas y oportunidades. Los datos provienen de los registros del servidor.</p></div><button class="utility-button" id="reportsRefreshBtn" type="button">↻ Actualizar</button></div>
  <div id="reportsMetrics" class="report-metrics"><div class="muted">Cargando estadísticas…</div></div><div id="reportsTrends" class="report-trends"></div>
  <div class="report-export"><div><strong>Exportar información</strong><small>Incluye jugadores, giros, premios, oportunidades y libro de fichas.</small></div><div><button class="secondary" id="reportCsvBtn" type="button">DESCARGAR CSV</button><button id="reportExcelBtn" type="button">DESCARGAR EXCEL</button></div></div><div id="reportsStatus" class="status"></div>
+</section>
+<section class="content-card hidden" id="communityCommentsManagement" data-owner-only="true">
+ <div class="section-heading"><div><div class="section-eyebrow">VOZ DE LA COMUNIDAD</div><h2>Comentarios anónimos</h2><p class="section-description">Revisá las sugerencias antes de publicarlas. Los mensajes no muestran el nombre, usuario ni PIN de quien los envió.</p></div><button class="utility-button" id="adminCommunityCommentsRefreshBtn" type="button">↻ Actualizar</button></div>
+ <div class="community-admin-summary"><strong id="adminCommunityPendingCount">0 pendientes</strong><small>Los comentarios nuevos no se publican hasta que los apruebes.</small></div>
+ <div class="community-admin-filters">
+  <button type="button" class="active" data-community-comment-filter="pending">Pendientes</button>
+  <button type="button" data-community-comment-filter="approved">Publicados</button>
+  <button type="button" data-community-comment-filter="rejected">Rechazados</button>
+  <button type="button" data-community-comment-filter="all">Todos</button>
+ </div>
+ <div id="adminCommunityCommentsList" class="community-admin-list"><div class="muted">Cargando comentarios…</div></div>
+ <div id="adminCommunityCommentsStatus" class="status"></div>
 </section></section><section class="content-card hidden" id="adminUsersManagement" data-owner-only="true">
  <div class="section-heading"><div><div class="section-eyebrow">SEGURIDAD INTERNA</div><h2>Usuarios y roles administrativos</h2><p class="section-description">Creá accesos separados para el equipo. Cada cuenta queda registrada y tiene permisos verificados en el servidor.</p></div><button class="utility-button" id="adminUsersRefreshBtn" type="button">↻ Actualizar</button></div>
  <div class="admin-role-guide">
@@ -424,6 +437,7 @@ button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,inpu
    <button class="mobile-more-link" type="button" data-nav-target="catalogManagement"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h5M8 16h3"/></svg><span>Catálogo de premios</span></button>
    <button class="mobile-more-link hidden" type="button" data-nav-target="adminUsersManagement" data-owner-only="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v8M15 12h8"/></svg><span>Usuarios y roles</span></button>
    <button class="mobile-more-link" type="button" data-nav-target="reportsManagement"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h17M8 16v-4m5 4V7m5 9v-6"/></svg><span>Reportes y métricas</span></button>
+   <button class="mobile-more-link hidden" type="button" data-nav-target="communityCommentsManagement" data-owner-only="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4V5Z"/><path d="M8 9h8M8 13h5"/></svg><span>Comentarios anónimos</span></button>
    <button class="mobile-more-link" type="button" data-nav-target="securityManagement"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Seguridad y acceso</span></button>
   </div>
   <button class="mobile-more-logout" id="mobileLogoutBtn" type="button"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 17l5-5-5-5M15 12H3M21 4v16" stroke="currentColor" fill="none" stroke-width="1.8"/></svg>Cerrar sesión</button>
@@ -939,7 +953,26 @@ function downloadReport(kind){
   blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});name='freehand-reporte-'+new Date().toISOString().slice(0,10)+'.csv';
  }else{
   const table='<table border="1">'+rows.map((row,i)=>'<tr>'+row.map(value=>i===0?'<th>'+esc(value)+'</th>':'<td>'+esc(value)+'</td>').join('')+'</tr>').join('')+'</table>';
-  const workbook='<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>';
+  const workbook='<html><head><meta charset="utf-8"><style id="freehand-admin-community-comments">
+.comment-nav-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;margin-left:auto;padding:0 5px;border-radius:20px;background:#b83e48;color:white;font:900 9px 'DM Sans',sans-serif}
+.community-admin-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;margin:5px 0 13px;border:1px solid rgba(245,200,75,.17);border-radius:13px;background:linear-gradient(130deg,rgba(18,55,33,.8),rgba(4,17,9,.8))}
+.community-admin-summary strong{color:#f6d87f;font-size:13px}
+.community-admin-summary small{color:#94ab9a;font-size:10px;text-align:right}
+.community-admin-filters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.community-admin-filters button{width:auto;min-height:36px;margin:0;padding:8px 12px;border:1px solid rgba(190,211,194,.14);border-radius:10px;background:#07170e;color:#9eb4a4;font-size:10px;box-shadow:none}
+.community-admin-filters button.active{border-color:rgba(255,211,77,.45);background:rgba(184,137,39,.16);color:#ffe19a}
+.community-admin-list{display:flex;flex-direction:column;gap:10px}
+.community-admin-item{padding:15px;border:1px solid rgba(164,195,173,.17);border-radius:14px;background:linear-gradient(145deg,rgba(11,39,22,.85),rgba(3,14,8,.92))}
+.community-admin-item p{margin:0;color:#edf5ee;font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.community-admin-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:11px;color:#91a899;font-size:10px}
+.community-admin-status{color:#f1d88c;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.community-admin-actions{display:flex;gap:8px;margin-top:12px}
+.community-admin-actions button{width:auto;min-height:36px;margin:0;padding:8px 13px;font-size:10px}
+.community-admin-actions .reject-comment{border-color:rgba(236,118,118,.3);background:#3d171b;color:#ffd9d9}
+.community-admin-empty{padding:25px 14px;border:1px dashed rgba(160,190,169,.2);border-radius:13px;color:#94ab9a;text-align:center;font-size:12px}
+@media(max-width:600px){.community-admin-summary{align-items:flex-start;flex-direction:column}.community-admin-summary small{text-align:left}.community-admin-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.community-admin-filters button{width:100%}.community-admin-actions button{flex:1}}
+</style>
+</head><body>'+table+'</body></html>';
   blob=new Blob([workbook],{type:'application/vnd.ms-excel;charset=utf-8;'});name='freehand-reporte-'+new Date().toISOString().slice(0,10)+'.xls';
  }
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
